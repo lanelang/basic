@@ -1,14 +1,15 @@
 # Lane Standard Library
 
-The standard library repository owns Lane source that is loaded as the default
-prelude and later ordinary library code.
+The standard library repository owns Lane source modules that provide standard
+builtin wrappers, operation values, contextual offers, and later ordinary
+library code.
 
 ## Language
 
-**Prelude**:
-The initial Lane environment containing primitive operation wrappers and
-contextual offers required by ordinary programs.
-_Avoid_: compiler builtin table, source import system
+**Builtins Module**:
+The standard module containing primitive operation wrappers over Lane
+intrinsics.
+_Avoid_: compiler builtin table, host plugin API
 
 **Standard Intrinsic Use**:
 A standard-library call to a Lane intrinsic defined by the language and
@@ -16,12 +17,19 @@ implemented by the compiler/runtime boundary.
 _Avoid_: host plugin API, arbitrary native call
 
 **Contextual Operation Value**:
-A prelude value such as `Add[Int]` offered for contextual resolution.
+A standard-library value such as `Add[Int]` offered for contextual resolution.
 _Avoid_: trait instance, open binding
+
+**Ops Module**:
+The standard module containing operation structs, operator targets, and default
+contextual operation offers.
+_Avoid_: magical operator namespace, source import system
 
 ## Relationships
 
 - `stdlib` is written in Lane source and checked by `lanec`.
 - The language and intrinsic contract is specified by `spec`.
-- The `lane` tool locates and loads this repository's prelude for single-file
-  runs and checks.
+- `Builtins` supplies standard intrinsic wrappers.
+- `Ops` imports `Builtins` and supplies standard operation values and offers.
+- Downstream compilation consumes standard-library module interfaces; linking
+  and execution consume the corresponding module objects.

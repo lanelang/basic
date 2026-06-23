@@ -1,0 +1,185 @@
+module Ops
+
+import Builtins::{
+  bool_and,
+  bool_equal,
+  bool_not,
+  bool_or,
+  int_add,
+  int_div,
+  int_equal,
+  int_less,
+  int_mul,
+  int_neg,
+  int_rem,
+  int_sub,
+  string_equal,
+}
+
+// Lane2 v1 standard operation values and contextual offers.
+
+pub struct Add[T] {
+  add : (T, T) -> T
+}
+
+pub struct Sub[T] {
+  sub : (T, T) -> T
+}
+
+pub struct Mul[T] {
+  mul : (T, T) -> T
+}
+
+pub struct Div[T] {
+  div : (T, T) -> T
+}
+
+pub struct Rem[T] {
+  rem : (T, T) -> T
+}
+
+pub struct Neg[T] {
+  neg : (T) -> T
+}
+
+pub struct And {
+  and : (Bool, () -> Bool) -> Bool
+}
+
+pub struct Or {
+  or : (Bool, () -> Bool) -> Bool
+}
+
+pub struct Not {
+  not : (Bool) -> Bool
+}
+
+pub struct Equal[T] {
+  equal : (T, T) -> Bool
+  not_equal : (T, T) -> Bool
+}
+
+pub struct Compare[T] {
+  offer equal_impl : Equal[T]
+  less : (T, T) -> Bool
+  less_eq : (T, T) -> Bool
+  greater : (T, T) -> Bool
+  greater_eq : (T, T) -> Bool
+}
+
+pub fn[T] op_add(a : T, b : T, auto op : Add[T]) -> T {
+  op.add(a, b)
+}
+
+pub fn[T] op_sub(a : T, b : T, auto op : Sub[T]) -> T {
+  op.sub(a, b)
+}
+
+pub fn[T] op_mul(a : T, b : T, auto op : Mul[T]) -> T {
+  op.mul(a, b)
+}
+
+pub fn[T] op_div(a : T, b : T, auto op : Div[T]) -> T {
+  op.div(a, b)
+}
+
+pub fn[T] op_rem(a : T, b : T, auto op : Rem[T]) -> T {
+  op.rem(a, b)
+}
+
+pub fn[T] op_neg(value : T, auto op : Neg[T]) -> T {
+  op.neg(value)
+}
+
+pub fn op_and(a : Bool, b : () -> Bool, auto op : And) -> Bool {
+  op.and(a, b)
+}
+
+pub fn op_or(a : Bool, b : () -> Bool, auto op : Or) -> Bool {
+  op.or(a, b)
+}
+
+pub fn op_not(value : Bool, auto op : Not) -> Bool {
+  op.not(value)
+}
+
+pub fn[T] op_equal(a : T, b : T, auto op : Equal[T]) -> Bool {
+  op.equal(a, b)
+}
+
+pub fn[T] op_not_equal(a : T, b : T, auto op : Equal[T]) -> Bool {
+  op.not_equal(a, b)
+}
+
+pub fn[T] op_less(a : T, b : T, auto op : Compare[T]) -> Bool {
+  op.less(a, b)
+}
+
+pub fn[T] op_less_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
+  op.less_eq(a, b)
+}
+
+pub fn[T] op_greater(a : T, b : T, auto op : Compare[T]) -> Bool {
+  op.greater(a, b)
+}
+
+pub fn[T] op_greater_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
+  op.greater_eq(a, b)
+}
+
+fn[T] make_equal(equal : (T, T) -> Bool) -> Equal[T] {
+  Equal::{
+    equal,
+    not_equal: fn(a : T, b : T) -> Bool {
+      if equal(a, b) {
+        false
+      } else {
+        true
+      }
+    },
+  }
+}
+
+fn[T] make_compare(
+  equal_impl : Equal[T],
+  less : (T, T) -> Bool
+) -> Compare[T] {
+  Compare::{
+    equal_impl,
+    less,
+    less_eq: fn(a : T, b : T) -> Bool {
+      if equal_impl.equal(a, b) {
+        true
+      } else {
+        less(a, b)
+      }
+    },
+    greater: fn(a : T, b : T) -> Bool {
+      less(b, a)
+    },
+    greater_eq: fn(a : T, b : T) -> Bool {
+      if equal_impl.equal(a, b) {
+        true
+      } else {
+        less(b, a)
+      }
+    },
+  }
+}
+
+pub offer int_add_ops : Add[Int] = Add::{ add: int_add }
+pub offer int_sub_ops : Sub[Int] = Sub::{ sub: int_sub }
+pub offer int_mul_ops : Mul[Int] = Mul::{ mul: int_mul }
+pub offer int_div_ops : Div[Int] = Div::{ div: int_div }
+pub offer int_rem_ops : Rem[Int] = Rem::{ rem: int_rem }
+pub offer int_neg_ops : Neg[Int] = Neg::{ neg: int_neg }
+
+let int_equal_ops : Equal[Int] = make_equal(int_equal)
+pub offer int_compare_ops : Compare[Int] = make_compare(int_equal_ops, int_less)
+
+pub offer bool_and_ops : And = And::{ and: bool_and }
+pub offer bool_or_ops : Or = Or::{ or: bool_or }
+pub offer bool_not_ops : Not = Not::{ not: bool_not }
+pub offer bool_equal_ops : Equal[Bool] = make_equal(bool_equal)
+
+pub offer string_equal_ops : Equal[String] = make_equal(string_equal)

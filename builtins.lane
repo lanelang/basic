@@ -1,0 +1,53 @@
+module Builtins
+
+// Lane2 v1 standard builtin wrappers.
+
+pub let int_add : (Int, Int) -> Int = builtin("%i64_add")
+
+pub let int_sub : (Int, Int) -> Int = builtin("%i64_sub")
+
+pub let int_mul : (Int, Int) -> Int = builtin("%i64_mul")
+
+pub let int_div : (Int, Int) -> Int = builtin("%i64_div")
+
+pub let int_rem : (Int, Int) -> Int = builtin("%i64_rem")
+
+pub let int_neg : (Int) -> Int = builtin("%i64_neg")
+
+pub let int_equal : (Int, Int) -> Bool = builtin("%i64_equal")
+
+pub let int_less : (Int, Int) -> Bool = builtin("%i64_less")
+
+pub let string_equal : (String, String) -> Bool = builtin("%string_equal")
+
+pub fn bool_and(a : Bool, b : () -> Bool) -> Bool {
+  if a {
+    b()
+  } else {
+    false
+  }
+}
+
+pub fn bool_or(a : Bool, b : () -> Bool) -> Bool {
+  if a {
+    true
+  } else {
+    b()
+  }
+}
+
+pub fn bool_not(a : Bool) -> Bool {
+  if a {
+    false
+  } else {
+    true
+  }
+}
+
+pub fn bool_equal(a : Bool, b : Bool) -> Bool {
+  if a {
+    b
+  } else {
+    bool_not(b)
+  }
+}
