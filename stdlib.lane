@@ -1,0 +1,9 @@
+module Stdlib
+
+pub effect Write {
+  println(String) -> Unit
+}
+
+pub type Console = { Write }
+
+pub type Io = { Console }
