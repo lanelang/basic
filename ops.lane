@@ -1,6 +1,6 @@
-module Ops
+module Stdlib.Ops
 
-import Builtins.{
+import Stdlib.Builtins.{
   bool_and,
   bool_equal,
   bool_not,

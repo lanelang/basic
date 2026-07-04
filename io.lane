@@ -1,4 +1,4 @@
-module Stdlib
+module Stdlib.Io
 
 pub effect Write {
   println(String) -> Unit
