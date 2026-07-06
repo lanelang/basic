@@ -1,12 +1,12 @@
-# Lane Standard Library
+# Lane Basic Library
 
-This directory contains Lane standard library source.
+This directory contains the Lane Basic library source.
 
-`builtins.lane` defines the `Stdlib.Builtins` module with standard builtin
+`builtins.lane` defines the `Basic.Builtins` module with basic builtin
 wrappers.
-`ops.lane` defines the `Stdlib.Ops` module with standard operation values and
+`ops.lane` defines the `Basic.Ops` module with basic operation values and
 default contextual offers.
-`io.lane` defines the `Stdlib.Io` module with conventional runtime effect
+`io.lane` defines the `Basic.Io` module with conventional runtime effect
 shapes such as `Write`, `Console`, and `Io`.
 
 All modules are ordinary Lane modules. Tooling does not inject them implicitly;
@@ -15,11 +15,11 @@ users pass the needed source, interface, or object artifacts explicitly.
 Example manual compilation:
 
 ```sh
-lane compile builtins.lane -t Stdlib.Builtins.lmi -o Stdlib.Builtins.lmo
-lane compile ops.lane -i Stdlib.Builtins.lmi -t Stdlib.Ops.lmi -o Stdlib.Ops.lmo
-lane compile io.lane -t Stdlib.Io.lmi -o Stdlib.Io.lmo
-lane compile main.lane -i Stdlib.Io.lmi
-lane link main.lmo Stdlib.Io.lmo
+lane compile builtins.lane -t Basic.Builtins.lmi -o Basic.Builtins.lmo
+lane compile ops.lane -i Basic.Builtins.lmi -t Basic.Ops.lmi -o Basic.Ops.lmo
+lane compile io.lane -t Basic.Io.lmi -o Basic.Io.lmo
+lane compile main.lane -i Basic.Io.lmi
+lane link main.lmo Basic.Io.lmo
 ```
 
 Example use:
@@ -27,7 +27,7 @@ Example use:
 ```lane
 module Main
 
-import Stdlib.Io.*
+import Basic.Io.*
 
 pub fn main() -> Unit ! Io {
   Write::println!("hello")

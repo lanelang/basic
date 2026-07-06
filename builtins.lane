@@ -1,4 +1,4 @@
-module Stdlib.Builtins
+module Basic.Builtins
 
 // Lane2 v1 standard builtin wrappers.
 
