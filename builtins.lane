@@ -18,6 +18,20 @@ pub let int_equal : (Int, Int) -> Bool = builtin("%i64_equal")
 
 pub let int_less : (Int, Int) -> Bool = builtin("%i64_less")
 
+pub let double_add : (Double, Double) -> Double = builtin("%f64_add")
+
+pub let double_sub : (Double, Double) -> Double = builtin("%f64_sub")
+
+pub let double_mul : (Double, Double) -> Double = builtin("%f64_mul")
+
+pub let double_div : (Double, Double) -> Double = builtin("%f64_div")
+
+pub let double_neg : (Double) -> Double = builtin("%f64_neg")
+
+pub let double_equal : (Double, Double) -> Bool = builtin("%f64_equal")
+
+pub let double_less : (Double, Double) -> Bool = builtin("%f64_less")
+
 pub let string_equal : (String, String) -> Bool = builtin("%string_equal")
 
 pub fn bool_and(a : Bool, b : () -> Bool) -> Bool {

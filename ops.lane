@@ -5,6 +5,13 @@ import Basic.Builtins.{
   bool_equal,
   bool_not,
   bool_or,
+  double_add,
+  double_div,
+  double_equal,
+  double_less,
+  double_mul,
+  double_neg,
+  double_sub,
   int_add,
   int_div,
   int_equal,
@@ -13,10 +20,8 @@ import Basic.Builtins.{
   int_neg,
   int_rem,
   int_sub,
-  string_equal,
+  string_equal
 }
-
-// Lane2 v1 standard operation values and contextual offers.
 
 pub struct Add[T] {
   add : (T, T) -> T
@@ -130,56 +135,78 @@ pub fn[T] op_greater_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
 fn[T] make_equal(equal : (T, T) -> Bool) -> Equal[T] {
   Equal::{
     equal,
-    not_equal: fn(a : T, b : T) -> Bool {
+    not_equal: fn (a : T, b : T) -> Bool {
       if equal(a, b) {
         false
       } else {
         true
       }
-    },
+    }
   }
 }
 
-fn[T] make_compare(
-  equal_impl : Equal[T],
-  less : (T, T) -> Bool
-) -> Compare[T] {
+fn[T] make_compare(equal_impl : Equal[T], less : (T, T) -> Bool) -> Compare[T] {
   Compare::{
     equal_impl,
     less,
-    less_eq: fn(a : T, b : T) -> Bool {
+    less_eq: fn (a : T, b : T) -> Bool {
       if equal_impl.equal(a, b) {
         true
       } else {
         less(a, b)
       }
     },
-    greater: fn(a : T, b : T) -> Bool {
+    greater: fn (a : T, b : T) -> Bool {
       less(b, a)
     },
-    greater_eq: fn(a : T, b : T) -> Bool {
+    greater_eq: fn (a : T, b : T) -> Bool {
       if equal_impl.equal(a, b) {
         true
       } else {
         less(b, a)
       }
-    },
+    }
   }
 }
 
 pub offer int_add_ops : Add[Int] = Add::{ add: int_add }
+
 pub offer int_sub_ops : Sub[Int] = Sub::{ sub: int_sub }
+
 pub offer int_mul_ops : Mul[Int] = Mul::{ mul: int_mul }
+
 pub offer int_div_ops : Div[Int] = Div::{ div: int_div }
+
 pub offer int_rem_ops : Rem[Int] = Rem::{ rem: int_rem }
+
 pub offer int_neg_ops : Neg[Int] = Neg::{ neg: int_neg }
 
 let int_equal_ops : Equal[Int] = make_equal(int_equal)
+
 pub offer int_compare_ops : Compare[Int] = make_compare(int_equal_ops, int_less)
 
+pub offer double_add_ops : Add[Double] = Add::{ add: double_add }
+
+pub offer double_sub_ops : Sub[Double] = Sub::{ sub: double_sub }
+
+pub offer double_mul_ops : Mul[Double] = Mul::{ mul: double_mul }
+
+pub offer double_div_ops : Div[Double] = Div::{ div: double_div }
+
+pub offer double_neg_ops : Neg[Double] = Neg::{ neg: double_neg }
+
+let double_equal_ops : Equal[Double] = make_equal(double_equal)
+
+pub offer double_compare_ops : Compare[Double] = make_compare(double_equal_ops, double_less)
+
 pub offer bool_and_ops : And = And::{ and: bool_and }
+
 pub offer bool_or_ops : Or = Or::{ or: bool_or }
+
 pub offer bool_not_ops : Not = Not::{ not: bool_not }
+
 pub offer bool_equal_ops : Equal[Bool] = make_equal(bool_equal)
 
 pub offer string_equal_ops : Equal[String] = make_equal(string_equal)
+
+// Lane2 v1 standard operation values and contextual offers.

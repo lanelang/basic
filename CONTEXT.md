@@ -29,6 +29,14 @@ The conventional Basic module containing runtime effect shapes recognized by run
 tooling when supplied explicitly by users.
 _Avoid_: implicit prelude, pinned official artifact, compiler magic module
 
+**Basic.Double Module**:
+The Basic module containing user-facing `Double` constants and helpers over `f64` intrinsics.
+_Avoid_: language literal namespace, implicit floating prelude, compiler-owned number library
+
+**Double Contextual Operations**:
+The Basic operation offers for `Double` arithmetic and comparison using IEEE floating-point equality and ordering.
+_Avoid_: total floating-point order, decimal arithmetic, implicit numeric conversion
+
 **Write Effect**:
 The `Basic.Io` effect whose `println(String) -> Unit` operation is the initial
 runtime output convention.
@@ -41,6 +49,10 @@ _Avoid_: generic console capability, unsafe builtin, terminal API
 - `Basic.Builtins` supplies standard intrinsic wrappers.
 - `Basic.Ops` imports `Basic.Builtins` and supplies standard operation values
   and offers.
+- `Basic.Double` supplies explicit `Double` constants such as infinity and NaN;
+  these are ordinary library values, not language literals.
+- `Basic.Ops` supplies `Double` arithmetic and comparison offers; comparison is
+  IEEE floating-point comparison, not a total order.
 - `Basic.Io` supplies conventional runtime effect shapes and is never injected
   implicitly by compiler or command tooling.
 - `Basic.Io.Write.println(String) -> Unit` is the only initial runtime output
