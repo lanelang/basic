@@ -1,0 +1,6 @@
+module Basic.Data.List
+
+pub enum List[T] {
+  nil()
+  cons(T, List[T])
+}
