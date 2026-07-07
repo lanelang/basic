@@ -1,0 +1,7 @@
+module Basic.Double
+
+pub let infinity : Double = builtin("%f64_inf")
+
+pub let neg_infinity : Double = builtin("%f64_ninf")
+
+pub let nan : Double = builtin("%f64_nan")
