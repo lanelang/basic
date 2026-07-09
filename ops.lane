@@ -65,7 +65,7 @@ pub struct Equal[T] {
 }
 
 pub struct Compare[T] {
-  offer equal_impl : Equal[T]
+  equal_impl : Equal[T]
   less : (T, T) -> Bool
   less_eq : (T, T) -> Bool
   greater : (T, T) -> Bool
@@ -181,7 +181,7 @@ pub offer int_rem_ops : Rem[Int] = Rem::{ rem: int_rem }
 
 pub offer int_neg_ops : Neg[Int] = Neg::{ neg: int_neg }
 
-let int_equal_ops : Equal[Int] = make_equal(int_equal)
+pub offer int_equal_ops : Equal[Int] = make_equal(int_equal)
 
 pub offer int_compare_ops : Compare[Int] = make_compare(int_equal_ops, int_less)
 
@@ -195,7 +195,7 @@ pub offer double_div_ops : Div[Double] = Div::{ div: double_div }
 
 pub offer double_neg_ops : Neg[Double] = Neg::{ neg: double_neg }
 
-let double_equal_ops : Equal[Double] = make_equal(double_equal)
+pub offer double_equal_ops : Equal[Double] = make_equal(double_equal)
 
 pub offer double_compare_ops : Compare[Double] = make_compare(double_equal_ops, double_less)
 
