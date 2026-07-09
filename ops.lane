@@ -145,7 +145,7 @@ fn[T] make_equal(equal : (T, T) -> Bool) -> Equal[T] {
   }
 }
 
-fn[T] make_compare(equal_impl : Equal[T], less : (T, T) -> Bool) -> Compare[T] {
+fn[T] make_compare(less : (T, T) -> Bool, auto equal_impl : Equal[T]) -> Compare[T] {
   Compare::{
     equal_impl,
     less,
@@ -183,7 +183,7 @@ pub offer int_neg_ops : Neg[Int] = Neg::{ neg: int_neg }
 
 pub offer int_equal_ops : Equal[Int] = make_equal(int_equal)
 
-pub offer int_compare_ops : Compare[Int] = make_compare(int_equal_ops, int_less)
+pub offer int_compare_ops : Compare[Int] = make_compare(int_less)
 
 pub offer double_add_ops : Add[Double] = Add::{ add: double_add }
 
@@ -197,7 +197,7 @@ pub offer double_neg_ops : Neg[Double] = Neg::{ neg: double_neg }
 
 pub offer double_equal_ops : Equal[Double] = make_equal(double_equal)
 
-pub offer double_compare_ops : Compare[Double] = make_compare(double_equal_ops, double_less)
+pub offer double_compare_ops : Compare[Double] = make_compare(double_less)
 
 pub offer bool_and_ops : And = And::{ and: bool_and }
 
