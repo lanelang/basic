@@ -1,9 +1,3 @@
 module Basic.Io
 
-pub effect Write {
-  println(String) -> Unit
-}
-
-pub type Console = { Write }
-
-pub type Io = { Console }
+pub let println : (String) -> Unit ! Io = extern("%println")

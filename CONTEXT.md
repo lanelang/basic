@@ -25,9 +25,9 @@ contextual operation offers.
 _Avoid_: magical operator namespace, source import system
 
 **Basic.Io Module**:
-The conventional Basic module containing runtime effect shapes recognized by run
-tooling when supplied explicitly by users.
-_Avoid_: implicit prelude, pinned official artifact, compiler magic module
+The Basic module containing ordinary runtime-backed IO values such as
+`println`.
+_Avoid_: built-in Io effect type, compiler magic module
 
 **Basic.Double Module**:
 The Basic module containing user-facing `Double` constants and helpers over `f64` intrinsics.
@@ -37,10 +37,10 @@ _Avoid_: language literal namespace, implicit floating prelude, compiler-owned n
 The Basic operation offers for `Double` arithmetic and comparison using IEEE floating-point equality and ordering.
 _Avoid_: total floating-point order, decimal arithmetic, implicit numeric conversion
 
-**Write Effect**:
-The `Basic.Io` effect whose `println(String) -> Unit` operation is the initial
-runtime output convention.
-_Avoid_: generic console capability, unsafe builtin, terminal API
+**println Binding**:
+The `Basic.Io` extern binding with type `(String) -> Unit ! Io` and runtime
+symbol `%println`.
+_Avoid_: algebraic effect operation, compiler intrinsic, terminal API
 
 ## Relationships
 
@@ -53,9 +53,7 @@ _Avoid_: generic console capability, unsafe builtin, terminal API
   these are ordinary library values, not language literals.
 - `Basic.Ops` supplies `Double` arithmetic and comparison offers; comparison is
   IEEE floating-point comparison, not a total order.
-- `Basic.Io` supplies conventional runtime effect shapes and is never injected
-  implicitly by compiler or command tooling.
-- `Basic.Io.Write.println(String) -> Unit` is the only initial runtime output
-  convention.
+- `Io` is a built-in effect type and is not declared by Basic.
+- `Basic.Io.println` is an ordinary extern binding to `%println`.
 - Downstream compilation consumes Basic module interfaces; linking and execution
   consume the corresponding module objects.
