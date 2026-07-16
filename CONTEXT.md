@@ -39,7 +39,7 @@ _Avoid_: total floating-point order, decimal arithmetic, implicit numeric conver
 
 **println Binding**:
 The `Basic.Io` extern binding with type `(String) -> Unit ! Io` and runtime
-symbol `%println`.
+symbol `println`.
 _Avoid_: algebraic effect operation, compiler intrinsic, terminal API
 
 ## Relationships
@@ -54,6 +54,6 @@ _Avoid_: algebraic effect operation, compiler intrinsic, terminal API
 - `Basic.Ops` supplies `Double` arithmetic and comparison offers; comparison is
   IEEE floating-point comparison, not a total order.
 - `Io` is a built-in effect type and is not declared by Basic.
-- `Basic.Io.println` is an ordinary extern binding to `%println`.
+- `Basic.Io.println` is an ordinary extern binding to `println`.
 - Downstream compilation consumes Basic module interfaces; linking and execution
   consume the corresponding module objects.
