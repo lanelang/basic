@@ -1,7 +1,0 @@
-# Contextual resolution for operators
-
-Lane2 removes `open`, `preopen`, open candidate sets, and open-based operator overloading from v1. Operators still lower to fixed ordinary operation names such as `op_add`, but those operation functions use trailing `auto` parameters that are supplied by Contextual Resolution from lexically visible offered value definitions. This keeps operator syntax as ordinary function-call sugar after elaboration, avoids exposing struct fields as unqualified names, and gives operation structs such as `Add[T]` and `Equal[T]` a narrow role as normal values selected by exact type equality.
-
-Contextual Resolution is deliberately not a trait, typeclass, or general instance search. An offered value definition has the form `offer name : T = expr`; it defines a named value with an explicit type annotation and adds that value to the contextual offer environment after checking its initializer. Functions introduced by named `fn` definitions may mark a trailing suffix of parameters as `auto`; direct named calls may omit those parameters, or supply selected ones with explicit `name=expr` arguments. Function types do not record `auto`, calls through ordinary function values must pass every argument explicitly, and visible offers match omitted contextual parameters only by Lane2 type equality.
-
-Superseded by the explicit-only contextual offer decision: struct fields cannot be marked with `offer`, and contextual resolution only consumes explicit named offers and offered parameters.
