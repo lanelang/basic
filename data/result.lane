@@ -13,5 +13,3 @@ pub fn[L, R, T, E : Effect] map(f : (L) -> T ! E, result : Result[L, R]) -> Resu
 }
 
 pub type PartialResult[R] = type[L] => Result[L, R]
-
-// pub offer partial_result_impl_mappable : [R]Mappable[PartialResult[R]] = Mappable::{ map } // FIXME: why can't this compile?

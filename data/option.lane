@@ -21,4 +21,4 @@ pub fn[T] or(o : Option[T], default : T) -> T {
   }
 }
 
-pub offer option_impl_mappable : Mappable[Option] = Mappable::{ map } // FIXME: { map: map } should be `fmt` to { map }
+pub offer option_impl_mappable : Mappable[Option] = Mappable::{ map }

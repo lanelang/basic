@@ -1,9 +1,7 @@
 module Basic.Data.List
 
 import Basic.Ops.*
-// FIXME: empty lines between imports should be removed by `fmt`
 import Basic.Trait.Map.{ Mappable }
-
 import Basic.Eff.Out.{ OutOfBound }
 
 pub enum List[T] {
