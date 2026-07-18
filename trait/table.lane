@@ -1,0 +1,12 @@
+module Basic.Trait.Table 
+
+import Basic.Data.Option.{ Option }
+
+import Basic.Data.Pair.{ Pair }
+
+pub struct Table[T] {
+  type K : Type
+  type V : Type 
+  set : (T, K, V) -> T
+  get : (T, K) -> Pair[Option[V], T]
+} 

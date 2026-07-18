@@ -1,0 +1,17 @@
+module Test
+
+import Basic.Ops.{ op_equal, op_add }
+
+// FIXME: not importing the offered int_add_ops, op_add still works
+
+import Basic.Io.*
+
+pub fn main() -> Unit ! Io {
+  if op_equal(op_add(1.0, 1.0), 2.0) {
+    println("true")
+  } else {
+    println("false")
+  }
+}
+
+// op_add : [T](T, T) -> T

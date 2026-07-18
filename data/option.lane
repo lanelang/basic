@@ -1,0 +1,24 @@
+module Basic.Data.Option
+
+import Basic.Trait.Map.{ Mappable }
+
+pub enum Option[T] {
+  some(T)
+  none()
+}
+
+pub fn[T, R, E : Effect] map(f : (T) -> R ! E, o : Option[T]) -> Option[R] ! E {
+  match o {
+    none() => none()
+    some(v) => some(f(v))
+  }
+}
+
+pub fn[T] or(o : Option[T], default : T) -> T {
+  match o {
+    none() => default
+    some(v) => v
+  }
+}
+
+pub offer option_impl_mappable : Mappable[Option] = Mappable::{ map } // FIXME: { map: map } should be `fmt` to { map }

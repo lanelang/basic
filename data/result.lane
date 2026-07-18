@@ -1,0 +1,17 @@
+module Basic.Data.Result
+
+pub enum Result[L, R] {
+  ok(L)
+  err(R)
+}
+
+pub fn[L, R, T, E : Effect] map(f : (L) -> T ! E, result : Result[L, R]) -> Result[T, R] ! E {
+  match result {
+    ok(v) => ok(f(v))
+    err(e) => err(e)
+  }
+}
+
+pub type PartialResult[R] = type[L] => Result[L, R]
+
+// pub offer partial_result_impl_mappable : [R]Mappable[PartialResult[R]] = Mappable::{ map } // FIXME: why can't this compile?

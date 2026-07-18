@@ -1,6 +1,44 @@
 module Basic.Data.List
 
+import Basic.Ops.*
+// FIXME: empty lines between imports should be removed by `fmt`
+import Basic.Trait.Map.{ Mappable }
+
+import Basic.Eff.Out.{ OutOfBound }
+
 pub enum List[T] {
   empty()
   cons(T, List[T])
 }
+
+pub fn[T] length(list : List[T]) -> Int {
+  match list {
+    empty() => 0
+    cons(_x, xs) => length(xs) + 1
+  }
+}
+
+pub fn[T, R, E : Effect] map(f : (T) -> R ! E, list : List[T]) -> List[R] ! E {
+  match list {
+    empty() => empty()
+    cons(x, xs) => cons(f(x), map(f, xs))
+  }
+}
+
+pub fn[T] elem(list : List[T], index : Int) -> T ! OutOfBound {
+  if index < 0 {
+    out_of_min!()
+  } else if index == 0 {
+    match list {
+      empty() => out_of_min!()
+      cons(x, _xs) => x
+    }
+  } else {
+    match list {
+      empty() => out_of_max!()
+      cons(_x, xs) => elem(xs, index - 1)
+    }
+  }
+}
+
+pub offer list_impl_mappable : Mappable[List] = Mappable::{ map }

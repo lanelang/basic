@@ -1,0 +1,6 @@
+module Basic.Eff.Out 
+
+pub effect OutOfBound {
+  out_of_max[A]() -> A
+  out_of_min[A]() -> A
+}

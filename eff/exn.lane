@@ -1,0 +1,15 @@
+module Basic.Eff.Exn
+
+import Basic.Data.Option.{ Option }
+
+pub effect Exception {
+  raise[T](String) -> T
+}
+
+pub fn[T] to_option(e : () -> T ! Exception) -> Option[T] {
+  handle e() with {
+    raise[R](_msg, _resume) => none()
+  } final v {
+    some(v)
+  }
+}
