@@ -1,4 +1,4 @@
-module Basic.Ops
+module Basic.Trait.Ops
 
 import Basic.Builtins.{
   bool_and,
@@ -135,7 +135,7 @@ pub fn[T] op_greater_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
 fn[T] make_equal(equal : (T, T) -> Bool) -> Equal[T] {
   Equal::{
     equal,
-    not_equal: fn (a : T, b : T) -> Bool {
+    not_equal: fn(a : T, b : T) -> Bool {
       if equal(a, b) {
         false
       } else {
@@ -149,17 +149,17 @@ fn[T] make_compare(less : (T, T) -> Bool, auto equal_impl : Equal[T]) -> Compare
   Compare::{
     equal_impl,
     less,
-    less_eq: fn (a : T, b : T) -> Bool {
+    less_eq: fn(a : T, b : T) -> Bool {
       if equal_impl.equal(a, b) {
         true
       } else {
         less(a, b)
       }
     },
-    greater: fn (a : T, b : T) -> Bool {
+    greater: fn(a : T, b : T) -> Bool {
       less(b, a)
     },
-    greater_eq: fn (a : T, b : T) -> Bool {
+    greater_eq: fn(a : T, b : T) -> Bool {
       if equal_impl.equal(a, b) {
         true
       } else {
@@ -208,5 +208,3 @@ pub offer bool_not_ops : Not = Not::{ not: bool_not }
 pub offer bool_equal_ops : Equal[Bool] = make_equal(bool_equal)
 
 pub offer string_equal_ops : Equal[String] = make_equal(string_equal)
-
-// Lane2 v1 standard operation values and contextual offers.

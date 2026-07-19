@@ -1,8 +1,8 @@
 module Basic.Data.List
 
-import Basic.Ops.*
 import Basic.Trait.Map.{ Mappable }
 import Basic.Eff.Out.{ OutOfBound }
+import Basic.Trait.Ops.{ Equal, op_add, op_equal, op_less, op_sub }
 
 pub enum List[T] {
   empty()
@@ -16,12 +16,14 @@ pub fn[T] length(list : List[T]) -> Int {
   }
 }
 
-pub fn[T, R, E : Effect] map(f : (T) -> R ! E, list : List[T]) -> List[R] ! E {
+pub fn[T, R, E : Effect] map(list : List[T], f : (T) -> R ! E) -> List[R] ! E {
   match list {
     empty() => empty()
-    cons(x, xs) => cons(f(x), map(f, xs))
+    cons(x, xs) => cons(f(x), map(xs, f))
   }
 }
+
+pub offer list_impl_mappable : Mappable[List] = Mappable::{ map }
 
 pub fn[T] elem(list : List[T], index : Int) -> T ! OutOfBound {
   if index < 0 {
@@ -39,4 +41,21 @@ pub fn[T] elem(list : List[T], index : Int) -> T ! OutOfBound {
   }
 }
 
-pub offer list_impl_mappable : Mappable[List] = Mappable::{ map }
+pub fn[T] push(list : List[T], elem : T) -> List[T] {
+  match list {
+    empty() => cons(elem, empty())
+    cons(_x, xs) => push(xs, elem)
+  }
+}
+
+pub fn[T] filter(list : List[T], pred : (T) -> Bool) -> List[T] {
+  match list {
+    empty() => empty()
+    cons(x, xs) =>
+      if pred(x) {
+        filter(xs, pred)
+      } else {
+        cons(x, filter(xs, pred))
+      }
+  }
+}

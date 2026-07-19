@@ -1,0 +1,10 @@
+module Basic.Data.AssociatedList
+
+import Basic.Data.List.{ List }
+import Basic.Data.Pair.{ Pair }
+
+pub type AssocList[A, B] = List[Pair[A, B]]
+
+pub fn[A, B] empty() -> AssocList[A, B] {
+  List::empty()
+}

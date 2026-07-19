@@ -7,7 +7,7 @@ pub enum Option[T] {
   none()
 }
 
-pub fn[T, R, E : Effect] map(f : (T) -> R ! E, o : Option[T]) -> Option[R] ! E {
+pub fn[T, R, E : Effect] map(o : Option[T], f : (T) -> R ! E) -> Option[R] ! E {
   match o {
     none() => none()
     some(v) => some(f(v))
