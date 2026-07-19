@@ -1,6 +1,6 @@
 module Test
 
-import Basic.Ops.{ op_equal, op_add }
+import Basic.Trait.Ops.{ op_equal, op_add }
 
 // FIXME: not importing the offered int_add_ops, op_add still works
 

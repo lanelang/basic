@@ -41,11 +41,15 @@ pub fn[T] elem(list : List[T], index : Int) -> T ! OutOfBound {
   }
 }
 
-pub fn[T] push(list : List[T], elem : T) -> List[T] {
+pub fn[T] push_tail(list : List[T], elem : T) -> List[T] {
   match list {
-    empty() => cons(elem, empty())
-    cons(_x, xs) => push(xs, elem)
+    empty() => [elem]
+    cons(_x, xs) => push_tail(xs, elem)
   }
+}
+
+pub fn[T] push_head(list : List[T], elem : T) -> List[T] {
+  cons(elem, list)
 }
 
 pub fn[T] filter(list : List[T], pred : (T) -> Bool) -> List[T] {
@@ -56,6 +60,19 @@ pub fn[T] filter(list : List[T], pred : (T) -> Bool) -> List[T] {
         filter(xs, pred)
       } else {
         cons(x, filter(xs, pred))
+      }
+  }
+}
+
+// TODO: is `auto offer` the direct corollary from `auto` and `offer`? Or it has ad-hoc semantics?
+pub fn[T] constains(list : List[T], elem : T, auto offer equal_impl : Equal[T]) -> Bool {
+  match list {
+    empty() => false
+    cons(x, xs) =>
+      if x == elem {
+        true
+      } else {
+        constains(xs, elem, equal_impl=equal_impl)
       }
   }
 }

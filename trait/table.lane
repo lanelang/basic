@@ -1,15 +1,13 @@
-module Basic.Trait.Table 
+module Basic.Trait.Table
 
 import Basic.Data.Option.{ Option }
+import Basic.Trait.Ops.{ Equal }
 
-import Basic.Data.Pair.{ Pair }
-
-pub struct KVStore[T, K, V] { 
+pub struct Table[T] {
+  type K
+  type V
+  key_equal_impl : Equal[K]
   set : (T, K, V) -> T
-  get : (T, K) -> Pair[Option[V], T]
-  del : (T, K) -> T 
-} 
-
-// pub offer associated_list_impl_kvstore : KVStore[AssociatedList]
-
-
+  get : (T, K) -> Option[V]
+  del : (T, K) -> T
+}
