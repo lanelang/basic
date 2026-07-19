@@ -7,7 +7,9 @@ pub struct Table[T] {
   type K
   type V
   key_equal_impl : Equal[K]
+  empty : () -> T
   set : (T, K, V) -> T
   get : (T, K) -> Option[V]
   del : (T, K) -> T
+  // from_list : (T, )
 }

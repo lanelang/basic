@@ -1,5 +1,6 @@
 module Basic.Data.List
 
+import Basic.Data.Option.{ Option }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Eff.Out.{ OutOfBound }
 import Basic.Trait.Ops.{ Equal, op_add, op_equal, op_less, op_sub }
@@ -60,6 +61,18 @@ pub fn[T] filter(list : List[T], pred : (T) -> Bool) -> List[T] {
         filter(xs, pred)
       } else {
         cons(x, filter(xs, pred))
+      }
+  }
+}
+
+pub fn[T] find(list : List[T], pred : (T) -> Bool) -> Option[T] {
+  match list {
+    empty() => none()
+    cons(x, xs) =>
+      if pred(x) {
+        some(x)
+      } else {
+        find(xs, pred)
       }
   }
 }
