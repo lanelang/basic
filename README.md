@@ -2,34 +2,4 @@
 
 This directory contains the Lane Basic library source.
 
-`builtins.lane` defines the `Basic.Builtins` module with basic builtin
-wrappers.
-`ops.lane` defines the `Basic.Ops` module with basic operation values and
-default contextual offers.
-`io.lane` defines the `Basic.Io.println` runtime binding. `Io` itself is a
-built-in effect type.
-
-All modules are ordinary Lane modules. Tooling does not inject them implicitly;
-users pass the needed source, interface, or object artifacts explicitly.
-
-Example manual compilation:
-
-```sh
-lane compile builtins.lane -t Basic.Builtins.lmi -o Basic.Builtins.lmo
-lane compile ops.lane -i Basic.Builtins.lmi -t Basic.Ops.lmi -o Basic.Ops.lmo
-lane compile io.lane -t Basic.Io.lmi -o Basic.Io.lmo
-lane compile main.lane -i Basic.Io.lmi
-lane link main.lmo Basic.Io.lmo
-```
-
-Example use:
-
-```lane
-module Main
-
-import Basic.Io.*
-
-pub fn main() -> Unit ! Io {
-  println("hello")
-}
-```
+All modules are ordinary Lane modules. Tooling does not inject them implicitly; users pass the needed source, interface, or object artifacts explicitly.
