@@ -2,7 +2,7 @@ module Basic.Data.List
 
 import Basic.Data.Option.{ Option }
 import Basic.Trait.Map.{ Mappable }
-import Basic.Eff.Out.{ OutOfBound }
+import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Ops.{ Equal, op_add, op_equal, op_less, op_sub }
 
 pub enum List[T] {

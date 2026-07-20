@@ -1,4 +1,4 @@
-module Basic.Eff.Out 
+module Basic.Eff.Bound
 
 pub effect OutOfBound {
   out_of_max[A]() -> A

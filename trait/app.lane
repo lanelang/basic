@@ -1,0 +1,10 @@
+module Basic.Trait.App
+
+import Basic.Trait.Map.{ Mappable }
+
+pub struct Applicative[A: [Type] -> Type] {
+  mappable_impl : Mappable[A]
+  pure : [T](T) -> A[T]
+  apply : [T, R, E : Effect](A[T], A[(T) -> R ! E]) -> A[R] ! E 
+}
+
