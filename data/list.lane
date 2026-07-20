@@ -58,9 +58,9 @@ pub fn[T] filter(list : List[T], pred : (T) -> Bool) -> List[T] {
     empty() => empty()
     cons(x, xs) =>
       if pred(x) {
-        filter(xs, pred)
-      } else {
         cons(x, filter(xs, pred))
+      } else {
+        filter(xs, pred)
       }
   }
 }
