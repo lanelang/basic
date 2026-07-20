@@ -78,14 +78,14 @@ pub fn[T] find(list : List[T], pred : (T) -> Bool) -> Option[T] {
 }
 
 // TODO: is `auto offer` the direct corollary from `auto` and `offer`? Or it has ad-hoc semantics?
-pub fn[T] constains(list : List[T], elem : T, auto offer equal_impl : Equal[T]) -> Bool {
+pub fn[T] contains(list : List[T], elem : T, auto offer equal_impl : Equal[T]) -> Bool {
   match list {
     empty() => false
     cons(x, xs) =>
       if x == elem {
         true
       } else {
-        constains(xs, elem, equal_impl=equal_impl)
+        contains(xs, elem, equal_impl=equal_impl)
       }
   }
 }
