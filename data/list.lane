@@ -45,7 +45,7 @@ pub fn[T] elem(list : List[T], index : Int) -> T ! OutOfBound {
 pub fn[T] push_tail(list : List[T], elem : T) -> List[T] {
   match list {
     empty() => [elem]
-    cons(_x, xs) => push_tail(xs, elem)
+    cons(x, xs) => cons(x, push_tail(xs, elem))
   }
 }
 
