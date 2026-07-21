@@ -11,5 +11,6 @@ pub struct Table[T] {
   set : (T, K, V) -> T
   get : (T, K) -> Option[V]
   del : (T, K) -> T
-  // from_list : (T, )
+  // from_list : TODO:
+  // to_list : TODO:
 }
