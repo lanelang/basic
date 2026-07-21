@@ -1,5 +1,6 @@
 module Basic.Data.Option
 
+import Basic.Trait.Ops.{ Equal, op_equal }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
@@ -7,6 +8,29 @@ import Basic.Trait.Flat.{ FlatMappable }
 pub enum Option[T] {
   some(T)
   none()
+}
+
+pub fn[T] equals(a : Option[T], b : Option[T], auto offer equal_impl : Equal[T]) -> Bool {
+  match a {
+    none() =>
+      match b {
+        none() => true
+        _ => false
+      }
+    some(x) =>
+      match b {
+        none() => false
+        some(y) => x == y
+      }
+  }
+}
+
+pub fn[T] option_impl_equals(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
+  Equal::{
+    equal: fn(a, b) {
+      equals(a, b)
+    }
+  }
 }
 
 pub fn[T, R, E : Effect] map(o : Option[T], f : (T) -> R ! E) -> Option[R] ! E {

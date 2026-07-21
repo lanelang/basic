@@ -1,4 +1,14 @@
 module Test.Data.Option
 
 import Basic.Data.Option.*
+import Basic.Trait.Ops.{ int_equal_ops, unit_equal_ops }
 import Test.Assert.{ Assert }
+
+pub fn test_equal() -> Unit ! Assert {
+  assert_eq!(some(1), some(1), option_impl_equals())
+  assert_eq![Option[Int]](none(), none(), option_impl_equals())
+  assert_eq![Option[Unit]](none(), none(), option_impl_equals())
+  assert_not_eq![Option[Int]](some(1), none(), option_impl_equals())
+  assert_not_eq![Option[Int]](some(1), some(2), option_impl_equals())
+}
+

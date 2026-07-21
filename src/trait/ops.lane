@@ -170,3 +170,9 @@ pub offer bool_not_ops : Not = Not::{ not: bool_not }
 pub offer bool_equal_ops : Equal[Bool] = Equal::{ equal: bool_equal }
 
 pub offer string_equal_ops : Equal[String] = Equal::{ equal: string_equal }
+
+pub offer unit_equal_ops : Equal[Unit] = Equal::{
+  equal: fn(_a, _b) {
+    true
+  }
+}

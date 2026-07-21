@@ -1,5 +1,8 @@
 module Test.Entry
 
-// pub fn test_entry() -> Unit ! Io {
-//   println("Hello")
-// }
+import Test.Assert.{ execute_all_test }
+import Test.Data.Option.{ test_equal }
+
+pub fn test_entry() -> Unit ! Io {
+  execute_all_test(test_equal)
+}
