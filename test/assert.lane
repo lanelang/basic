@@ -1,0 +1,28 @@
+module Basic.Test.Assert
+
+import Basic.Trait.Ops.{ Equal }
+import Basic.Io.{ println }
+
+pub fn assert_true(exp : Bool) -> Unit ! Io {
+  if exp {
+    ()
+  } else {
+    println("assert error")
+  }
+}
+
+pub fn assert_false(exp : Bool) -> Unit ! Io {
+  if exp {
+    println("assert error")
+  } else {
+    ()
+  }
+}
+
+pub fn[T] assert_eq(a : T, b : T, auto equal_impl : Equal[T]) -> Unit ! Io {
+  if equal_impl.equal(a, b) {
+    ()
+  } else {
+    println("assert error")
+  }
+}

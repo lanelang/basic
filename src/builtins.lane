@@ -1,7 +1,5 @@
 module Basic.Builtins
 
-// Lane2 v1 standard builtin wrappers.
-
 pub let int_add : (Int, Int) -> Int = builtin("%i64_add")
 
 pub let int_sub : (Int, Int) -> Int = builtin("%i64_sub")
@@ -31,6 +29,12 @@ pub let double_neg : (Double) -> Double = builtin("%f64_neg")
 pub let double_equal : (Double, Double) -> Bool = builtin("%f64_equal")
 
 pub let double_less : (Double, Double) -> Bool = builtin("%f64_less")
+
+pub let double_inf : Double = builtin("%f64_inf")
+
+pub let double_ninf : Double = builtin("%f64_ninf")
+
+pub let double_nan : Double = builtin("%f64_nan")
 
 pub let string_equal : (String, String) -> Bool = builtin("%string_equal")
 

@@ -1,7 +1,5 @@
 module Basic.Test.Entry
 
-import Basic.Io.{ println }
-
-pub fn test_entry() -> Unit ! Io {
-  println("Hello")
-}
+// pub fn test_entry() -> Unit ! Io {
+//   println("Hello")
+// }
