@@ -1,3 +1,5 @@
 module Basic.Io
 
 pub let println : (String) -> Unit ! Io = extern("println")
+
+// TODO: we need extern `panic`
