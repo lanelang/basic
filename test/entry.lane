@@ -1,4 +1,4 @@
-module Basic.Test.Entry
+module Test.Entry
 
 // pub fn test_entry() -> Unit ! Io {
 //   println("Hello")

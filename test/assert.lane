@@ -1,28 +1,35 @@
-module Basic.Test.Assert
+module Test.Assert
 
 import Basic.Trait.Ops.{ Equal }
 import Basic.Io.{ println }
 
-pub fn assert_true(exp : Bool) -> Unit ! Io {
-  if exp {
-    ()
-  } else {
-    println("assert error")
-  }
+pub effect Assert {
+  assert_true(Bool) -> Unit
+  assert_false(Bool) -> Unit
+  assert_eq[T](T, T, Equal[T]) -> Unit
 }
 
-pub fn assert_false(exp : Bool) -> Unit ! Io {
-  if exp {
-    println("assert error")
-  } else {
+pub fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
+  handle f() with {
+    assert_true(b, _r) =>
+      if b {
+        println("assert error")
+      } else {
+        ()
+      }
+    assert_false(b, _r) =>
+      if b {
+        ()
+      } else {
+        println("assert error")
+      }
+    assert_eq[_T](a, b, e, _r) =>
+      if e.equal(a, b) {
+        ()
+      } else {
+        println("assert error")
+      }
+  } final _v {
     ()
-  }
-}
-
-pub fn[T] assert_eq(a : T, b : T, auto equal_impl : Equal[T]) -> Unit ! Io {
-  if equal_impl.equal(a, b) {
-    ()
-  } else {
-    println("assert error")
   }
 }

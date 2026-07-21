@@ -22,6 +22,34 @@ pub enum List[T] {
   cons(T, List[T])
 }
 
+pub fn[T] equals(a : List[T], b : List[T], auto offer equal_impl : Equal[T]) -> Bool {
+  match a {
+    empty() =>
+      match b {
+        empty() => true
+        _ => false
+      }
+    cons(x, xs) =>
+      match b {
+        empty() => false
+        cons(y, ys) =>
+          if x == y {
+            equals(xs, ys)
+          } else {
+            false
+          }
+      }
+  }
+}
+
+pub fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
+  Equal::{
+    equal: fn(a, b) {
+      equals(a, b)
+    }
+  }
+}
+
 pub fn[T] length(list : List[T]) -> Int {
   match list {
     empty() => 0
