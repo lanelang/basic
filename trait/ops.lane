@@ -61,15 +61,11 @@ pub struct Not {
 
 pub struct Equal[T] {
   equal : (T, T) -> Bool
-  not_equal : (T, T) -> Bool
 }
 
 pub struct Compare[T] {
   equal_impl : Equal[T]
   less : (T, T) -> Bool
-  less_eq : (T, T) -> Bool
-  greater : (T, T) -> Bool
-  greater_eq : (T, T) -> Bool
 }
 
 pub fn[T] op_add(a : T, b : T, auto op : Add[T]) -> T {
@@ -113,7 +109,7 @@ pub fn[T] op_equal(a : T, b : T, auto op : Equal[T]) -> Bool {
 }
 
 pub fn[T] op_not_equal(a : T, b : T, auto op : Equal[T]) -> Bool {
-  op.not_equal(a, b)
+  !op.equal(a, b)
 }
 
 pub fn[T] op_less(a : T, b : T, auto op : Compare[T]) -> Bool {
@@ -121,52 +117,15 @@ pub fn[T] op_less(a : T, b : T, auto op : Compare[T]) -> Bool {
 }
 
 pub fn[T] op_less_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
-  op.less_eq(a, b)
+  op.less(a, b) || op.equal_impl.equal(a, b)
 }
 
 pub fn[T] op_greater(a : T, b : T, auto op : Compare[T]) -> Bool {
-  op.greater(a, b)
+  !op_less_eq(a, b, op=op)
 }
 
 pub fn[T] op_greater_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
-  op.greater_eq(a, b)
-}
-
-fn[T] make_equal(equal : (T, T) -> Bool) -> Equal[T] {
-  Equal::{
-    equal,
-    not_equal: fn(a : T, b : T) -> Bool {
-      if equal(a, b) {
-        false
-      } else {
-        true
-      }
-    }
-  }
-}
-
-fn[T] make_compare(less : (T, T) -> Bool, auto equal_impl : Equal[T]) -> Compare[T] {
-  Compare::{
-    equal_impl,
-    less,
-    less_eq: fn(a : T, b : T) -> Bool {
-      if equal_impl.equal(a, b) {
-        true
-      } else {
-        less(a, b)
-      }
-    },
-    greater: fn(a : T, b : T) -> Bool {
-      less(b, a)
-    },
-    greater_eq: fn(a : T, b : T) -> Bool {
-      if equal_impl.equal(a, b) {
-        true
-      } else {
-        less(b, a)
-      }
-    }
-  }
+  !op.less(a, b)
 }
 
 pub offer int_add_ops : Add[Int] = Add::{ add: int_add }
@@ -181,9 +140,9 @@ pub offer int_rem_ops : Rem[Int] = Rem::{ rem: int_rem }
 
 pub offer int_neg_ops : Neg[Int] = Neg::{ neg: int_neg }
 
-pub offer int_equal_ops : Equal[Int] = make_equal(int_equal)
+pub offer int_equal_ops : Equal[Int] = Equal::{ equal: int_equal }
 
-pub offer int_compare_ops : Compare[Int] = make_compare(int_less)
+pub offer int_compare_ops : Compare[Int] = Compare::{ equal_impl: int_equal_ops, less: int_less }
 
 pub offer double_add_ops : Add[Double] = Add::{ add: double_add }
 
@@ -195,9 +154,12 @@ pub offer double_div_ops : Div[Double] = Div::{ div: double_div }
 
 pub offer double_neg_ops : Neg[Double] = Neg::{ neg: double_neg }
 
-pub offer double_equal_ops : Equal[Double] = make_equal(double_equal)
+pub offer double_equal_ops : Equal[Double] = Equal::{ equal: double_equal }
 
-pub offer double_compare_ops : Compare[Double] = make_compare(double_less)
+pub offer double_compare_ops : Compare[Double] = Compare::{
+  equal_impl: double_equal_ops,
+  less: double_less
+}
 
 pub offer bool_and_ops : And = And::{ and: bool_and }
 
@@ -205,6 +167,6 @@ pub offer bool_or_ops : Or = Or::{ or: bool_or }
 
 pub offer bool_not_ops : Not = Not::{ not: bool_not }
 
-pub offer bool_equal_ops : Equal[Bool] = make_equal(bool_equal)
+pub offer bool_equal_ops : Equal[Bool] = Equal::{ equal: bool_equal }
 
-pub offer string_equal_ops : Equal[String] = make_equal(string_equal)
+pub offer string_equal_ops : Equal[String] = Equal::{ equal: string_equal }

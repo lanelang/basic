@@ -3,7 +3,17 @@ module Basic.Data.List
 import Basic.Data.Option.{ Option }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Eff.Bound.{ OutOfBound }
-import Basic.Trait.Ops.{ Equal, op_add, op_equal, op_less, op_sub }
+import Basic.Trait.Ops.{
+  Equal,
+  int_sub_ops,
+  int_equal_ops,
+  int_compare_ops,
+  int_add_ops,
+  op_add,
+  op_equal,
+  op_less,
+  op_sub
+}
 
 pub enum List[T] {
   empty()
@@ -77,7 +87,6 @@ pub fn[T] find(list : List[T], pred : (T) -> Bool) -> Option[T] {
   }
 }
 
-// TODO: is `auto offer` the direct corollary from `auto` and `offer`? Or it has ad-hoc semantics?
 pub fn[T] contains(list : List[T], elem : T, auto offer equal_impl : Equal[T]) -> Bool {
   match list {
     empty() => false
