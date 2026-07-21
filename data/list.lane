@@ -2,6 +2,8 @@ module Basic.Data.List
 
 import Basic.Data.Option.{ Option }
 import Basic.Trait.Map.{ Mappable }
+import Basic.Trait.App.{ Applicative }
+import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Ops.{
   Equal,
@@ -24,6 +26,13 @@ pub fn[T] length(list : List[T]) -> Int {
   match list {
     empty() => 0
     cons(_x, xs) => length(xs) + 1
+  }
+}
+
+pub fn[T] append(a : List[T], b : List[T]) -> List[T] {
+  match a {
+    empty() => b
+    cons(x, xs) => cons(x, append(xs, b))
   }
 }
 
@@ -97,4 +106,38 @@ pub fn[T] contains(list : List[T], elem : T, auto offer equal_impl : Equal[T]) -
         contains(xs, elem, equal_impl=equal_impl)
       }
   }
+}
+
+pub fn[T] pure(x : T) -> List[T] {
+  [x]
+}
+
+pub fn[T, R, E : Effect] apply(list : List[T], flist : List[(T) -> R ! E]) -> List[R] ! E {
+  match flist {
+    empty() => empty()
+    cons(f, fs) => append(map(list, f), apply(list, fs))
+  }
+}
+
+pub offer list_impl_applicative : Applicative[List] = Applicative::{
+  apply,
+  pure,
+  mappable_impl: list_impl_mappable
+}
+
+pub fn[T, R, E : Effect] flat_map(list : List[T], f : (T) -> List[R] ! E) -> List[R] ! E {
+  match list {
+    empty() => empty()
+    cons(x, xs) => {
+      match f(x) {
+        empty() => flat_map(xs, f)
+        r => append(r, flat_map(xs, f))
+      }
+    }
+  }
+}
+
+pub offer list_impl_flat_mappable : FlatMappable[List] = FlatMappable::{
+  applicative_impl: list_impl_applicative,
+  flat_map
 }
