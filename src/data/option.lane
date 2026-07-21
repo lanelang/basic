@@ -25,7 +25,7 @@ pub fn[T] equals(a : Option[T], b : Option[T], auto offer equal_impl : Equal[T])
   }
 }
 
-pub fn[T] option_impl_equals(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
+pub fn[T] option_impl_equal(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
   Equal::{
     equal: fn(a, b) {
       equals(a, b)

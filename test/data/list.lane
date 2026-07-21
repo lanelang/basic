@@ -1,0 +1,10 @@
+module Test.Data.List
+
+import Basic.Data.List.*
+import Basic.Trait.Ops.{ int_equal_ops }
+import Basic.Summon.{ summon }
+import Test.Assert.{ Assert }
+
+pub fn test_length() -> Unit ! Assert {
+  assert_eq!(length([1, 2, 3, 4]), 4, summon())
+}
