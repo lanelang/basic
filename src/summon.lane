@@ -1,0 +1,5 @@
+module Basic.Summon
+
+pub fn[T] summon(auto x : T) -> T {
+  x
+}
