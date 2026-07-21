@@ -121,11 +121,11 @@ pub fn[T] op_less_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
 }
 
 pub fn[T] op_greater(a : T, b : T, auto op : Compare[T]) -> Bool {
-  !op_less_eq(a, b, op=op)
+  op.less(b, a)
 }
 
 pub fn[T] op_greater_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
-  !op.less(a, b)
+  op.less(b, a) || op.equal_impl.equal(a, b)
 }
 
 pub offer int_add_ops : Add[Int] = Add::{ add: int_add }
