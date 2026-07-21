@@ -1,0 +1,8 @@
+module Basic.Trait.Flat
+
+import Basic.Trait.App.{ Applicative }
+
+pub struct FlatMappable[F : [Type] -> Type] {
+  applicative_impl :  Applicative[F]
+  flat_map : [T, R, E : Effect](F[T], (T) -> F[R] ! E) -> F[R] ! E 
+}

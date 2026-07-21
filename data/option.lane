@@ -1,6 +1,8 @@
 module Basic.Data.Option
 
 import Basic.Trait.Map.{ Mappable }
+import Basic.Trait.App.{ Applicative }
+import Basic.Trait.Flat.{ FlatMappable }
 
 pub enum Option[T] {
   some(T)
@@ -14,6 +16,21 @@ pub fn[T, R, E : Effect] map(o : Option[T], f : (T) -> R ! E) -> Option[R] ! E {
   }
 }
 
+pub fn[T, R, E : Effect] apply(a : Option[T], f : Option[(T) -> R ! E]) -> Option[R] ! E {
+  match a {
+    none() => none()
+    some(v) =>
+      match f {
+        none() => none()
+        some(f) => some(f(v))
+      }
+  }
+}
+
+pub fn[T] pure(a : T) -> Option[T] {
+  some(a)
+}
+
 pub fn[T] or(o : Option[T], default : T) -> T {
   match o {
     none() => default
@@ -21,4 +38,26 @@ pub fn[T] or(o : Option[T], default : T) -> T {
   }
 }
 
+pub fn[T, R, E : Effect] flat_map(o : Option[T], f : (T) -> Option[R] ! E) -> Option[R] ! E {
+  match o {
+    none() => none()
+    some(v) =>
+      match f(v) {
+        none() => none()
+        some(v) => some(v)
+      }
+  }
+}
+
 pub offer option_impl_mappable : Mappable[Option] = Mappable::{ map }
+
+pub offer option_impl_applicative : Applicative[Option] = Applicative::{
+  apply,
+  pure,
+  mappable_impl: option_impl_mappable
+}
+
+pub offer option_impl_flat_mappable : FlatMappable[Option] = FlatMappable::{
+  applicative_impl: option_impl_applicative,
+  flat_map
+}
