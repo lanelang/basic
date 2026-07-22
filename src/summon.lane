@@ -3,3 +3,20 @@ module Basic.Summon
 pub fn[T] summon(auto x : T) -> T {
   x
 }
+
+pub fn[Evid : [Type] -> Type, T1 : [Type] -> Type, T2 : Type] summon_via(
+  auto provider : [T](Evid[T]) -> Evid[T1[T]],
+  auto base : Evid[T2]
+) -> Evid[T1[T2]] {
+  provider(base)
+}
+
+pub fn[Evid : [Type] -> Type, F : [Type, Type] -> Type, A : Type, B : Type] summon_via2(
+  auto provider : [X, Y](Evid[X], Evid[Y]) -> Evid[F[X, Y]],
+  auto base1 : Evid[A],
+  auto base2 : Evid[B]
+) -> Evid[F[A, B]] {
+  provider(base1, base2)
+}
+
+

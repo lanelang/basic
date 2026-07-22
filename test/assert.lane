@@ -12,26 +12,30 @@ pub effect Assert {
 
 pub fn[E : Effect] execute_all_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
   handle f() with {
-    assert_true(b, resume) => if b {
-      println("assert error")
-    } else {
-      ()
-    } |> resume()
-    assert_false(b, resume) => if b {
-      ()
-    } else {
-      println("assert error")
-    } |> resume()
-    assert_eq[_T](a, b, e, resume) => if e.equal(a, b) {
-      ()
-    } else {
-      println("assert error")
-    } |> resume()
-    assert_not_eq[_T](a, b, e, resume) => if e.equal(a, b) {
-      println("assert error")
-    } else {
-      ()
-    } |> resume()
+    assert_true(b, resume) =>
+      if b {
+        println("assert error")
+      } else {
+        ()
+      } |> resume()
+    assert_false(b, resume) =>
+      if b {
+        ()
+      } else {
+        println("assert error")
+      } |> resume()
+    assert_eq[_T](a, b, e, resume) =>
+      if e.equal(a, b) {
+        ()
+      } else {
+        println("assert error")
+      } |> resume()
+    assert_not_eq[_T](a, b, e, resume) =>
+      if e.equal(a, b) {
+        println("assert error")
+      } else {
+        ()
+      } |> resume()
   } final _v {
     ()
   }

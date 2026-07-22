@@ -33,6 +33,8 @@ pub fn[T] option_impl_equal(auto offer equal_impl : Equal[T]) -> Equal[Option[T]
   }
 }
 
+pub offer option_impl_equal_ : [T](Equal[T]) -> Equal[Option[T]] = option_impl_equal
+
 pub fn[T, R, E : Effect] map(o : Option[T], f : (T) -> R ! E) -> Option[R] ! E {
   match o {
     none() => none()

@@ -1,0 +1,22 @@
+module Basic.Data.State
+
+pub struct StateResult[T, S] {
+  result : T
+  state : S
+}
+
+pub struct State[T, S] {
+  run : (T) -> StateResult[T, S]
+}
+
+pub fn[T, S] run_state(state : State[T, S], init : T) -> StateResult[T, S] {
+  state.run(init)
+}
+
+pub fn[T, S] eval_state(state : State[T, S], init : T) -> T {
+  state.run(init).result
+}
+
+pub fn[T, S] exec_state(state : State[T, S], init : T) -> S {
+  state.run(init).state
+}
