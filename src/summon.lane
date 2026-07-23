@@ -18,5 +18,3 @@ pub fn[Evid : [Type] -> Type, F : [Type, Type] -> Type, A : Type, B : Type] summ
 ) -> Evid[F[A, B]] {
   provider(base1, base2)
 }
-
-

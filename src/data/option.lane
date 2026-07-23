@@ -25,15 +25,13 @@ pub fn[T] equals(a : Option[T], b : Option[T], auto offer equal_impl : Equal[T])
   }
 }
 
-pub fn[T] option_impl_equal(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
+pub offer fn[T] option_impl_equal(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
   Equal::{
     equal: fn(a, b) {
       equals(a, b)
     }
   }
 }
-
-pub offer option_impl_equal_ : [T](Equal[T]) -> Equal[Option[T]] = option_impl_equal
 
 pub fn[T, R, E : Effect] map(o : Option[T], f : (T) -> R ! E) -> Option[R] ! E {
   match o {

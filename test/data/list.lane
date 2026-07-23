@@ -2,7 +2,7 @@ module Test.Data.List
 
 import Basic.Data.List.*
 import Basic.Trait.Ops.{ int_equal_ops }
-import Basic.Summon.{ summon }
+import Basic.Summon.{ summon, summon_via }
 import Test.Assert.{ Assert }
 
 pub fn test_length() -> Unit ! Assert {
@@ -11,5 +11,5 @@ pub fn test_length() -> Unit ! Assert {
 }
 
 pub fn test_equal() -> Unit ! Assert {
-  assert_eq!([1, 2, 3], [1, 2, 3], list_impl_equal())
+  assert_eq!([1, 2, 3], [1, 2, 3], summon_via())
 }

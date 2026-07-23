@@ -42,7 +42,7 @@ pub fn[T] equals(a : List[T], b : List[T], auto offer equal_impl : Equal[T]) -> 
   }
 }
 
-pub fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
+pub offer fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
   Equal::{
     equal: fn(a, b) {
       equals(a, b)
