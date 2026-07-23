@@ -1,0 +1,5 @@
+module Basic.Data.Tuple
+
+pub enum Tuple[A, B] {
+  tuple(A, B)
+}
