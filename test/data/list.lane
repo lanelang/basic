@@ -1,7 +1,7 @@
 module Test.Data.List
 
 import Basic.Data.List.*
-import Basic.Trait.Ops.{ int_equal_ops }
+import Basic.Trait.Ops.{ int_equal_ops, int_add_ops, op_add }
 import Basic.Summon.{ summon, summon_via }
 import Test.Assert.{ Assert }
 
@@ -12,4 +12,17 @@ pub fn test_length() -> Unit ! Assert {
 
 pub fn test_equal() -> Unit ! Assert {
   assert_eq!([1, 2, 3], [1, 2, 3], summon_via())
+  assert_eq![List[Int]]([], [], summon_via())
+  assert_not_eq!([1, 2, 3], [1, 2], summon_via())
+}
+
+pub fn test_map() -> Unit ! Assert {
+  let l1 = [1, 2, 3]
+  let l2 = map[Int, Int, {}](
+    l1,
+    fn(x) {
+      x + 2
+    }
+  )
+  assert_eq!(l2, [3, 4, 5], summon_via())
 }
