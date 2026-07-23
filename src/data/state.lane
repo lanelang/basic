@@ -5,18 +5,31 @@ pub struct StateResult[T, S] {
   state : S
 }
 
-pub struct State[T, S] {
-  run : (T) -> StateResult[T, S]
+pub struct State[T, S, E : Effect] {
+  run : (S) -> StateResult[T, S] ! E
 }
 
-pub fn[T, S] run_state(state : State[T, S], init : T) -> StateResult[T, S] {
+pub fn[T, S, E : Effect] run_state(state : State[T, S, E], init : S) -> StateResult[T, S] ! E {
   state.run(init)
 }
 
-pub fn[T, S] eval_state(state : State[T, S], init : T) -> T {
+pub fn[T, S, E : Effect] eval_state(state : State[T, S, E], init : S) -> T ! E {
   state.run(init).result
 }
 
-pub fn[T, S] exec_state(state : State[T, S], init : T) -> S {
+pub fn[T, S, E : Effect] exec_state(state : State[T, S, E], init : S) -> S ! E {
   state.run(init).state
+}
+
+pub fn[T, S, R, FE : Effect, SE : Effect] map(
+  state : State[T, S, SE],
+  f : (T) -> R ! FE
+) -> State[R, S, { FE, SE }] {
+  State::{
+    run: fn(s) -> StateResult[R, S] ! { SE, FE } {
+      let old_state_res = state.run(s)
+      let res = f(old_state_res.result)
+      StateResult::{ result: res, state: old_state_res.state }
+    }
+  }
 }
