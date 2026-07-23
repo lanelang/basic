@@ -1,25 +1,2 @@
 module Basic.Eff.State
 
-import Basic.Data.State.{ StateResult }
-import Basic.Data.Pair.{ Pair }
-import Basic.Trait.Monoid.{ Monoid }
-
-pub effect Read[T] {
-  read() -> T
-}
-
-pub effect Write[T] {
-  write(T) -> Unit
-}
-
-pub type State[T] = { Read[T], Write[T] }
-
-pub fn[T, R, E : Effect] reader(action : () -> T ! { E, Read[R] }, state : R) -> () -> T ! E {
-  fn() {
-    handle action() with {
-      read(resume) => resume(state)
-    } final v {
-      v
-    }
-  }
-}

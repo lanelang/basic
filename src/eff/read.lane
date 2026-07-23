@@ -1,0 +1,15 @@
+module Basic.Eff.Read
+
+pub effect Read[T] {
+  read() -> T
+}
+
+pub fn[T, R, E : Effect] run_read(action : () -> T ! { E, Read[R] }, state : R) -> () -> T ! E {
+  fn() {
+    handle action() with {
+      read(resume) => resume(state)
+    } final v {
+      v
+    }
+  }
+}
