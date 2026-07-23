@@ -1,0 +1,36 @@
+module Test.Data.State
+
+import Basic.Data.State.*
+import Basic.Trait.Ops.{ unit_equal_ops, int_equal_ops }
+import Basic.Summon.{ summon }
+import Test.Assert.{ Assert }
+
+pub fn test_run() -> Unit ! Assert {
+  let s : State[Unit, Unit, {}] = State::{
+    run: fn(_t) {
+      StateResult::{ state: (), result: () }
+    }
+  }
+  assert_eq!(eval_state(s, ()), (), summon())
+}
+
+pub effect Trace {
+  tick(Int) -> Unit
+}
+
+pub fn test_run_effectful() -> Unit ! Assert {
+  let s : State[Unit, Unit, Trace] = State::{
+    run: fn(state) -> StateResult[Unit, Unit] ! Trace {
+      tick!(42)
+      StateResult::{ state, result: () }
+    }
+  }
+  handle eval_state(s, ()) with {
+    tick(value, resume) => {
+      assert_eq!(value, 42, summon())
+      resume(())
+    }
+  } final _value {
+    ()
+  }
+}
