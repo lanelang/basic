@@ -1,0 +1,12 @@
+module Basic.Trait.Monoid
+
+pub struct Semigroup[T] {
+  empty : T
+}
+
+pub struct Monoid[T] {
+  semigroup_impl : Semigroup[T]
+  append : (T, T) -> T
+}
+
+

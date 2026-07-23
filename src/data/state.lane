@@ -32,5 +32,3 @@ pub fn[T, S, R, FE : Effect, SE : Effect] map_merge_effect(
     }
   }
 }
-
-pub type PureState[T, S] = State[T, S, {}]
