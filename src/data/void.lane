@@ -1,0 +1,3 @@
+module Basic.Data.Void
+
+pub enum Void {}

@@ -11,5 +11,6 @@ pub fn test_entry() -> Unit ! Io {
     Test.Data.Option.test_equal()
     Test.Data.List.test_equal()
     Test.Data.List.test_length()
+    Test.Data.List.test_foldl()
   } |> execute_all_test()
 }

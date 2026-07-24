@@ -26,3 +26,9 @@ pub fn test_map() -> Unit ! Assert {
   )
   assert_eq!(l2, [3, 4, 5], summon_via())
 }
+
+pub fn test_foldl() -> Unit ! Assert {
+  let l1 = [1, 2, 3]
+  let s = foldl(l1, 0, int_add_ops.add)
+  assert_eq!(s, 6, summon())
+}
