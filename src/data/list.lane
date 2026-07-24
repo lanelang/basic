@@ -1,5 +1,6 @@
 module Basic.Data.List
 
+import Basic.Data.Tuple.{ Tuple }
 import Basic.Data.Option.{ Option }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
@@ -182,9 +183,40 @@ pub offer fn[T] list_impl_monoid() -> Monoid[List[T]] {
   }
 }
 
-pub fn[T] foldl(list : List[T], init : T, f : (T, T) -> T) -> T {
+pub fn[T, R, E : Effect] foldl(list : List[T], init : R, f : (T, R) -> R ! E) -> R ! E {
   match list {
-    empty() => init 
+    empty() => init
     cons(x, xs) => f(x, foldl(xs, init, f))
+  }
+}
+
+pub fn[T, E : Effect] all(list : List[T], pred : (T) -> Bool ! E) -> Bool ! E {
+  match list {
+    empty() => true
+    cons(x, xs) =>
+      if pred(x) {
+        all(xs, pred)
+      } else {
+        false
+      }
+  }
+}
+
+pub fn[T, E : Effect] any(list : List[T], pred : (T) -> Bool ! E) -> Bool ! E {
+  match list {
+    empty() => false
+    cons(x, xs) =>
+      if pred(x) {
+        true
+      } else {
+        all(xs, pred)
+      }
+  }
+}
+
+pub fn[A, B] zip(al : List[A], bl : List[B]) -> List[(A, B)] {
+  match (al, bl) {
+    (cons(x, xs), cons(y, ys)) => cons((x, y), zip(xs, ys))
+    _ => empty()
   }
 }

@@ -1,0 +1,27 @@
+module Basic.Eff.Loop
+
+pub effect Loop[It, Res] {
+  break[A](Res) -> A
+  continue[A](It) -> A
+}
+
+pub fn[It, Res, E : Effect] loop(
+  init : It,
+  cond : (It) -> Bool,
+  body : (It) -> It ! { Loop[It, Res], E },
+  nobreak : () -> Res ! E
+) -> Res ! E {
+  fn run_loop(i : It) -> Res ! E {
+    if cond(i) {
+      handle body(i) with {
+        break[_A](result, _resume) => result
+        continue[_A](next, _resume) => run_loop(next)
+      } final next {
+        run_loop(next)
+      }
+    } else {
+      nobreak()
+    }
+  }
+  run_loop(init)
+}
