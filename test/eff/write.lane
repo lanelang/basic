@@ -1,0 +1,20 @@
+module Test.Eff.Write
+
+import Basic.Eff.Write.*
+import Basic.Data.List.{ List, list_impl_monoid, list_impl_equal }
+import Basic.Trait.Ops.{ int_equal_ops, Equal }
+import Basic.Summon.{ summon_via }
+import Test.Assert.{ Assert }
+
+fn program() -> Unit ! Write[List[Int]] {
+  write!([1])
+  write!([2])
+  write!([3, 4])
+  write!([5, 6])
+  write!([])
+}
+
+pub fn test_write_log() -> Unit ! Assert {
+  let res = run_write(program, monoid_impl=list_impl_monoid())()
+  assert_eq!(res.log, [1, 2, 3, 4, 5, 6], summon_via[Equal, List, Int]())
+}

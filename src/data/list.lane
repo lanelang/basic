@@ -1,10 +1,11 @@
 module Basic.Data.List
 
 import Basic.Data.Option.{ Option }
+import Basic.Eff.Bound.{ OutOfBound }
+import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
-import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Ops.{
   Equal,
   int_sub_ops,
@@ -168,4 +169,15 @@ pub fn[T, R, E : Effect] flat_map(list : List[T], f : (T) -> List[R] ! E) -> Lis
 pub offer list_impl_flat_mappable : FlatMappable[List] = FlatMappable::{
   applicative_impl: list_impl_applicative,
   flat_map
+}
+
+pub offer fn[T] list_impl_monoid() -> Monoid[List[T]] {
+  Monoid::{
+    empty: empty(),
+    semigroup_impl: Semigroup::{
+      append: fn(a, b) {
+        append(a, b)
+      }
+    }
+  }
 }

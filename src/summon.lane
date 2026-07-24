@@ -4,6 +4,12 @@ pub fn[T] summon(auto x : T) -> T {
   x
 }
 
+pub fn[T] summon_on(auto x : T) -> () -> T {
+  fn() {
+    x
+  }
+}
+
 pub fn[Evid : [Type] -> Type, T1 : [Type] -> Type, T2 : Type] summon_via(
   auto provider : [T](Evid[T]) -> Evid[T1[T]],
   auto base : Evid[T2]
