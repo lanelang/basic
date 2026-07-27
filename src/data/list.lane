@@ -183,10 +183,17 @@ pub offer fn[T] list_impl_monoid() -> Monoid[List[T]] {
   }
 }
 
-pub fn[T, R, E : Effect] foldl(list : List[T], init : R, f : (T, R) -> R ! E) -> R ! E {
+pub fn[T, R, E : Effect] foldr(list : List[T], init : R, f : (T, R) -> R ! E) -> R ! E {
   match list {
     empty() => init
-    cons(x, xs) => f(x, foldl(xs, init, f))
+    cons(x, xs) => f(x, foldr(xs, init, f))
+  }
+}
+
+pub fn[T, R, E : Effect] foldl(list : List[T], init : R, f : (R, T) -> R ! E) -> R ! E {
+  match list {
+    empty() => init
+    cons(x, xs) => foldl(xs, f(init, x), f)
   }
 }
 
