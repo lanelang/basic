@@ -1,6 +1,7 @@
 module Basic.Trait.Derive
 
 import Basic.Data.Void.{ Void }
+import Basic.Trait.Iso.{ Iso }
 
 pub struct Deriver[C : [Type] -> Type] {
   unit : () -> C[Unit]
@@ -26,15 +27,9 @@ pub struct Product[A, B] {
   tail : B
 }
 
-
 pub enum Sum[A, B] {
   here(A)
   there(B)
-}
-
-pub struct Iso[T, R] {
-  to : (T) -> R
-  from : (R) -> T
 }
 
 pub struct TypeInfo {

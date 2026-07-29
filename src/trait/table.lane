@@ -1,7 +1,7 @@
 module Basic.Trait.Table
 
 import Basic.Data.Option.{ Option }
-import Basic.Trait.Ops.{ Equal }
+import Basic.Trait.Equal.{ Equal }
 
 pub struct Table[T] {
   type K

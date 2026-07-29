@@ -1,0 +1,22 @@
+module Basic.Data.Int
+
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Builtins.{ int_add, int_sub, int_mul, int_div, int_rem, int_neg, int_equal, int_less }
+
+pub offer int_add_ops : Add[Int] = Add::{ add: int_add }
+
+pub offer int_sub_ops : Sub[Int] = Sub::{ sub: int_sub }
+
+pub offer int_mul_ops : Mul[Int] = Mul::{ mul: int_mul }
+
+pub offer int_div_ops : Div[Int] = Div::{ div: int_div }
+
+pub offer int_rem_ops : Rem[Int] = Rem::{ rem: int_rem }
+
+pub offer int_neg_ops : Neg[Int] = Neg::{ neg: int_neg }
+
+pub offer int_equal_ops : Equal[Int] = Equal::{ equal: int_equal }
+
+pub offer int_compare_ops : Compare[Int] = Compare::{ equal_impl: int_equal_ops, less: int_less }

@@ -1,0 +1,6 @@
+module Basic.Trait.Iso
+
+pub struct Iso[T, R] {
+  to : (T) -> R
+  from : (R) -> T
+}

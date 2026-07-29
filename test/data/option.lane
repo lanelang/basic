@@ -1,7 +1,9 @@
 module Test.Data.Option
 
 import Basic.Data.Option.*
-import Basic.Trait.Ops.{ int_equal_ops, unit_equal_ops, Equal }
+import Basic.Data.Int.{ int_equal_ops }
+import Basic.Data.Unit.{ unit_equal_ops }
+import Basic.Trait.Equal.{ Equal }
 import Basic.Summon.{ summon_via }
 import Test.Assert.{ Assert }
 

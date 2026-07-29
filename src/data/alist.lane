@@ -3,8 +3,9 @@ module Basic.Data.AList
 import Basic.Data.List.{ List, push_head, filter, find }
 import Basic.Data.Pair.{ Pair }
 import Basic.Data.Option.{ Option, map }
-import Basic.Trait.Ops.{ Equal, op_equal, op_not_equal }
+import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Table.{ Table }
+import Basic.Trait.Ops.{ op_equal, op_not_equal }
 
 pub type AList[A, B] = List[Pair[A, B]]
 

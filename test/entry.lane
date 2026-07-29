@@ -1,16 +1,16 @@
 module Test.Entry
 
 import Test.Assert.{ Assert, execute_all_test }
-import Test.Data.Option
-import Test.Data.List
-import Test.Eff.Write
+import Test.Data.Option as Option
+import Test.Data.List as List 
+import Test.Eff.Write as Write
 
 pub fn test_entry() -> Unit ! Io {
   fn() {
-    Test.Eff.Write.test_write_log()
-    Test.Data.Option.test_equal()
-    Test.Data.List.test_equal()
-    Test.Data.List.test_length()
-    Test.Data.List.test_foldl()
+    Write.test_write_log()
+    Option.test_equal()
+    List.test_equal()
+    List.test_length()
+    List.test_foldl()
   } |> execute_all_test()
 }

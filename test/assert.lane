@@ -1,6 +1,6 @@
 module Test.Assert
 
-import Basic.Trait.Ops.{ Equal }
+import Basic.Trait.Equal.{ Equal }
 import Basic.Io.{ println }
 
 pub effect Assert {

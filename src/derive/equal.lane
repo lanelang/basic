@@ -1,0 +1,88 @@
+module Basic.Derive.Equal
+
+import Basic.Trait.Derive.{ Product, Sum, Deriver, Recursive }
+import Basic.Trait.Iso.{ Iso }
+import Basic.Data.Void.{ Void, absurd }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Ops.{ op_and }
+import Basic.Data.Bool.{ bool_and_ops }
+
+fn equal_unit() -> Equal[Unit] {
+  Equal::{
+    equal: fn(_left, _right) {
+      true
+    }
+  }
+}
+
+fn[A, B] equal_product(equal_a : Equal[A], equal_b : Equal[B]) -> Equal[Product[A, B]] {
+  Equal::{
+    equal: fn(left, right) {
+      equal_a.equal(left.head, right.head) && equal_b.equal(left.tail, right.tail)
+    }
+  }
+}
+
+fn equal_void() -> Equal[Void] {
+  Equal::{
+    equal: fn(left, _right) {
+      absurd(left)
+    }
+  }
+}
+
+fn[A, B] equal_sum(equal_a : Equal[A], equal_b : Equal[B]) -> Equal[Sum[A, B]] {
+  Equal::{
+    equal: fn(left, right) {
+      match left {
+        here(left) =>
+          match right {
+            here(right) => equal_a.equal(left, right)
+            there(_) => false
+          }
+        there(left) =>
+          match right {
+            here(_) => false
+            there(right) => equal_b.equal(left, right)
+          }
+      }
+    }
+  }
+}
+
+fn[T, R] equal_iso(iso : Iso[T, R], representation : Equal[R]) -> Equal[T] {
+  Equal::{
+    equal: fn(left, right) {
+      representation.equal(iso.to(left), iso.to(right))
+    }
+  }
+}
+
+offer derive_equal : Deriver[Equal] = Deriver::{
+  unit: equal_unit,
+  product: equal_product,
+  void: equal_void,
+  sum: equal_sum,
+  field: fn[A](_info, equal) {
+    equal
+  },
+  variant: fn[A](_info, equal) {
+    equal
+  },
+  record: fn[T, R](_info, iso, representation) {
+    equal_iso(iso, representation)
+  },
+  enumeration: fn[T, R](_info, iso, representation) {
+    equal_iso(iso, representation)
+  }
+}
+
+let recursive_equal : Recursive[Equal] = Recursive::{
+  defer: fn[T](get_equal) {
+    Equal::{
+      equal: fn(left, right) {
+        get_equal().equal(left, right)
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+module Basic.Data.Double
+
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
+import Basic.Builtins.{ double_add, double_sub, double_mul, double_div, double_neg, double_equal, double_less }
+
+pub offer double_add_ops : Add[Double] = Add::{ add: double_add }
+
+pub offer double_sub_ops : Sub[Double] = Sub::{ sub: double_sub }
+
+pub offer double_mul_ops : Mul[Double] = Mul::{ mul: double_mul }
+
+pub offer double_div_ops : Div[Double] = Div::{ div: double_div }
+
+pub offer double_neg_ops : Neg[Double] = Neg::{ neg: double_neg }
+
+pub offer double_equal_ops : Equal[Double] = Equal::{ equal: double_equal }
+
+pub offer double_compare_ops : Compare[Double] = Compare::{
+  equal_impl: double_equal_ops,
+  less: double_less
+}

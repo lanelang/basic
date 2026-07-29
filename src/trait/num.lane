@@ -1,0 +1,25 @@
+module Basic.Trait.Num
+
+pub struct Add[T] {
+  add : (T, T) -> T
+}
+
+pub struct Sub[T] {
+  sub : (T, T) -> T
+}
+
+pub struct Mul[T] {
+  mul : (T, T) -> T
+}
+
+pub struct Div[T] {
+  div : (T, T) -> T
+}
+
+pub struct Rem[T] {
+  rem : (T, T) -> T
+}
+
+pub struct Neg[T] {
+  neg : (T) -> T
+}

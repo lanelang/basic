@@ -1,0 +1,8 @@
+module Basic.Trait.Compare
+
+import Basic.Trait.Equal.{ Equal }
+
+pub struct Compare[T] {
+  equal_impl : Equal[T]
+  less : (T, T) -> Bool
+}

@@ -2,22 +2,14 @@ module Basic.Data.List
 
 import Basic.Data.Tuple.{ Tuple }
 import Basic.Data.Option.{ Option }
+import Basic.Data.Int.{ int_add_ops, int_sub_ops, int_compare_ops, int_equal_ops }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
-import Basic.Trait.Ops.{
-  Equal,
-  int_sub_ops,
-  int_equal_ops,
-  int_compare_ops,
-  int_add_ops,
-  op_add,
-  op_equal,
-  op_less,
-  op_sub
-}
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Ops.{ op_equal, op_add, op_less, op_sub }
 
 pub enum List[T] {
   empty()
@@ -216,7 +208,7 @@ pub fn[T, E : Effect] any(list : List[T], pred : (T) -> Bool ! E) -> Bool ! E {
       if pred(x) {
         true
       } else {
-        all(xs, pred)
+        any(xs, pred)
       }
   }
 }

@@ -1,0 +1,13 @@
+module Basic.Trait.Bool
+
+pub struct And {
+  and : (Bool, () -> Bool) -> Bool
+}
+
+pub struct Or {
+  or : (Bool, () -> Bool) -> Bool
+}
+
+pub struct Not {
+  not : (Bool) -> Bool
+}

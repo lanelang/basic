@@ -1,0 +1,5 @@
+module Basic.Trait.Equal
+
+pub struct Equal[T] {
+  equal : (T, T) -> Bool
+}

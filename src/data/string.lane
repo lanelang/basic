@@ -1,0 +1,6 @@
+module Basic.Data.String
+
+import Basic.Trait.Equal.{ Equal }
+import Basic.Builtins.{ string_equal }
+
+pub offer string_equal_ops : Equal[String] = Equal::{ equal: string_equal }

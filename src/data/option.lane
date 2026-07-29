@@ -1,6 +1,7 @@
 module Basic.Data.Option
 
-import Basic.Trait.Ops.{ Equal, op_equal }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Ops.{ op_equal }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
