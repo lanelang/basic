@@ -2,7 +2,7 @@ module Basic.Data.Unit
 
 import Basic.Trait.Equal.{ Equal }
 
-pub offer unit_equal_ops : Equal[Unit] = Equal::{
+pub offer unit_impl_equal : Equal[Unit] = Equal::{
   equal: fn(_a, _b) {
     true
   }

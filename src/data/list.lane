@@ -2,7 +2,7 @@ module Basic.Data.List
 
 import Basic.Data.Tuple.{ Tuple }
 import Basic.Data.Option.{ Option }
-import Basic.Data.Int.{ int_add_ops, int_sub_ops, int_compare_ops, int_equal_ops }
+import Basic.Data.Int.{ int_impl_add, int_impl_sub, int_impl_compare, int_impl_equal }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Map.{ Mappable }

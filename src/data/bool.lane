@@ -4,10 +4,10 @@ import Basic.Trait.Bool.{ And, Or, Not }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Builtins.{ bool_and, bool_or, bool_not, bool_equal }
 
-pub offer bool_and_ops : And = And::{ and: bool_and }
+pub offer bool_impl_and : And = And::{ and: bool_and }
 
-pub offer bool_or_ops : Or = Or::{ or: bool_or }
+pub offer bool_impl_or : Or = Or::{ or: bool_or }
 
-pub offer bool_not_ops : Not = Not::{ not: bool_not }
+pub offer bool_impl_not : Not = Not::{ not: bool_not }
 
-pub offer bool_equal_ops : Equal[Bool] = Equal::{ equal: bool_equal }
+pub offer bool_impl_equal : Equal[Bool] = Equal::{ equal: bool_equal }

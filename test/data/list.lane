@@ -1,7 +1,7 @@
 module Test.Data.List
 
 import Basic.Data.List.*
-import Basic.Data.Int.{ int_add_ops, int_equal_ops }
+import Basic.Data.Int.{ int_impl_add, int_impl_equal }
 import Basic.Ops.{ op_add }
 import Basic.Trait.Num.{ Add }
 import Basic.Summon.{ summon, summon_via }
@@ -32,6 +32,6 @@ pub fn test_map() -> Unit ! Assert {
 
 pub fn test_foldl() -> Unit ! Assert {
   let l1 = [1, 2, 3]
-  let s = foldl(l1, 0, int_add_ops.add)
+  let s = foldl(l1, 0, int_impl_add.add)
   assert_eq!(s, 6, summon())
 }

@@ -2,8 +2,8 @@ module Basic.Ops
 
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Data.Bool.{ bool_not_ops }
-import Basic.Data.Bool.{ bool_or_ops }
+import Basic.Data.Bool.{ bool_impl_not }
+import Basic.Data.Bool.{ bool_impl_or }
 import Basic.Trait.Bool.{ And, Or, Not }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 

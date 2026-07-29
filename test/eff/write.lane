@@ -3,7 +3,7 @@ module Test.Eff.Write
 import Basic.Eff.Write.*
 import Basic.Data.List.{ List, list_impl_monoid, list_impl_equal }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Data.Int.{ int_equal_ops }
+import Basic.Data.Int.{ int_impl_equal }
 import Basic.Summon.{ summon_via }
 import Test.Assert.{ Assert }
 
