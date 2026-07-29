@@ -1,5 +1,0 @@
-module Basic.Shape
-
-import Basic.Data.List.*
-import Basic.Data.Tuple.{ Tuple }
-import Basic.Trait.Ops.*

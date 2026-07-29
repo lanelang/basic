@@ -1,0 +1,51 @@
+module Basic.Trait.Derive
+
+import Basic.Data.Void.{ Void }
+
+pub struct Deriver[C : [Type] -> Type] {
+  unit : () -> C[Unit]
+  product : [A, B](C[A], C[B]) -> C[Product[A, B]]
+  void : () -> C[Void]
+  sum : [A, B](C[A], C[B]) -> C[Sum[A, B]]
+  field : [A](FieldInfo, C[A]) -> C[A]
+  variant : [A](VariantInfo, C[A]) -> C[A]
+  record : [T, R](TypeInfo, Iso[T, R], C[R]) -> C[T]
+  enumeration : [T, R](TypeInfo, Iso[T, R], C[R]) -> C[T]
+}
+
+pub struct Recursive[C : [Type] -> Type] {
+  defer : [T](() -> C[T]) -> C[T]
+}
+
+pub struct Lift[C : [Type] -> Type, F : [Type] -> Type] {
+  lift : [A](C[A]) -> C[F[A]]
+}
+
+pub struct Product[A, B] {
+  head : A
+  tail : B
+}
+
+
+pub enum Sum[A, B] {
+  here(A)
+  there(B)
+}
+
+pub struct Iso[T, R] {
+  to : (T) -> R
+  from : (R) -> T
+}
+
+pub struct TypeInfo {
+  name : String
+  qualified_name : String
+}
+
+pub struct FieldInfo {
+  name : String
+}
+
+pub struct VariantInfo {
+  name : String
+}
