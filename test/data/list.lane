@@ -2,7 +2,7 @@ module Test.Data.List
 
 import Basic.Data.List.*
 import Basic.Data.Int.{ int_add_ops, int_equal_ops }
-import Basic.Trait.Ops.{ op_add }
+import Basic.Ops.{ op_add }
 import Basic.Trait.Num.{ Add }
 import Basic.Summon.{ summon, summon_via }
 import Basic.Trait.Equal.{ Equal }

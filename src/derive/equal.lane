@@ -4,7 +4,7 @@ import Basic.Trait.Derive.{ Product, Sum, Deriver, Recursive }
 import Basic.Trait.Iso.{ Iso }
 import Basic.Data.Void.{ Void, absurd }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Ops.{ op_and }
+import Basic.Ops.{ op_and }
 import Basic.Data.Bool.{ bool_and_ops }
 
 fn equal_unit() -> Equal[Unit] {

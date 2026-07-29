@@ -9,7 +9,7 @@ import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Ops.{ op_equal, op_add, op_less, op_sub }
+import Basic.Ops.{ op_equal, op_add, op_less, op_sub }
 
 pub enum List[T] {
   empty()
