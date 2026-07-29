@@ -58,7 +58,7 @@ fn[T, R] equal_iso(iso : Iso[T, R], representation : Equal[R]) -> Equal[T] {
   }
 }
 
-offer derive_equal : Deriver[Equal] = Deriver::{
+pub offer derive_equal : Deriver[Equal] = Deriver::{
   unit: equal_unit,
   product: equal_product,
   void: equal_void,
@@ -77,7 +77,7 @@ offer derive_equal : Deriver[Equal] = Deriver::{
   }
 }
 
-let recursive_equal : Recursive[Equal] = Recursive::{
+pub let recursive_equal : Recursive[Equal] = Recursive::{
   defer: fn[T](get_equal) {
     Equal::{
       equal: fn(left, right) {

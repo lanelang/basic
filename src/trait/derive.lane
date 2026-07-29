@@ -3,44 +3,140 @@ module Basic.Trait.Derive
 import Basic.Data.Void.{ Void }
 import Basic.Trait.Iso.{ Iso }
 
+// The canonical structural-derivation interface used by `derive` expression.
+//
+// `derive[C, T]()` resolves exactly one visible `Deriver[C]` offer and produces
+// an ordinary `C[T]` value. `derive[C, T](deriver=value)` selects the deriver
+// explicitly. In both forms, the compiler derives only the outer nominal layer
+// of `T`: every field or variant payload of type `A` requires an exact visible
+// `C[A]` offer at the derive site.
+//
+// For example, deriving `Equal[Point]` for
+//
+//   struct Point {
+//     x : Int
+//     y : Int
+//   }
+//
+// requires a `Deriver[Equal]` and an `Equal[Int]`. The compiler represents the
+// record as `Product[Int, Product[Int, Unit]]`, constructs an `Iso` between
+// `Point` and that representation, and combines the operations below.
+//
+// `Deriver[C]` carries no compiler-assumed algebraic laws. The selected
+// deriver is evaluated once, and every generated combinator call follows
+// ordinary strict Lane semantics, so call order and canonical nesting are
+// observable.
+//
+// This declaration is part of the language's canonical derivation ABI. The
+// compiler identifies it and its representation types by their canonical
+// declarations and validates their field order and types. These declarations
+// must therefore not be renamed, reordered, or reshaped independently of the
+// compiler.
 pub struct Deriver[C : [Type] -> Type] {
+  // Produces the capability for an empty product. This terminates the
+  // right-associated representation of record fields and variant payloads.
   unit : () -> C[Unit]
+  // Prepends the capability for the next component to the capability for the
+  // remaining product. Source declaration order is preserved:
+  //
+  //   fields([])      = unit()
+  //   fields(a :: as) = product(capability(a), fields(as))
   product : [A, B](C[A], C[B]) -> C[Product[A, B]]
+  // Produces the capability for an empty sum. This terminates the
+  // right-associated representation of enum variants.
   void : () -> C[Void]
+  // Prepends the capability for the next variant to the capability for the
+  // remaining variants:
+  //
+  //   variants([])      = void()
+  //   variants(v :: vs) = sum(capability(v), variants(vs))
   sum : [A, B](C[A], C[B]) -> C[Sum[A, B]]
+  // Marks a record-field boundary. `info.name` is the declared field name, and
+  // the supplied `C[A]` is the exact contextual capability for that field's
+  // type. A deriver may preserve, annotate, or otherwise interpret the
+  // boundary; an equality deriver can simply return the supplied capability.
   field : [A](FieldInfo, C[A]) -> C[A]
+  // Marks an enum-variant boundary. The supplied capability describes the
+  // variant's complete product-shaped payload, including `Unit` for a variant
+  // with no payload.
   variant : [A](VariantInfo, C[A]) -> C[A]
+  // Finishes derivation for a struct. `R` is the compiler-generated canonical
+  // product representation, `Iso[T, R]` converts between the nominal type and
+  // that representation, and `C[R]` is the result of combining all fields.
   record : [T, R](TypeInfo, Iso[T, R], C[R]) -> C[T]
+  // Finishes derivation for an enum. `R` is the compiler-generated canonical
+  // sum-of-products representation, and `C[R]` is the result of combining all
+  // variants in source declaration order.
   enumeration : [T, R](TypeInfo, Iso[T, R], C[R]) -> C[T]
 }
 
+// An ordinary library adapter for capabilities that can refer to themselves
+// lazily. The compiler does not inspect or invoke `Recursive`.
+//
+// A conforming `defer` implementation constructs `C[T]` without forcing the
+// thunk immediately; it may force the thunk later when the capability is used.
+// No memoization or fixed invocation count is implied. Recursive derivation
+// normally exposes the deferred value as a local offer and then derives one
+// nominal layer.
 pub struct Recursive[C : [Type] -> Type] {
   defer : [T](() -> C[T]) -> C[T]
 }
 
+// An ordinary library adapter that lifts a capability through a unary type
+// constructor. The compiler does not inspect or invoke `Lift`.
+//
+// It is used to construct exact component evidence before a derive call. For
+// example, `Lift[Equal, List]` can turn `Equal[Tree]` into the
+// `Equal[List[Tree]]` required by a `children : List[Tree]` field.
 pub struct Lift[C : [Type] -> Type, F : [Type] -> Type] {
   lift : [A](C[A]) -> C[F[A]]
 }
 
+// The canonical right-associated product used for record fields and variant
+// payloads:
+//
+//   {}                 => Unit
+//   { a : A }          => Product[A, Unit]
+//   { a : A, b : B }   => Product[A, Product[B, Unit]]
 pub struct Product[A, B] {
+  // The current field or payload component.
   head : A
+  // The remaining right-associated product.
   tail : B
 }
 
+// The canonical right-associated sum used for enum variants:
+//
+//   enum {}              => Void
+//   enum { a() }         => Sum[Unit, Void]
+//   enum { a(A), b(B) }  =>
+//     Sum[Product[A, Unit], Sum[Product[B, Unit], Void]]
 pub enum Sum[A, B] {
+  // Selects the current variant representation.
   here(A)
+  // Selects a variant from the remaining sum.
   there(B)
 }
 
+// Metadata for the normalized nominal type being derived. Transparent aliases
+// do not introduce another derivation layer, and generic arguments are not
+// included in either name.
 pub struct TypeInfo {
+  // The declaration name, such as `"Point"`.
   name : String
+  // The canonical module path followed by the declaration name, such as
+  // `"Geometry.Point"`.
   qualified_name : String
 }
 
+// Metadata for a record field. Product position records declaration order.
 pub struct FieldInfo {
+  // The field's declared name.
   name : String
 }
 
+// Metadata for an enum variant. Sum position records declaration order.
 pub struct VariantInfo {
+  // The variant's declared name.
   name : String
 }
