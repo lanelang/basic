@@ -1,3 +1,7 @@
 module Basic.Data.Void
 
 pub enum Void {}
+
+pub fn[T] absurd(value : Void) -> T {
+  match value {}
+}
