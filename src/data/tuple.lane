@@ -1,5 +1,22 @@
 module Basic.Data.Tuple
 
+import Basic.Trait.Equal.{ Equal }
+import Basic.Derive.Equal.{ derive_equal }
+
 pub enum Tuple[A, B] {
   tuple(A, B)
+}
+
+pub offer fn[A, B] tuple_impl_equal(offer a : Equal[A], offer b : Equal[B]) -> Equal[Tuple[A, B]] {
+  derive[Equal, Tuple[A, B]]()
+}
+
+pub fn[A, B] fst(tp : (A, B)) -> A {
+  let tuple(x, _y) = tp
+  x
+}
+
+pub fn[A, B] snd(tp : (A, B)) -> B {
+  let tuple(_x, y) = tp
+  y
 }

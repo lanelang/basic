@@ -1,6 +1,0 @@
-module Basic.Data.Pair 
-
-pub struct Pair[A, B] {
-  fst : A 
-  snd : B 
-}

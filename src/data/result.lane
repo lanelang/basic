@@ -1,15 +1,17 @@
 module Basic.Data.Result
 
+import Basic.Trait.Map.{ Mappable }
+import Basic.Trait.App.{ Applicative }
+import Basic.Trait.Flat.{ FlatMappable }
+
 pub enum Result[L, R] {
   ok(L)
   err(R)
 }
 
-pub fn[L, R, T, E : Effect] map(f : (L) -> T ! E, result : Result[L, R]) -> Result[T, R] ! E {
+pub fn[L, R, T, E : Effect] map(result : Result[L, R], f : (L) -> T ! E) -> Result[T, R] ! E {
   match result {
     ok(v) => ok(f(v))
     err(e) => err(e)
   }
 }
-
-pub type PartialResult[R] = type[L] => Result[L, R]

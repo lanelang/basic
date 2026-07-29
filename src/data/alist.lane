@@ -1,13 +1,13 @@
 module Basic.Data.AList
 
 import Basic.Data.List.{ List, push_head, filter, find }
-import Basic.Data.Pair.{ Pair }
+import Basic.Data.Tuple.{ Tuple, fst, snd }
 import Basic.Data.Option.{ Option, map }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Table.{ Table }
 import Basic.Ops.{ op_equal, op_not_equal }
 
-pub type AList[A, B] = List[Pair[A, B]]
+pub type AList[A, B] = List[(A, B)]
 
 pub fn[A, B] empty() -> AList[A, B] {
   List::empty()
@@ -17,24 +17,24 @@ pub fn[K, V] get(list : AList[K, V], key : K, auto offer equal_impl : Equal[K]) 
   find(
     list,
     fn(e) {
-      e.fst == key
+      fst(e) == key
     }
   ) |> map(
       fn(e) {
-        e.snd
+        snd(e)
       }
     )
 }
 
 pub fn[K, V] set(list : AList[K, V], key : K, val : V, auto _equal_impl : Equal[K]) -> AList[K, V] {
-  push_head(list, Pair::{ fst: key, snd: val })
+  push_head(list, (key, val))
 }
 
 pub fn[K, V] del(list : AList[K, V], key : K, auto offer equal_impl : Equal[K]) -> AList[K, V] {
   filter(
     list,
     fn(e) {
-      e.fst != key
+      fst(e) != key
     }
   )
 }
