@@ -1,9 +1,9 @@
 module Basic.Data.Option
 
 import Basic.Trait.Equal.{ Equal }
-import Basic.Ops.{ op_equal }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
+import Basic.Derive.Equal.{ derive_equal }
 import Basic.Trait.Flat.{ FlatMappable }
 
 pub enum Option[T] {
@@ -12,26 +12,11 @@ pub enum Option[T] {
 }
 
 pub fn[T] equals(a : Option[T], b : Option[T], auto offer equal_impl : Equal[T]) -> Bool {
-  match a {
-    none() =>
-      match b {
-        none() => true
-        _ => false
-      }
-    some(x) =>
-      match b {
-        none() => false
-        some(y) => x == y
-      }
-  }
+  option_impl_equal[T]().equal(a, b)
 }
 
 pub offer fn[T] option_impl_equal(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
-  Equal::{
-    equal: fn(a, b) {
-      equals(a, b)
-    }
-  }
+  derive[Equal, Option[T]]()
 }
 
 pub fn[T, R, E : Effect] map(o : Option[T], f : (T) -> R ! E) -> Option[R] ! E {

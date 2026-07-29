@@ -9,6 +9,7 @@ import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Derive.Equal.{ derive_equal, recursive_equal }
 import Basic.Ops.{ op_equal, op_add, op_less, op_sub }
 
 pub enum List[T] {
@@ -17,31 +18,16 @@ pub enum List[T] {
 }
 
 pub fn[T] equals(a : List[T], b : List[T], auto offer equal_impl : Equal[T]) -> Bool {
-  match a {
-    empty() =>
-      match b {
-        empty() => true
-        _ => false
-      }
-    cons(x, xs) =>
-      match b {
-        empty() => false
-        cons(y, ys) =>
-          if x == y {
-            equals(xs, ys)
-          } else {
-            false
-          }
-      }
-  }
+  list_impl_equal[T]().equal(a, b)
 }
 
 pub offer fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
-  Equal::{
-    equal: fn(a, b) {
-      equals(a, b)
+  offer recursive_list_equal : Equal[List[T]] = recursive_equal.defer(
+    fn() {
+      list_impl_equal()
     }
-  }
+  )
+  derive[Equal, List[T]]()
 }
 
 pub fn[T] length(list : List[T]) -> Int {
