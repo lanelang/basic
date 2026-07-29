@@ -39,8 +39,9 @@ pub struct Deriver[C : [Type] -> Type] {
   // Prepends the capability for the next component to the capability for the
   // remaining product. Source declaration order is preserved:
   //
-  //   fields([])      = unit()
-  //   fields(a :: as) = product(capability(a), fields(as))
+  //   fields([])     = unit()
+  //   fields([a, b]) =
+  //     product(capability(a), product(capability(b), unit()))
   product : [A, B](C[A], C[B]) -> C[Product[A, B]]
   // Produces the capability for an empty sum. This terminates the
   // right-associated representation of enum variants.
@@ -48,8 +49,9 @@ pub struct Deriver[C : [Type] -> Type] {
   // Prepends the capability for the next variant to the capability for the
   // remaining variants:
   //
-  //   variants([])      = void()
-  //   variants(v :: vs) = sum(capability(v), variants(vs))
+  //   variants([])     = void()
+  //   variants([v, w]) =
+  //     sum(capability(v), sum(capability(w), void()))
   sum : [A, B](C[A], C[B]) -> C[Sum[A, B]]
   // Marks a record-field boundary. `info.name` is the declared field name, and
   // the supplied `C[A]` is the exact contextual capability for that field's
