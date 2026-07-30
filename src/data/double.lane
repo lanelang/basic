@@ -3,7 +3,18 @@ module Basic.Data.Double
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
-import Basic.Builtins.{ double_add, double_sub, double_mul, double_div, double_neg, double_equal, double_less }
+import Basic.Builtins.{
+  double_add,
+  double_sub,
+  double_mul,
+  double_div,
+  double_neg,
+  double_equal,
+  double_less,
+  double_inf,
+  double_ninf,
+  double_nan
+}
 
 pub offer double_impl_add : Add[Double] = Add::{ add: double_add }
 
@@ -21,3 +32,9 @@ pub offer double_impl_compare : Compare[Double] = Compare::{
   equal_impl: double_impl_equal,
   less: double_less
 }
+
+pub let inf : Double = double_inf
+
+pub let ninf : Double = double_ninf
+
+pub let nan : Double = double_nan

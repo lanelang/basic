@@ -1,15 +1,21 @@
 module Basic.Builtins
 
+// UB if overflow
 pub let int_add : (Int, Int) -> Int = builtin("%i64_add")
 
+// UB if overflow
 pub let int_sub : (Int, Int) -> Int = builtin("%i64_sub")
 
+// UB if overflow
 pub let int_mul : (Int, Int) -> Int = builtin("%i64_mul")
 
+// UB if divisor is zero
 pub let int_div : (Int, Int) -> Int = builtin("%i64_div")
 
+// UB if divisor is zero
 pub let int_rem : (Int, Int) -> Int = builtin("%i64_rem")
 
+// UB if argument is -2^63
 pub let int_neg : (Int) -> Int = builtin("%i64_neg")
 
 pub let int_equal : (Int, Int) -> Bool = builtin("%i64_equal")
@@ -42,10 +48,13 @@ pub let byte_to_int : (Byte) -> Int = builtin("%byte_to_int")
 
 pub let int_to_byte : (Int) -> Byte = builtin("%int_to_byte")
 
+// UB if length < 0
 pub let bytes_make : (Int, Byte) -> Bytes = builtin("%bytes_make")
 
 pub let bytes_length : (Bytes) -> Int = builtin("%bytes_length")
 
+// UB if not (index >= 0 && index < bytes_length)
 pub let bytes_get : (Bytes, Int) -> Byte = builtin("%bytes_get")
 
+// UB if not (index >= 0 && index < bytes_length)
 pub let bytes_set : (Bytes, Int, Byte) -> Bytes = builtin("%bytes_set")
