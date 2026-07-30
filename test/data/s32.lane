@@ -1,0 +1,38 @@
+module Test.Data.S32
+
+import Basic.Builtins as Builtins
+import Basic.Data.S32 as S32
+import Basic.Data.Int.{ int_impl_equal }
+import Test.Assert.{ Assert }
+
+pub fn test_s32() -> Unit ! Assert {
+  let add = S32.s32_impl_add
+  let sub = S32.s32_impl_sub
+  let mul = S32.s32_impl_mul
+  let div = S32.s32_impl_div
+  let rem = S32.s32_impl_rem
+  let neg = S32.s32_impl_neg
+  let equal = S32.s32_impl_equal
+  let compare = S32.s32_impl_compare
+  let maximum = S32.from_int(2147483647)
+  let minimum_int = Builtins.int_neg(2147483648)
+  let minimum = S32.from_int(minimum_int)
+  assert_eq!(S32.to_int(add.add(maximum, S32.from_int(1))), minimum_int, int_impl_equal)
+  assert_eq!(S32.to_int(sub.sub(minimum, S32.from_int(1))), 2147483647, int_impl_equal)
+  assert_eq!(S32.to_int(mul.mul(S32.from_int(65536), S32.from_int(65536))), 0, int_impl_equal)
+  assert_eq!(
+    S32.to_int(div.div(S32.from_int(Builtins.int_neg(7)), S32.from_int(3))),
+    Builtins.int_neg(2),
+    int_impl_equal
+  )
+  assert_eq!(
+    S32.to_int(rem.rem(S32.from_int(Builtins.int_neg(7)), S32.from_int(3))),
+    Builtins.int_neg(1),
+    int_impl_equal
+  )
+  assert_eq!(S32.to_int(rem.rem(minimum, S32.from_int(Builtins.int_neg(1)))), 0, int_impl_equal)
+  assert_eq!(S32.to_int(neg.neg(minimum)), minimum_int, int_impl_equal)
+  assert_eq!(S32.to_int(S32.from_int(2147483648)), minimum_int, int_impl_equal)
+  assert_true!(equal.equal(S32.from_int(42), S32.from_int(42)))
+  assert_true!(compare.less(S32.from_int(Builtins.int_neg(1)), S32.from_int(0)))
+}

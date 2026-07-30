@@ -1,1 +1,13 @@
 module Basic.Data.Byte
+
+import Basic.Builtins.{ byte_to_int, int_to_byte }
+
+// Zero-extend a Byte value to Int.
+pub fn to_int(value : Byte) -> Int {
+  byte_to_int(value)
+}
+
+// Keep the low eight bits of an Int and return the corresponding Byte.
+pub fn from_int(value : Int) -> Byte {
+  int_to_byte(value)
+}

@@ -1,10 +1,11 @@
 module Basic.Data.Bytes
 
 import Basic.Builtins as Builtins
-import Basic.Ops.{ op_less, op_greater_eq }
-import Basic.Data.Int.{ int_impl_compare }
+import Basic.Ops.{ op_less, op_greater_eq, op_sub }
+import Basic.Data.Int.{ int_impl_compare, int_impl_sub }
 import Basic.Eff.Bound.{ OutOfBound }
 
+// Create an immutable byte sequence, reporting a negative length through OutOfBound.
 pub fn bytes_make(len : Int, init : Byte) -> Bytes ! OutOfBound {
   if len < 0 {
     out_of_min!()
@@ -13,10 +14,12 @@ pub fn bytes_make(len : Int, init : Byte) -> Bytes ! OutOfBound {
   }
 }
 
+// Return the number of bytes in the sequence.
 pub fn bytes_length(bytes : Bytes) -> Int {
   Builtins.bytes_length(bytes)
 }
 
+// Read one byte, reporting a negative or past-the-end index through OutOfBound.
 pub fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
   if index < 0 {
     out_of_min!()
@@ -27,6 +30,7 @@ pub fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
   }
 }
 
+// Return a sequence with one byte replaced, preserving the original value and reporting an invalid index through OutOfBound.
 pub fn bytes_set(bytes : Bytes, index : Int, byte : Byte) -> Bytes ! OutOfBound {
   if index < 0 {
     out_of_min!()
@@ -35,4 +39,35 @@ pub fn bytes_set(bytes : Bytes, index : Int, byte : Byte) -> Bytes ! OutOfBound 
   } else {
     Builtins.bytes_set(bytes, index, byte)
   }
+}
+
+// Compare two sequences by exact byte contents.
+pub fn bytes_equal(left : Bytes, right : Bytes) -> Bool {
+  Builtins.bytes_equal(left, right)
+}
+
+// Concatenate two sequences without assigning text semantics to either operand.
+pub fn bytes_concat(left : Bytes, right : Bytes) -> Bytes {
+  Builtins.bytes_concat(left, right)
+}
+
+// Copy the selected byte range, reporting negative or out-of-bounds ranges through OutOfBound.
+pub fn bytes_slice(bytes : Bytes, start : Int, length : Int) -> Bytes ! OutOfBound {
+  let bytes_length = Builtins.bytes_length(bytes)
+  if start < 0 {
+    out_of_min!()
+  } else if length < 0 {
+    out_of_min!()
+  } else if bytes_length < start {
+    out_of_max!()
+  } else if bytes_length - start < length {
+    out_of_max!()
+  } else {
+    Builtins.bytes_slice(bytes, start, length)
+  }
+}
+
+// Report whether the complete sequence is a canonical valid UTF-8 encoding.
+pub fn is_valid_utf8(bytes : Bytes) -> Bool {
+  Builtins.bytes_is_valid_utf8(bytes)
 }

@@ -2,10 +2,36 @@ module Test.Entry
 
 import Test.Assert.{ Assert, execute_all_test }
 import Test.Data.Option as Option
-import Test.Data.List as List 
+import Test.Data.List as List
+import Test.Data.S32 as S32
+import Test.Data.String as String
 import Test.Eff.Write as Write
 
-pub fn test_entry() -> Unit ! Io {
+pub fn test_s32_entry() -> Unit ! Io {
+  fn() {
+    S32.test_s32()
+  } |> execute_all_test()
+}
+
+pub fn test_char_entry() -> Unit ! Io {
+  fn() {
+    String.test_char()
+  } |> execute_all_test()
+}
+
+pub fn test_string_entry() -> Unit ! Io {
+  fn() {
+    String.test_string()
+  } |> execute_all_test()
+}
+
+pub fn test_utf8_and_bytes_entry() -> Unit ! Io {
+  fn() {
+    String.test_utf8_and_bytes()
+  } |> execute_all_test()
+}
+
+fn test_existing_entry() -> Unit ! Io {
   fn() {
     Write.test_write_log()
     Option.test_equal()
@@ -13,4 +39,12 @@ pub fn test_entry() -> Unit ! Io {
     List.test_length()
     List.test_foldl()
   } |> execute_all_test()
+}
+
+pub fn test_entry() -> Unit ! Io {
+  test_existing_entry()
+  test_s32_entry()
+  test_char_entry()
+  test_string_entry()
+  test_utf8_and_bytes_entry()
 }

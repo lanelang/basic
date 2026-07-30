@@ -42,7 +42,32 @@ pub let double_ninf : Double = builtin("%f64_ninf")
 
 pub let double_nan : Double = builtin("%f64_nan")
 
-pub let string_equal : (String, String) -> Bool = builtin("%string_equal")
+pub let s32_add : (S32, S32) -> S32 = builtin("%i32_add")
+
+pub let s32_sub : (S32, S32) -> S32 = builtin("%i32_sub")
+
+pub let s32_mul : (S32, S32) -> S32 = builtin("%i32_mul")
+
+// UB if divisor is zero or the quotient is not representable
+pub let s32_div : (S32, S32) -> S32 = builtin("%i32_div")
+
+// UB if divisor is zero
+pub let s32_rem : (S32, S32) -> S32 = builtin("%i32_rem")
+
+pub let s32_neg : (S32) -> S32 = builtin("%i32_neg")
+
+pub let s32_equal : (S32, S32) -> Bool = builtin("%i32_equal")
+
+pub let s32_less : (S32, S32) -> Bool = builtin("%i32_less")
+
+pub let s32_to_int : (S32) -> Int = builtin("%s32_to_int")
+
+pub let int_to_s32 : (Int) -> S32 = builtin("%int_to_s32")
+
+pub let char_to_s32 : (Char) -> S32 = builtin("%char_to_s32")
+
+// UB unless the argument is a Unicode scalar value
+pub let s32_to_char : (S32) -> Char = builtin("%s32_to_char")
 
 pub let byte_to_int : (Byte) -> Int = builtin("%byte_to_int")
 
@@ -58,3 +83,17 @@ pub let bytes_get : (Bytes, Int) -> Byte = builtin("%bytes_get")
 
 // UB if not (index >= 0 && index < bytes_length)
 pub let bytes_set : (Bytes, Int, Byte) -> Bytes = builtin("%bytes_set")
+
+pub let string_to_bytes : (String) -> Bytes = builtin("%string_to_bytes")
+
+pub let bytes_is_valid_utf8 : (Bytes) -> Bool = builtin("%bytes_is_valid_utf8")
+
+// UB unless the argument contains valid UTF-8
+pub let bytes_to_string : (Bytes) -> String = builtin("%bytes_to_string")
+
+pub let bytes_equal : (Bytes, Bytes) -> Bool = builtin("%bytes_equal")
+
+pub let bytes_concat : (Bytes, Bytes) -> Bytes = builtin("%bytes_concat")
+
+// UB unless start and length select an in-bounds byte range
+pub let bytes_slice : (Bytes, Int, Int) -> Bytes = builtin("%bytes_slice")

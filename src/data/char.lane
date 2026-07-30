@@ -1,0 +1,89 @@
+module Basic.Data.Char
+
+import Basic.Builtins as Builtins
+import Basic.Data.Option.{ Option }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+
+fn char_equal(left : Char, right : Char) -> Bool {
+  Builtins.s32_equal(Builtins.char_to_s32(left), Builtins.char_to_s32(right))
+}
+
+fn char_less(left : Char, right : Char) -> Bool {
+  Builtins.s32_less(Builtins.char_to_s32(left), Builtins.char_to_s32(right))
+}
+
+pub offer char_impl_equal : Equal[Char] = Equal::{ equal: char_equal }
+
+pub offer char_impl_compare : Compare[Char] = Compare::{
+  equal_impl: char_impl_equal,
+  less: char_less
+}
+
+// Return the Unicode scalar represented by value, rejecting values outside the scalar range and surrogates.
+pub fn from_int(value : Int) -> Option[Char] {
+  if Builtins.int_less(value, 0) {
+    none()
+  } else if Builtins.int_less(1114111, value) {
+    none()
+  } else if Builtins.int_less(value, 55296) {
+    some(Builtins.s32_to_char(Builtins.int_to_s32(value)))
+  } else if Builtins.int_less(value, 57344) {
+    none()
+  } else {
+    some(Builtins.s32_to_char(Builtins.int_to_s32(value)))
+  }
+}
+
+// Return the Unicode scalar value as an Int.
+pub fn to_int(value : Char) -> Int {
+  Builtins.s32_to_int(Builtins.char_to_s32(value))
+}
+
+fn one_byte(first : Int) -> String {
+  Builtins.bytes_to_string(Builtins.bytes_make(1, Builtins.int_to_byte(first)))
+}
+
+fn two_bytes(first : Int, second : Int) -> String {
+  let bytes = Builtins.bytes_make(2, Builtins.int_to_byte(first))
+  Builtins.bytes_to_string(Builtins.bytes_set(bytes, 1, Builtins.int_to_byte(second)))
+}
+
+fn three_bytes(first : Int, second : Int, third : Int) -> String {
+  let bytes = Builtins.bytes_make(3, Builtins.int_to_byte(first))
+  let bytes = Builtins.bytes_set(bytes, 1, Builtins.int_to_byte(second))
+  Builtins.bytes_to_string(Builtins.bytes_set(bytes, 2, Builtins.int_to_byte(third)))
+}
+
+fn four_bytes(first : Int, second : Int, third : Int, fourth : Int) -> String {
+  let bytes = Builtins.bytes_make(4, Builtins.int_to_byte(first))
+  let bytes = Builtins.bytes_set(bytes, 1, Builtins.int_to_byte(second))
+  let bytes = Builtins.bytes_set(bytes, 2, Builtins.int_to_byte(third))
+  Builtins.bytes_to_string(Builtins.bytes_set(bytes, 3, Builtins.int_to_byte(fourth)))
+}
+
+// Encode one Unicode scalar as a one-scalar UTF-8 String.
+pub fn to_string(value : Char) -> String {
+  let scalar = to_int(value)
+  if Builtins.int_less(scalar, 128) {
+    one_byte(scalar)
+  } else if Builtins.int_less(scalar, 2048) {
+    two_bytes(
+      Builtins.int_add(192, Builtins.int_div(scalar, 64)),
+      Builtins.int_add(128, Builtins.int_rem(scalar, 64))
+    )
+  } else if Builtins.int_less(scalar, 65536) {
+    three_bytes(
+      Builtins.int_add(224, Builtins.int_div(scalar, 4096)),
+      Builtins.int_add(128, Builtins.int_rem(Builtins.int_div(scalar, 64), 64)),
+      Builtins.int_add(128, Builtins.int_rem(scalar, 64))
+    )
+  } else {
+    four_bytes(
+      Builtins.int_add(240, Builtins.int_div(scalar, 262144)),
+      Builtins.int_add(128, Builtins.int_rem(Builtins.int_div(scalar, 4096), 64)),
+      Builtins.int_add(128, Builtins.int_rem(Builtins.int_div(scalar, 64), 64)),
+      Builtins.int_add(128, Builtins.int_rem(scalar, 64))
+    )
+  }
+}
