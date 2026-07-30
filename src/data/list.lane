@@ -17,10 +17,6 @@ pub enum List[T] {
   cons(T, List[T])
 }
 
-pub fn[T] equals(a : List[T], b : List[T], auto offer equal_impl : Equal[T]) -> Bool {
-  list_impl_equal[T]().equal(a, b)
-}
-
 pub offer fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
   offer recursive_list_equal : Equal[List[T]] = recursive_equal.defer(
     fn() {

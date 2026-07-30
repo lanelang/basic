@@ -11,10 +11,6 @@ pub enum Option[T] {
   none()
 }
 
-pub fn[T] equals(a : Option[T], b : Option[T], auto offer equal_impl : Equal[T]) -> Bool {
-  option_impl_equal[T]().equal(a, b)
-}
-
 pub offer fn[T] option_impl_equal(auto offer equal_impl : Equal[T]) -> Equal[Option[T]] {
   derive[Equal, Option[T]]()
 }

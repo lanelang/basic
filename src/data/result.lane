@@ -1,12 +1,18 @@
 module Basic.Data.Result
 
+import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
+import Basic.Derive.Equal.{ derive_equal }
 
-pub enum Result[L, R] {
-  ok(L)
-  err(R)
+pub enum Result[T, E] {
+  ok(T)
+  err(E)
+}
+
+pub fn[T, E] result_impl_equal(offer t : Equal[T], offer e : Equal[E]) -> Equal[Result[T, E]] {
+  derive[Equal, Result[T, E]]()
 }
 
 pub fn[L, R, T, E : Effect] map(result : Result[L, R], f : (L) -> T ! E) -> Result[T, R] ! E {
@@ -15,3 +21,23 @@ pub fn[L, R, T, E : Effect] map(result : Result[L, R], f : (L) -> T ! E) -> Resu
     err(e) => err(e)
   }
 }
+
+pub fn[L, R] pure(x : L) -> Result[L, R] {
+  ok(x)
+}
+
+pub fn[L, R, T, E : Effect] apply(
+  result : Result[L, R],
+  f : Result[(L) -> T ! E, R]
+) -> Result[T, R] ! E {
+  match result {
+    err(e) => err(e)
+    ok(o) =>
+      match f {
+        err(fe) => err(fe)
+        ok(fo) => ok(fo(o))
+      }
+  }
+}
+
+
