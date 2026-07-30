@@ -1,0 +1,58 @@
+module Basic.Data.F32
+
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
+import Basic.Builtins.{
+  f32_add,
+  f32_sub,
+  f32_mul,
+  f32_div,
+  f32_neg,
+  f32_equal,
+  f32_less,
+  f32_inf,
+  f32_ninf,
+  f32_nan,
+  i64_to_f32,
+  f32_to_i64,
+  f32_to_f64,
+  f64_to_f32
+}
+
+pub offer f32_impl_add : Add[F32] = Add::{ add: f32_add }
+
+pub offer f32_impl_sub : Sub[F32] = Sub::{ sub: f32_sub }
+
+pub offer f32_impl_mul : Mul[F32] = Mul::{ mul: f32_mul }
+
+pub offer f32_impl_div : Div[F32] = Div::{ div: f32_div }
+
+pub offer f32_impl_neg : Neg[F32] = Neg::{ neg: f32_neg }
+
+pub offer f32_impl_equal : Equal[F32] = Equal::{ equal: f32_equal }
+
+pub offer f32_impl_compare : Compare[F32] = Compare::{ equal_impl: f32_impl_equal, less: f32_less }
+
+pub let inf : F32 = f32_inf
+
+pub let ninf : F32 = f32_ninf
+
+pub let nan : F32 = f32_nan
+
+pub fn from_i64(value : I64) -> F32 {
+  i64_to_f32(value)
+}
+
+// UB if the argument is NaN, infinite, or outside the I64 range.
+pub fn to_i64(value : F32) -> I64 {
+  f32_to_i64(value)
+}
+
+pub fn to_f64(value : F32) -> F64 {
+  f32_to_f64(value)
+}
+
+pub fn from_f64(value : F64) -> F32 {
+  f64_to_f32(value)
+}

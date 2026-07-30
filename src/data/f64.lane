@@ -1,0 +1,37 @@
+module Basic.Data.F64
+
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
+import Basic.Builtins.{
+  f64_add,
+  f64_sub,
+  f64_mul,
+  f64_div,
+  f64_neg,
+  f64_equal,
+  f64_less,
+  f64_inf,
+  f64_ninf,
+  f64_nan
+}
+
+pub offer f64_impl_add : Add[F64] = Add::{ add: f64_add }
+
+pub offer f64_impl_sub : Sub[F64] = Sub::{ sub: f64_sub }
+
+pub offer f64_impl_mul : Mul[F64] = Mul::{ mul: f64_mul }
+
+pub offer f64_impl_div : Div[F64] = Div::{ div: f64_div }
+
+pub offer f64_impl_neg : Neg[F64] = Neg::{ neg: f64_neg }
+
+pub offer f64_impl_equal : Equal[F64] = Equal::{ equal: f64_equal }
+
+pub offer f64_impl_compare : Compare[F64] = Compare::{ equal_impl: f64_impl_equal, less: f64_less }
+
+pub let inf : F64 = f64_inf
+
+pub let ninf : F64 = f64_ninf
+
+pub let nan : F64 = f64_nan

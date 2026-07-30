@@ -2,7 +2,7 @@ module Basic.Data.List
 
 import Basic.Data.Tuple.{ Tuple }
 import Basic.Data.Option.{ Option }
-import Basic.Data.Int.{ int_impl_add, int_impl_sub, int_impl_compare, int_impl_equal }
+import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_compare, i64_impl_equal }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Map.{ Mappable }
@@ -26,7 +26,7 @@ pub offer fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
   derive[Equal, List[T]]()
 }
 
-pub fn[T] length(list : List[T]) -> Int {
+pub fn[T] length(list : List[T]) -> I64 {
   match list {
     empty() => 0
     cons(_x, xs) => length(xs) + 1
@@ -49,7 +49,7 @@ pub fn[T, R, E : Effect] map(list : List[T], f : (T) -> R ! E) -> List[R] ! E {
 
 pub offer list_impl_mappable : Mappable[List] = Mappable::{ map }
 
-pub fn[T] elem(list : List[T], index : Int) -> T ! OutOfBound {
+pub fn[T] elem(list : List[T], index : I64) -> T ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index == 0 {

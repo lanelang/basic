@@ -14,12 +14,12 @@ import Basic.Trait.Iso.{ Iso }
 // For example, deriving `Equal[Point]` for
 //
 //   struct Point {
-//     x : Int
-//     y : Int
+//     x : I64
+//     y : I64
 //   }
 //
-// requires a `Deriver[Equal]` and an `Equal[Int]`. The compiler represents the
-// record as `Product[Int, Product[Int, Unit]]`, constructs an `Iso` between
+// requires a `Deriver[Equal]` and an `Equal[I64]`. The compiler represents the
+// record as `Product[I64, Product[I64, Unit]]`, constructs an `Iso` between
 // `Point` and that representation, and combines the operations below.
 //
 // `Deriver[C]` carries no compiler-assumed algebraic laws. The selected

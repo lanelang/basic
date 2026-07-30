@@ -1,13 +1,13 @@
 module Basic.Data.Byte
 
-import Basic.Builtins.{ byte_to_int, int_to_byte }
+import Basic.Builtins.{ byte_to_i64, i64_to_byte }
 
-// Zero-extend a Byte value to Int.
-pub fn to_int(value : Byte) -> Int {
-  byte_to_int(value)
+// Zero-extend a Byte value to I64.
+pub fn to_i64(value : Byte) -> I64 {
+  byte_to_i64(value)
 }
 
-// Keep the low eight bits of an Int and return the corresponding Byte.
-pub fn from_int(value : Int) -> Byte {
-  int_to_byte(value)
+// Keep the low eight bits of an I64 and return the corresponding Byte.
+pub fn from_i64(value : I64) -> Byte {
+  i64_to_byte(value)
 }

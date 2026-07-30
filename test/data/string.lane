@@ -6,7 +6,7 @@ import Basic.Data.Bytes as ByteSeq
 import Basic.Data.Char as Char
 import Basic.Data.String as String
 import Basic.Data.Option.{ Option }
-import Basic.Data.Int.{ int_impl_equal }
+import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Eff.Bound.{ OutOfBound }
 import Test.Assert.{ Assert }
 
@@ -76,14 +76,14 @@ fn string_less(left : String, right : String) -> Bool {
 }
 
 pub fn test_char() -> Unit ! Assert {
-  assert_some_char(Char.from_int(0), '\0')
-  assert_some_char(Char.from_int(233), 'é')
-  assert_some_char(Char.from_int(20320), '你')
-  assert_some_char(Char.from_int(128512), '😀')
-  assert_true!(is_none(Char.from_int(Builtins.int_neg(1))))
-  assert_true!(is_none(Char.from_int(55296)))
-  assert_true!(is_none(Char.from_int(1114112)))
-  assert_eq!(Char.to_int('😀'), 128512, int_impl_equal)
+  assert_some_char(Char.from_i64(0), '\0')
+  assert_some_char(Char.from_i64(233), 'é')
+  assert_some_char(Char.from_i64(20320), '你')
+  assert_some_char(Char.from_i64(128512), '😀')
+  assert_true!(is_none(Char.from_i64(Builtins.i64_neg(1))))
+  assert_true!(is_none(Char.from_i64(55296)))
+  assert_true!(is_none(Char.from_i64(1114112)))
+  assert_eq!(Char.to_i64('😀'), 128512, i64_impl_equal)
   assert_true!(string_equal(Char.to_string('A'), "A"))
   assert_true!(string_equal(Char.to_string('é'), "é"))
   assert_true!(string_equal(Char.to_string('你'), "你"))
@@ -93,8 +93,8 @@ pub fn test_char() -> Unit ! Assert {
 
 pub fn test_string() -> Unit ! Assert {
   let text = "Aé中😀\0"
-  assert_eq!(String.byte_length(text), 11, int_impl_equal)
-  assert_eq!(String.scalar_count(text), 5, int_impl_equal)
+  assert_eq!(String.byte_length(text), 11, i64_impl_equal)
+  assert_eq!(String.scalar_count(text), 5, i64_impl_equal)
   assert_true!(String.is_empty(""))
   assert_false!(String.is_empty(text))
   assert_true!(string_equal(String.from_char('中'), "中"))
@@ -141,7 +141,7 @@ pub fn test_string() -> Unit ! Assert {
   assert_true!(
     is_out_of_bounds[Char](
       fn() {
-        String.scalar_at(text, Builtins.int_neg(1))
+        String.scalar_at(text, Builtins.i64_neg(1))
       }
     )
   )
@@ -180,23 +180,23 @@ pub fn test_string() -> Unit ! Assert {
 pub fn test_utf8_and_bytes() -> Unit ! Assert {
   let text = "Aé中😀\0"
   let encoded = String.encode_utf8(text)
-  assert_eq!(ByteSeq.bytes_length(encoded), 11, int_impl_equal)
+  assert_eq!(ByteSeq.bytes_length(encoded), 11, i64_impl_equal)
   assert_true!(ByteSeq.is_valid_utf8(encoded))
   assert_some_string(String.decode_utf8(encoded), text)
   let malformed = expect_in_bounds(
     fn() {
-      ByteSeq.bytes_make(1, Byte.from_int(255))
+      ByteSeq.bytes_make(1, Byte.from_i64(255))
     },
-    Builtins.bytes_make(0, Byte.from_int(0))
+    Builtins.bytes_make(0, Byte.from_i64(0))
   )
   assert_true!(is_none(String.decode_utf8(malformed)))
   let original = "abc"
   let original_bytes = String.encode_utf8(original)
   let changed = expect_in_bounds(
     fn() {
-      ByteSeq.bytes_set(original_bytes, 0, Byte.from_int(122))
+      ByteSeq.bytes_set(original_bytes, 0, Byte.from_i64(122))
     },
-    Builtins.bytes_make(0, Byte.from_int(0))
+    Builtins.bytes_make(0, Byte.from_i64(0))
   )
   assert_true!(string_equal(original, "abc"))
   assert_some_string(String.decode_utf8(changed), "zbc")
@@ -204,13 +204,13 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
     fn() {
       ByteSeq.bytes_slice(encoded, 0, 6)
     },
-    Builtins.bytes_make(0, Byte.from_int(0))
+    Builtins.bytes_make(0, Byte.from_i64(0))
   )
   let suffix = expect_in_bounds(
     fn() {
       ByteSeq.bytes_slice(encoded, 6, 5)
     },
-    Builtins.bytes_make(0, Byte.from_int(0))
+    Builtins.bytes_make(0, Byte.from_i64(0))
   )
   assert_true!(ByteSeq.bytes_equal(ByteSeq.bytes_concat(prefix, suffix), encoded))
   assert_true!(

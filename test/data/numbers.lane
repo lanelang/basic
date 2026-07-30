@@ -1,0 +1,64 @@
+module Test.Data.Numbers
+
+import Basic.Builtins as Builtins
+import Basic.Data.I64 as I64
+import Basic.Data.F64 as F64
+import Basic.Data.F32 as F32
+import Test.Assert.{ Assert }
+
+pub fn test_i64() -> Unit ! Assert {
+  let add = I64.i64_impl_add
+  let sub = I64.i64_impl_sub
+  let mul = I64.i64_impl_mul
+  let div = I64.i64_impl_div
+  let rem = I64.i64_impl_rem
+  let neg = I64.i64_impl_neg
+  let equal = I64.i64_impl_equal
+  let compare = I64.i64_impl_compare
+  assert_eq!(add.add(40, 2), 42, equal)
+  assert_eq!(sub.sub(44, 2), 42, equal)
+  assert_eq!(mul.mul(6, 7), 42, equal)
+  assert_eq!(div.div(85, 2), 42, equal)
+  assert_eq!(rem.rem(85, 43), 42, equal)
+  assert_eq!(neg.neg(Builtins.i64_neg(42)), 42, equal)
+  assert_true!(compare.less(41, 42))
+}
+
+pub fn test_f64() -> Unit ! Assert {
+  let add = F64.f64_impl_add
+  let sub = F64.f64_impl_sub
+  let mul = F64.f64_impl_mul
+  let div = F64.f64_impl_div
+  let neg = F64.f64_impl_neg
+  let equal = F64.f64_impl_equal
+  let compare = F64.f64_impl_compare
+  assert_true!(equal.equal(add.add(1.5, 2.25), 3.75))
+  assert_true!(equal.equal(sub.sub(4.0, 1.5), 2.5))
+  assert_true!(equal.equal(mul.mul(1.5, 2.0), 3.0))
+  assert_true!(equal.equal(div.div(7.5, 2.5), 3.0))
+  assert_true!(equal.equal(neg.neg(neg.neg(1.5)), 1.5))
+  assert_true!(compare.less(F64.ninf, F64.inf))
+  assert_false!(equal.equal(F64.nan, F64.nan))
+}
+
+pub fn test_f32() -> Unit ! Assert {
+  let add = F32.f32_impl_add
+  let sub = F32.f32_impl_sub
+  let mul = F32.f32_impl_mul
+  let div = F32.f32_impl_div
+  let neg = F32.f32_impl_neg
+  let equal = F32.f32_impl_equal
+  let compare = F32.f32_impl_compare
+  let one = F32.from_i64(1)
+  let two = F32.from_i64(2)
+  let three = F32.from_i64(3)
+  assert_true!(equal.equal(add.add(one, two), three))
+  assert_true!(equal.equal(sub.sub(three, one), two))
+  assert_true!(equal.equal(mul.mul(one, two), two))
+  assert_true!(equal.equal(div.div(two, two), one))
+  assert_true!(equal.equal(neg.neg(neg.neg(one)), one))
+  assert_true!(compare.less(F32.ninf, F32.inf))
+  assert_false!(equal.equal(F32.nan, F32.nan))
+  assert_eq!(F32.to_i64(F32.from_i64(42)), 42, I64.i64_impl_equal)
+  assert_true!(equal.equal(F32.from_f64(F32.to_f64(F32.from_i64(42))), F32.from_i64(42)))
+}

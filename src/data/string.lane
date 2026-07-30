@@ -8,95 +8,95 @@ import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 
-fn byte_value(bytes : Bytes, index : Int) -> Int {
-  Builtins.byte_to_int(Builtins.bytes_get(bytes, index))
+fn byte_value(bytes : Bytes, index : I64) -> I64 {
+  Builtins.byte_to_i64(Builtins.bytes_get(bytes, index))
 }
 
-fn utf8_width(bytes : Bytes, offset : Int) -> Int {
+fn utf8_width(bytes : Bytes, offset : I64) -> I64 {
   let first = byte_value(bytes, offset)
-  if Builtins.int_less(first, 128) {
+  if Builtins.i64_less(first, 128) {
     1
-  } else if Builtins.int_less(first, 224) {
+  } else if Builtins.i64_less(first, 224) {
     2
-  } else if Builtins.int_less(first, 240) {
+  } else if Builtins.i64_less(first, 240) {
     3
   } else {
     4
   }
 }
 
-fn decode_scalar(bytes : Bytes, offset : Int) -> Char {
+fn decode_scalar(bytes : Bytes, offset : I64) -> Char {
   let first = byte_value(bytes, offset)
   let width = utf8_width(bytes, offset)
-  let scalar = if Builtins.int_equal(width, 1) {
+  let scalar = if Builtins.i64_equal(width, 1) {
     first
-  } else if Builtins.int_equal(width, 2) {
-    Builtins.int_add(
-      Builtins.int_mul(Builtins.int_sub(first, 192), 64),
-      Builtins.int_sub(byte_value(bytes, Builtins.int_add(offset, 1)), 128)
+  } else if Builtins.i64_equal(width, 2) {
+    Builtins.i64_add(
+      Builtins.i64_mul(Builtins.i64_sub(first, 192), 64),
+      Builtins.i64_sub(byte_value(bytes, Builtins.i64_add(offset, 1)), 128)
     )
-  } else if Builtins.int_equal(width, 3) {
-    Builtins.int_add(
-      Builtins.int_add(
-        Builtins.int_mul(Builtins.int_sub(first, 224), 4096),
-        Builtins.int_mul(Builtins.int_sub(byte_value(bytes, Builtins.int_add(offset, 1)), 128), 64)
+  } else if Builtins.i64_equal(width, 3) {
+    Builtins.i64_add(
+      Builtins.i64_add(
+        Builtins.i64_mul(Builtins.i64_sub(first, 224), 4096),
+        Builtins.i64_mul(Builtins.i64_sub(byte_value(bytes, Builtins.i64_add(offset, 1)), 128), 64)
       ),
-      Builtins.int_sub(byte_value(bytes, Builtins.int_add(offset, 2)), 128)
+      Builtins.i64_sub(byte_value(bytes, Builtins.i64_add(offset, 2)), 128)
     )
   } else {
-    Builtins.int_add(
-      Builtins.int_add(
-        Builtins.int_add(
-          Builtins.int_mul(Builtins.int_sub(first, 240), 262144),
-          Builtins.int_mul(
-            Builtins.int_sub(byte_value(bytes, Builtins.int_add(offset, 1)), 128),
+    Builtins.i64_add(
+      Builtins.i64_add(
+        Builtins.i64_add(
+          Builtins.i64_mul(Builtins.i64_sub(first, 240), 262144),
+          Builtins.i64_mul(
+            Builtins.i64_sub(byte_value(bytes, Builtins.i64_add(offset, 1)), 128),
             4096
           )
         ),
-        Builtins.int_mul(Builtins.int_sub(byte_value(bytes, Builtins.int_add(offset, 2)), 128), 64)
+        Builtins.i64_mul(Builtins.i64_sub(byte_value(bytes, Builtins.i64_add(offset, 2)), 128), 64)
       ),
-      Builtins.int_sub(byte_value(bytes, Builtins.int_add(offset, 3)), 128)
+      Builtins.i64_sub(byte_value(bytes, Builtins.i64_add(offset, 3)), 128)
     )
   }
-  Builtins.s32_to_char(Builtins.int_to_s32(scalar))
+  Builtins.i32_to_char(Builtins.i64_to_i32(scalar))
 }
 
-fn count_scalars(bytes : Bytes, offset : Int, count : Int) -> Int {
-  if Builtins.int_equal(offset, Builtins.bytes_length(bytes)) {
+fn count_scalars(bytes : Bytes, offset : I64, count : I64) -> I64 {
+  if Builtins.i64_equal(offset, Builtins.bytes_length(bytes)) {
     count
   } else {
     count_scalars(
       bytes,
-      Builtins.int_add(offset, utf8_width(bytes, offset)),
-      Builtins.int_add(count, 1)
+      Builtins.i64_add(offset, utf8_width(bytes, offset)),
+      Builtins.i64_add(count, 1)
     )
   }
 }
 
-fn advance_scalars(bytes : Bytes, offset : Int, count : Int) -> Int {
-  if Builtins.int_equal(count, 0) {
+fn advance_scalars(bytes : Bytes, offset : I64, count : I64) -> I64 {
+  if Builtins.i64_equal(count, 0) {
     offset
   } else {
     advance_scalars(
       bytes,
-      Builtins.int_add(offset, utf8_width(bytes, offset)),
-      Builtins.int_sub(count, 1)
+      Builtins.i64_add(offset, utf8_width(bytes, offset)),
+      Builtins.i64_sub(count, 1)
     )
   }
 }
 
 fn[R, E : Effect] foldl_bytes(
   bytes : Bytes,
-  offset : Int,
+  offset : I64,
   accumulator : R,
   f : (R, Char) -> R ! E
 ) -> R ! E {
-  if Builtins.int_equal(offset, Builtins.bytes_length(bytes)) {
+  if Builtins.i64_equal(offset, Builtins.bytes_length(bytes)) {
     accumulator
   } else {
     foldl_bytes(
       bytes,
-      Builtins.int_add(offset, utf8_width(bytes, offset)),
+      Builtins.i64_add(offset, utf8_width(bytes, offset)),
       f(accumulator, decode_scalar(bytes, offset)),
       f
     )
@@ -107,9 +107,9 @@ fn string_equal(left : String, right : String) -> Bool {
   Builtins.bytes_equal(Builtins.string_to_bytes(left), Builtins.string_to_bytes(right))
 }
 
-fn string_less_from(left : Bytes, left_offset : Int, right : Bytes, right_offset : Int) -> Bool {
-  let left_done = Builtins.int_equal(left_offset, Builtins.bytes_length(left))
-  let right_done = Builtins.int_equal(right_offset, Builtins.bytes_length(right))
+fn string_less_from(left : Bytes, left_offset : I64, right : Bytes, right_offset : I64) -> Bool {
+  let left_done = Builtins.i64_equal(left_offset, Builtins.bytes_length(left))
+  let right_done = Builtins.i64_equal(right_offset, Builtins.bytes_length(right))
   if left_done {
     if right_done {
       false
@@ -119,17 +119,17 @@ fn string_less_from(left : Bytes, left_offset : Int, right : Bytes, right_offset
   } else if right_done {
     false
   } else {
-    let left_scalar = Builtins.char_to_s32(decode_scalar(left, left_offset))
-    let right_scalar = Builtins.char_to_s32(decode_scalar(right, right_offset))
-    if Builtins.s32_equal(left_scalar, right_scalar) {
+    let left_scalar = Builtins.char_to_i32(decode_scalar(left, left_offset))
+    let right_scalar = Builtins.char_to_i32(decode_scalar(right, right_offset))
+    if Builtins.i32_equal(left_scalar, right_scalar) {
       string_less_from(
         left,
-        Builtins.int_add(left_offset, utf8_width(left, left_offset)),
+        Builtins.i64_add(left_offset, utf8_width(left, left_offset)),
         right,
-        Builtins.int_add(right_offset, utf8_width(right, right_offset))
+        Builtins.i64_add(right_offset, utf8_width(right, right_offset))
       )
     } else {
-      Builtins.s32_less(left_scalar, right_scalar)
+      Builtins.i32_less(left_scalar, right_scalar)
     }
   }
 }
@@ -153,18 +153,18 @@ pub offer string_impl_monoid : Monoid[String] = Monoid::{
 }
 
 // Return the number of bytes in the canonical UTF-8 representation.
-pub fn byte_length(value : String) -> Int {
+pub fn byte_length(value : String) -> I64 {
   Builtins.bytes_length(Builtins.string_to_bytes(value))
 }
 
 // Count Unicode scalar values without normalizing or interpreting grapheme clusters.
-pub fn scalar_count(value : String) -> Int {
+pub fn scalar_count(value : String) -> I64 {
   count_scalars(Builtins.string_to_bytes(value), 0, 0)
 }
 
 // Report whether the String contains no Unicode scalar values.
 pub fn is_empty(value : String) -> Bool {
-  Builtins.int_equal(byte_length(value), 0)
+  Builtins.i64_equal(byte_length(value), 0)
 }
 
 // Encode one Char as a one-scalar String.
@@ -180,13 +180,13 @@ pub fn concat(left : String, right : String) -> String {
 }
 
 // Read one zero-based Unicode scalar, reporting an invalid index through OutOfBound.
-pub fn scalar_at(value : String, index : Int) -> Char ! OutOfBound {
-  if Builtins.int_less(index, 0) {
+pub fn scalar_at(value : String, index : I64) -> Char ! OutOfBound {
+  if Builtins.i64_less(index, 0) {
     out_of_min!()
   } else {
     let bytes = Builtins.string_to_bytes(value)
     let count = count_scalars(bytes, 0, 0)
-    if Builtins.int_less(index, count) {
+    if Builtins.i64_less(index, count) {
       decode_scalar(bytes, advance_scalars(bytes, 0, index))
     } else {
       out_of_max!()
@@ -195,23 +195,23 @@ pub fn scalar_at(value : String, index : Int) -> Char ! OutOfBound {
 }
 
 // Copy a range measured in Unicode scalar values, reporting an invalid range through OutOfBound.
-pub fn slice(value : String, start : Int, length : Int) -> String ! OutOfBound {
-  if Builtins.int_less(start, 0) {
+pub fn slice(value : String, start : I64, length : I64) -> String ! OutOfBound {
+  if Builtins.i64_less(start, 0) {
     out_of_min!()
-  } else if Builtins.int_less(length, 0) {
+  } else if Builtins.i64_less(length, 0) {
     out_of_min!()
   } else {
     let bytes = Builtins.string_to_bytes(value)
     let count = count_scalars(bytes, 0, 0)
-    if Builtins.int_less(count, start) {
+    if Builtins.i64_less(count, start) {
       out_of_max!()
-    } else if Builtins.int_less(Builtins.int_sub(count, start), length) {
+    } else if Builtins.i64_less(Builtins.i64_sub(count, start), length) {
       out_of_max!()
     } else {
       let start_offset = advance_scalars(bytes, 0, start)
       let end_offset = advance_scalars(bytes, start_offset, length)
       Builtins.bytes_to_string(
-        Builtins.bytes_slice(bytes, start_offset, Builtins.int_sub(end_offset, start_offset))
+        Builtins.bytes_slice(bytes, start_offset, Builtins.i64_sub(end_offset, start_offset))
       )
     }
   }

@@ -1,0 +1,22 @@
+module Basic.Data.I64
+
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Builtins.{ i64_add, i64_sub, i64_mul, i64_div, i64_rem, i64_neg, i64_equal, i64_less }
+
+pub offer i64_impl_add : Add[I64] = Add::{ add: i64_add }
+
+pub offer i64_impl_sub : Sub[I64] = Sub::{ sub: i64_sub }
+
+pub offer i64_impl_mul : Mul[I64] = Mul::{ mul: i64_mul }
+
+pub offer i64_impl_div : Div[I64] = Div::{ div: i64_div }
+
+pub offer i64_impl_rem : Rem[I64] = Rem::{ rem: i64_rem }
+
+pub offer i64_impl_neg : Neg[I64] = Neg::{ neg: i64_neg }
+
+pub offer i64_impl_equal : Equal[I64] = Equal::{ equal: i64_equal }
+
+pub offer i64_impl_compare : Compare[I64] = Compare::{ equal_impl: i64_impl_equal, less: i64_less }

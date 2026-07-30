@@ -2,11 +2,11 @@ module Basic.Data.Bytes
 
 import Basic.Builtins as Builtins
 import Basic.Ops.{ op_less, op_greater_eq, op_sub }
-import Basic.Data.Int.{ int_impl_compare, int_impl_sub }
+import Basic.Data.I64.{ i64_impl_compare, i64_impl_sub }
 import Basic.Eff.Bound.{ OutOfBound }
 
 // Create an immutable byte sequence, reporting a negative length through OutOfBound.
-pub fn bytes_make(len : Int, init : Byte) -> Bytes ! OutOfBound {
+pub fn bytes_make(len : I64, init : Byte) -> Bytes ! OutOfBound {
   if len < 0 {
     out_of_min!()
   } else {
@@ -15,12 +15,12 @@ pub fn bytes_make(len : Int, init : Byte) -> Bytes ! OutOfBound {
 }
 
 // Return the number of bytes in the sequence.
-pub fn bytes_length(bytes : Bytes) -> Int {
+pub fn bytes_length(bytes : Bytes) -> I64 {
   Builtins.bytes_length(bytes)
 }
 
 // Read one byte, reporting a negative or past-the-end index through OutOfBound.
-pub fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
+pub fn bytes_get(bytes : Bytes, index : I64) -> Byte ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index >= Builtins.bytes_length(bytes) {
@@ -31,7 +31,7 @@ pub fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
 }
 
 // Return a sequence with one byte replaced, preserving the original value and reporting an invalid index through OutOfBound.
-pub fn bytes_set(bytes : Bytes, index : Int, byte : Byte) -> Bytes ! OutOfBound {
+pub fn bytes_set(bytes : Bytes, index : I64, byte : Byte) -> Bytes ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index >= Builtins.bytes_length(bytes) {
@@ -52,7 +52,7 @@ pub fn bytes_concat(left : Bytes, right : Bytes) -> Bytes {
 }
 
 // Copy the selected byte range, reporting negative or out-of-bounds ranges through OutOfBound.
-pub fn bytes_slice(bytes : Bytes, start : Int, length : Int) -> Bytes ! OutOfBound {
+pub fn bytes_slice(bytes : Bytes, start : I64, length : I64) -> Bytes ! OutOfBound {
   let bytes_length = Builtins.bytes_length(bytes)
   if start < 0 {
     out_of_min!()

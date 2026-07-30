@@ -1,88 +1,117 @@
 module Basic.Builtins
 
 // UB if overflow
-pub let int_add : (Int, Int) -> Int = builtin("%i64_add")
+pub let i64_add : (I64, I64) -> I64 = builtin("%i64_add")
 
 // UB if overflow
-pub let int_sub : (Int, Int) -> Int = builtin("%i64_sub")
+pub let i64_sub : (I64, I64) -> I64 = builtin("%i64_sub")
 
 // UB if overflow
-pub let int_mul : (Int, Int) -> Int = builtin("%i64_mul")
+pub let i64_mul : (I64, I64) -> I64 = builtin("%i64_mul")
 
 // UB if divisor is zero
-pub let int_div : (Int, Int) -> Int = builtin("%i64_div")
+pub let i64_div : (I64, I64) -> I64 = builtin("%i64_div")
 
 // UB if divisor is zero
-pub let int_rem : (Int, Int) -> Int = builtin("%i64_rem")
+pub let i64_rem : (I64, I64) -> I64 = builtin("%i64_rem")
 
 // UB if argument is -2^63
-pub let int_neg : (Int) -> Int = builtin("%i64_neg")
+pub let i64_neg : (I64) -> I64 = builtin("%i64_neg")
 
-pub let int_equal : (Int, Int) -> Bool = builtin("%i64_equal")
+pub let i64_equal : (I64, I64) -> Bool = builtin("%i64_equal")
 
-pub let int_less : (Int, Int) -> Bool = builtin("%i64_less")
+pub let i64_less : (I64, I64) -> Bool = builtin("%i64_less")
 
-pub let double_add : (Double, Double) -> Double = builtin("%f64_add")
+pub let f64_add : (F64, F64) -> F64 = builtin("%f64_add")
 
-pub let double_sub : (Double, Double) -> Double = builtin("%f64_sub")
+pub let f64_sub : (F64, F64) -> F64 = builtin("%f64_sub")
 
-pub let double_mul : (Double, Double) -> Double = builtin("%f64_mul")
+pub let f64_mul : (F64, F64) -> F64 = builtin("%f64_mul")
 
-pub let double_div : (Double, Double) -> Double = builtin("%f64_div")
+pub let f64_div : (F64, F64) -> F64 = builtin("%f64_div")
 
-pub let double_neg : (Double) -> Double = builtin("%f64_neg")
+pub let f64_neg : (F64) -> F64 = builtin("%f64_neg")
 
-pub let double_equal : (Double, Double) -> Bool = builtin("%f64_equal")
+pub let f64_equal : (F64, F64) -> Bool = builtin("%f64_equal")
 
-pub let double_less : (Double, Double) -> Bool = builtin("%f64_less")
+pub let f64_less : (F64, F64) -> Bool = builtin("%f64_less")
 
-pub let double_inf : Double = builtin("%f64_inf")
+pub let f64_inf : F64 = builtin("%f64_inf")
 
-pub let double_ninf : Double = builtin("%f64_ninf")
+pub let f64_ninf : F64 = builtin("%f64_ninf")
 
-pub let double_nan : Double = builtin("%f64_nan")
+pub let f64_nan : F64 = builtin("%f64_nan")
 
-pub let s32_add : (S32, S32) -> S32 = builtin("%i32_add")
+pub let f32_add : (F32, F32) -> F32 = builtin("%f32_add")
 
-pub let s32_sub : (S32, S32) -> S32 = builtin("%i32_sub")
+pub let f32_sub : (F32, F32) -> F32 = builtin("%f32_sub")
 
-pub let s32_mul : (S32, S32) -> S32 = builtin("%i32_mul")
+pub let f32_mul : (F32, F32) -> F32 = builtin("%f32_mul")
+
+pub let f32_div : (F32, F32) -> F32 = builtin("%f32_div")
+
+pub let f32_neg : (F32) -> F32 = builtin("%f32_neg")
+
+pub let f32_equal : (F32, F32) -> Bool = builtin("%f32_equal")
+
+pub let f32_less : (F32, F32) -> Bool = builtin("%f32_less")
+
+pub let f32_inf : F32 = builtin("%f32_inf")
+
+pub let f32_ninf : F32 = builtin("%f32_ninf")
+
+pub let f32_nan : F32 = builtin("%f32_nan")
+
+pub let i64_to_f32 : (I64) -> F32 = builtin("%i64_to_f32")
+
+// UB if the argument is NaN, infinite, or outside the I64 range
+pub let f32_to_i64 : (F32) -> I64 = builtin("%f32_to_i64")
+
+pub let f32_to_f64 : (F32) -> F64 = builtin("%f32_to_f64")
+
+pub let f64_to_f32 : (F64) -> F32 = builtin("%f64_to_f32")
+
+pub let i32_add : (I32, I32) -> I32 = builtin("%i32_add")
+
+pub let i32_sub : (I32, I32) -> I32 = builtin("%i32_sub")
+
+pub let i32_mul : (I32, I32) -> I32 = builtin("%i32_mul")
 
 // UB if divisor is zero or the quotient is not representable
-pub let s32_div : (S32, S32) -> S32 = builtin("%i32_div")
+pub let i32_div : (I32, I32) -> I32 = builtin("%i32_div")
 
 // UB if divisor is zero
-pub let s32_rem : (S32, S32) -> S32 = builtin("%i32_rem")
+pub let i32_rem : (I32, I32) -> I32 = builtin("%i32_rem")
 
-pub let s32_neg : (S32) -> S32 = builtin("%i32_neg")
+pub let i32_neg : (I32) -> I32 = builtin("%i32_neg")
 
-pub let s32_equal : (S32, S32) -> Bool = builtin("%i32_equal")
+pub let i32_equal : (I32, I32) -> Bool = builtin("%i32_equal")
 
-pub let s32_less : (S32, S32) -> Bool = builtin("%i32_less")
+pub let i32_less : (I32, I32) -> Bool = builtin("%i32_less")
 
-pub let s32_to_int : (S32) -> Int = builtin("%s32_to_int")
+pub let i32_to_i64 : (I32) -> I64 = builtin("%i32_to_i64")
 
-pub let int_to_s32 : (Int) -> S32 = builtin("%int_to_s32")
+pub let i64_to_i32 : (I64) -> I32 = builtin("%i64_to_i32")
 
-pub let char_to_s32 : (Char) -> S32 = builtin("%char_to_s32")
+pub let char_to_i32 : (Char) -> I32 = builtin("%char_to_i32")
 
 // UB unless the argument is a Unicode scalar value
-pub let s32_to_char : (S32) -> Char = builtin("%s32_to_char")
+pub let i32_to_char : (I32) -> Char = builtin("%i32_to_char")
 
-pub let byte_to_int : (Byte) -> Int = builtin("%byte_to_int")
+pub let byte_to_i64 : (Byte) -> I64 = builtin("%byte_to_i64")
 
-pub let int_to_byte : (Int) -> Byte = builtin("%int_to_byte")
+pub let i64_to_byte : (I64) -> Byte = builtin("%i64_to_byte")
 
 // UB if length < 0
-pub let bytes_make : (Int, Byte) -> Bytes = builtin("%bytes_make")
+pub let bytes_make : (I64, Byte) -> Bytes = builtin("%bytes_make")
 
-pub let bytes_length : (Bytes) -> Int = builtin("%bytes_length")
-
-// UB if not (index >= 0 && index < bytes_length)
-pub let bytes_get : (Bytes, Int) -> Byte = builtin("%bytes_get")
+pub let bytes_length : (Bytes) -> I64 = builtin("%bytes_length")
 
 // UB if not (index >= 0 && index < bytes_length)
-pub let bytes_set : (Bytes, Int, Byte) -> Bytes = builtin("%bytes_set")
+pub let bytes_get : (Bytes, I64) -> Byte = builtin("%bytes_get")
+
+// UB if not (index >= 0 && index < bytes_length)
+pub let bytes_set : (Bytes, I64, Byte) -> Bytes = builtin("%bytes_set")
 
 pub let string_to_bytes : (String) -> Bytes = builtin("%string_to_bytes")
 
@@ -96,4 +125,4 @@ pub let bytes_equal : (Bytes, Bytes) -> Bool = builtin("%bytes_equal")
 pub let bytes_concat : (Bytes, Bytes) -> Bytes = builtin("%bytes_concat")
 
 // UB unless start and length select an in-bounds byte range
-pub let bytes_slice : (Bytes, Int, Int) -> Bytes = builtin("%bytes_slice")
+pub let bytes_slice : (Bytes, I64, I64) -> Bytes = builtin("%bytes_slice")

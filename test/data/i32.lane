@@ -1,0 +1,38 @@
+module Test.Data.I32
+
+import Basic.Builtins as Builtins
+import Basic.Data.I32 as I32
+import Basic.Data.I64.{ i64_impl_equal }
+import Test.Assert.{ Assert }
+
+pub fn test_i32() -> Unit ! Assert {
+  let add = I32.i32_impl_add
+  let sub = I32.i32_impl_sub
+  let mul = I32.i32_impl_mul
+  let div = I32.i32_impl_div
+  let rem = I32.i32_impl_rem
+  let neg = I32.i32_impl_neg
+  let equal = I32.i32_impl_equal
+  let compare = I32.i32_impl_compare
+  let maximum = I32.from_i64(2147483647)
+  let minimum_i64 = Builtins.i64_neg(2147483648)
+  let minimum = I32.from_i64(minimum_i64)
+  assert_eq!(I32.to_i64(add.add(maximum, I32.from_i64(1))), minimum_i64, i64_impl_equal)
+  assert_eq!(I32.to_i64(sub.sub(minimum, I32.from_i64(1))), 2147483647, i64_impl_equal)
+  assert_eq!(I32.to_i64(mul.mul(I32.from_i64(65536), I32.from_i64(65536))), 0, i64_impl_equal)
+  assert_eq!(
+    I32.to_i64(div.div(I32.from_i64(Builtins.i64_neg(7)), I32.from_i64(3))),
+    Builtins.i64_neg(2),
+    i64_impl_equal
+  )
+  assert_eq!(
+    I32.to_i64(rem.rem(I32.from_i64(Builtins.i64_neg(7)), I32.from_i64(3))),
+    Builtins.i64_neg(1),
+    i64_impl_equal
+  )
+  assert_eq!(I32.to_i64(rem.rem(minimum, I32.from_i64(Builtins.i64_neg(1)))), 0, i64_impl_equal)
+  assert_eq!(I32.to_i64(neg.neg(minimum)), minimum_i64, i64_impl_equal)
+  assert_eq!(I32.to_i64(I32.from_i64(2147483648)), minimum_i64, i64_impl_equal)
+  assert_true!(equal.equal(I32.from_i64(42), I32.from_i64(42)))
+  assert_true!(compare.less(I32.from_i64(Builtins.i64_neg(1)), I32.from_i64(0)))
+}

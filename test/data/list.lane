@@ -1,7 +1,7 @@
 module Test.Data.List
 
 import Basic.Data.List.*
-import Basic.Data.Int.{ int_impl_add, int_impl_equal }
+import Basic.Data.I64.{ i64_impl_add, i64_impl_equal }
 import Basic.Ops.{ op_add }
 import Basic.Trait.Num.{ Add }
 import Basic.Summon.{ summon, summon_via }
@@ -15,13 +15,13 @@ pub fn test_length() -> Unit ! Assert {
 
 pub fn test_equal() -> Unit ! Assert {
   assert_eq!([1, 2, 3], [1, 2, 3], summon_via())
-  assert_eq![List[Int]]([], [], summon_via())
+  assert_eq![List[I64]]([], [], summon_via())
   assert_not_eq!([1, 2, 3], [1, 2], summon_via())
 }
 
 pub fn test_map() -> Unit ! Assert {
   let l1 = [1, 2, 3]
-  let l2 = map[Int, Int, {}](
+  let l2 = map[I64, I64, {}](
     l1,
     fn(x) {
       x + 2
@@ -32,6 +32,6 @@ pub fn test_map() -> Unit ! Assert {
 
 pub fn test_foldl() -> Unit ! Assert {
   let l1 = [1, 2, 3]
-  let s = foldl(l1, 0, int_impl_add.add)
+  let s = foldl(l1, 0, i64_impl_add.add)
   assert_eq!(s, 6, summon())
 }

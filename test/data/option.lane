@@ -1,7 +1,7 @@
 module Test.Data.Option
 
 import Basic.Data.Option.*
-import Basic.Data.Int.{ int_impl_equal }
+import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Data.Unit.{ unit_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Summon.{ summon_via }
@@ -9,8 +9,8 @@ import Test.Assert.{ Assert }
 
 pub fn test_equal() -> Unit ! Assert {
   assert_eq!(some(1), some(1), summon_via())
-  assert_eq![Option[Int]](none(), none(), summon_via())
+  assert_eq![Option[I64]](none(), none(), summon_via())
   assert_eq![Option[Unit]](none(), none(), summon_via())
-  assert_not_eq![Option[Int]](some(1), none(), summon_via())
-  assert_not_eq![Option[Int]](some(1), some(2), summon_via())
+  assert_not_eq![Option[I64]](some(1), none(), summon_via())
+  assert_not_eq![Option[I64]](some(1), some(2), summon_via())
 }

@@ -1,0 +1,43 @@
+module Basic.Data.I32
+
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Builtins.{
+  i32_add,
+  i32_sub,
+  i32_mul,
+  i32_div,
+  i32_rem,
+  i32_neg,
+  i32_equal,
+  i32_less,
+  i32_to_i64,
+  i64_to_i32
+}
+
+pub offer i32_impl_add : Add[I32] = Add::{ add: i32_add }
+
+pub offer i32_impl_sub : Sub[I32] = Sub::{ sub: i32_sub }
+
+pub offer i32_impl_mul : Mul[I32] = Mul::{ mul: i32_mul }
+
+pub offer i32_impl_div : Div[I32] = Div::{ div: i32_div }
+
+pub offer i32_impl_rem : Rem[I32] = Rem::{ rem: i32_rem }
+
+pub offer i32_impl_neg : Neg[I32] = Neg::{ neg: i32_neg }
+
+pub offer i32_impl_equal : Equal[I32] = Equal::{ equal: i32_equal }
+
+pub offer i32_impl_compare : Compare[I32] = Compare::{ equal_impl: i32_impl_equal, less: i32_less }
+
+// Sign-extend an I32 value to I64.
+pub fn to_i64(value : I32) -> I64 {
+  i32_to_i64(value)
+}
+
+// Keep the low 32 bits of an I64 and interpret them as signed two's complement.
+pub fn from_i64(value : I64) -> I32 {
+  i64_to_i32(value)
+}
