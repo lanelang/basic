@@ -1,9 +1,9 @@
 module Basic.Data.Result
 
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Map.{ Mappable }
-import Basic.Trait.App.{ Applicative }
-import Basic.Trait.Flat.{ FlatMappable }
+// import Basic.Trait.Map.{ Mappable }
+// import Basic.Trait.App.{ Applicative }
+// import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Derive.Equal.{ derive_equal }
 
 pub enum Result[T, E] {
@@ -39,5 +39,3 @@ pub fn[L, R, T, E : Effect] apply(
       }
   }
 }
-
-

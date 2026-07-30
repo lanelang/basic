@@ -1,0 +1,6 @@
+module Basic.Data.Byte
+
+import Basic.Trait.Iso.{ Iso }
+import Basic.Builtins.{ byte_to_int, int_to_byte }
+
+pub offer byte_int_iso : Iso[Byte, Int] = Iso::{ to: byte_to_int, from: int_to_byte }

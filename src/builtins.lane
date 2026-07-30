@@ -38,34 +38,14 @@ pub let double_nan : Double = builtin("%f64_nan")
 
 pub let string_equal : (String, String) -> Bool = builtin("%string_equal")
 
-pub fn bool_and(a : Bool, b : () -> Bool) -> Bool {
-  if a {
-    b()
-  } else {
-    false
-  }
-}
+pub let byte_to_int : (Byte) -> Int = builtin("%byte_to_int")
 
-pub fn bool_or(a : Bool, b : () -> Bool) -> Bool {
-  if a {
-    true
-  } else {
-    b()
-  }
-}
+pub let int_to_byte : (Int) -> Byte = builtin("%int_to_byte")
 
-pub fn bool_not(a : Bool) -> Bool {
-  if a {
-    false
-  } else {
-    true
-  }
-}
+pub let bytes_make : (Int, Byte) -> Bytes = builtin("%bytes_make")
 
-pub fn bool_equal(a : Bool, b : Bool) -> Bool {
-  if a {
-    b
-  } else {
-    bool_not(b)
-  }
-}
+pub let bytes_length : (Bytes) -> Int = builtin("%bytes_length")
+
+pub let bytes_get : (Bytes, Int) -> Byte = builtin("%bytes_get")
+
+pub let bytes_set : (Bytes, Int, Byte) -> Bytes = builtin("%bytes_set")

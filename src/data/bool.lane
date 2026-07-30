@@ -2,7 +2,6 @@ module Basic.Data.Bool
 
 import Basic.Trait.Bool.{ And, Or, Not }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Builtins.{ bool_and, bool_or, bool_not, bool_equal }
 
 pub offer bool_impl_and : And = And::{ and: bool_and }
 
@@ -11,3 +10,35 @@ pub offer bool_impl_or : Or = Or::{ or: bool_or }
 pub offer bool_impl_not : Not = Not::{ not: bool_not }
 
 pub offer bool_impl_equal : Equal[Bool] = Equal::{ equal: bool_equal }
+
+pub fn bool_and(a : Bool, b : () -> Bool) -> Bool {
+  if a {
+    b()
+  } else {
+    false
+  }
+}
+
+pub fn bool_or(a : Bool, b : () -> Bool) -> Bool {
+  if a {
+    true
+  } else {
+    b()
+  }
+}
+
+pub fn bool_not(a : Bool) -> Bool {
+  if a {
+    false
+  } else {
+    true
+  }
+}
+
+pub fn bool_equal(a : Bool, b : Bool) -> Bool {
+  if a {
+    b
+  } else {
+    bool_not(b)
+  }
+}
