@@ -5,15 +5,19 @@ import Basic.Ops.{ op_less, op_greater_eq }
 import Basic.Data.Int.{ int_impl_compare }
 import Basic.Eff.Bound.{ OutOfBound }
 
-pub offer fn bytes_make(len : Int, init : Byte) -> Bytes {
-  Builtins.bytes_make(len, init)
+pub fn bytes_make(len : Int, init : Byte) -> Bytes ! OutOfBound {
+  if len < 0 {
+    out_of_min!()
+  } else {
+    Builtins.bytes_make(len, init)
+  }
 }
 
-pub offer fn bytes_length(bytes : Bytes) -> Int {
+pub fn bytes_length(bytes : Bytes) -> Int {
   Builtins.bytes_length(bytes)
 }
 
-pub offer fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
+pub fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index >= Builtins.bytes_length(bytes) {
@@ -23,7 +27,7 @@ pub offer fn bytes_get(bytes : Bytes, index : Int) -> Byte ! OutOfBound {
   }
 }
 
-pub offer fn bytes_set(bytes : Bytes, index : Int, byte : Byte) -> Bytes ! OutOfBound {
+pub fn bytes_set(bytes : Bytes, index : Int, byte : Byte) -> Bytes ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index >= Builtins.bytes_length(bytes) {

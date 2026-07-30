@@ -1,7 +1,7 @@
 module Basic.Data.Result
 
 import Basic.Trait.Equal.{ Equal }
-// import Basic.Trait.Map.{ Mappable }
+import Basic.Trait.Map.{ Mappable }
 // import Basic.Trait.App.{ Applicative }
 // import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Derive.Equal.{ derive_equal }
@@ -11,11 +11,14 @@ pub enum Result[T, E] {
   err(E)
 }
 
-pub fn[T, E] result_impl_equal(offer t : Equal[T], offer e : Equal[E]) -> Equal[Result[T, E]] {
+pub offer fn[T, E] result_impl_equal(offer t : Equal[T], offer e : Equal[E]) -> Equal[Result[T, E]] {
   derive[Equal, Result[T, E]]()
 }
 
-pub fn[L, R, T, E : Effect] map(result : Result[L, R], f : (L) -> T ! E) -> Result[T, R] ! E {
+pub fn[L, Err, T, Eff : Effect] map(
+  result : Result[L, Err],
+  f : (L) -> T ! Eff
+) -> Result[T, Err] ! Eff {
   match result {
     ok(v) => ok(f(v))
     err(e) => err(e)
@@ -26,10 +29,10 @@ pub fn[L, R] pure(x : L) -> Result[L, R] {
   ok(x)
 }
 
-pub fn[L, R, T, E : Effect] apply(
-  result : Result[L, R],
-  f : Result[(L) -> T ! E, R]
-) -> Result[T, R] ! E {
+pub fn[L, Err, T, Eff : Effect] apply(
+  result : Result[L, Err],
+  f : Result[(L) -> T ! Eff, Err]
+) -> Result[T, Err] ! Eff {
   match result {
     err(e) => err(e)
     ok(o) =>
@@ -37,5 +40,15 @@ pub fn[L, R, T, E : Effect] apply(
         err(fe) => err(fe)
         ok(fo) => ok(fo(o))
       }
+  }
+}
+
+pub type PartialResult[E] = type[T] => Result[T, E]
+
+pub fn[E] partial_result_impl_map() -> Mappable[PartialResult[E]] {
+  Mappable::{
+    map: fn[T, R, Eff : Effect](res : PartialResult[E][T], f : (T) -> R ! Eff) {
+      map[T, E, R, Eff](res, f)
+    }
   }
 }
