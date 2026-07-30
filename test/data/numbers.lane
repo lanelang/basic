@@ -39,6 +39,8 @@ pub fn test_f64() -> Unit ! Assert {
   assert_true!(equal.equal(neg.neg(neg.neg(1.5)), 1.5))
   assert_true!(compare.less(F64.ninf, F64.inf))
   assert_false!(equal.equal(F64.nan, F64.nan))
+  assert_true!(equal.equal(F64.from_i64(42), 42.0))
+  assert_eq!(F64.to_i64(42.75), 42, I64.i64_impl_equal)
 }
 
 pub fn test_f32() -> Unit ! Assert {

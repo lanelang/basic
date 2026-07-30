@@ -13,7 +13,9 @@ import Basic.Builtins.{
   f64_less,
   f64_inf,
   f64_ninf,
-  f64_nan
+  f64_nan,
+  i64_to_f64,
+  f64_to_i64
 }
 
 pub offer f64_impl_add : Add[F64] = Add::{ add: f64_add }
@@ -35,3 +37,12 @@ pub let inf : F64 = f64_inf
 pub let ninf : F64 = f64_ninf
 
 pub let nan : F64 = f64_nan
+
+pub fn from_i64(value : I64) -> F64 {
+  i64_to_f64(value)
+}
+
+// UB if the argument is NaN, infinite, or outside the I64 range.
+pub fn to_i64(value : F64) -> I64 {
+  f64_to_i64(value)
+}

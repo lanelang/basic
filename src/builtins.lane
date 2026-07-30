@@ -42,6 +42,11 @@ pub let f64_ninf : F64 = builtin("%f64_ninf")
 
 pub let f64_nan : F64 = builtin("%f64_nan")
 
+pub let i64_to_f64 : (I64) -> F64 = builtin("%i64_to_f64")
+
+// UB if the argument is NaN, infinite, or outside the I64 range
+pub let f64_to_i64 : (F64) -> I64 = builtin("%f64_to_i64")
+
 pub let f32_add : (F32, F32) -> F32 = builtin("%f32_add")
 
 pub let f32_sub : (F32, F32) -> F32 = builtin("%f32_sub")
