@@ -1,6 +1,5 @@
 module Basic.Data.I32
 
-import Basic.Ops.{ op_neg }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
