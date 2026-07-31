@@ -1,0 +1,27 @@
+module Test.Data.F32
+
+import Basic.Data.I64 as I64
+import Basic.Data.F32 as F32
+import Test.Assert.{ Assert }
+
+pub fn test_f32() -> Unit ! Assert {
+  let add = F32.f32_impl_add
+  let sub = F32.f32_impl_sub
+  let mul = F32.f32_impl_mul
+  let div = F32.f32_impl_div
+  let neg = F32.f32_impl_neg
+  let equal = F32.f32_impl_equal
+  let compare = F32.f32_impl_compare
+  let one = F32.from_i64(1)
+  let two = F32.from_i64(2)
+  let three = F32.from_i64(3)
+  assert_true!(equal.equal(add.add(one, two), three))
+  assert_true!(equal.equal(sub.sub(three, one), two))
+  assert_true!(equal.equal(mul.mul(one, two), two))
+  assert_true!(equal.equal(div.div(two, two), one))
+  assert_true!(equal.equal(neg.neg(neg.neg(one)), one))
+  assert_true!(compare.less(F32.ninf, F32.inf))
+  assert_false!(equal.equal(F32.nan, F32.nan))
+  assert_eq!(F32.to_i64(F32.from_i64(42)), 42, I64.i64_impl_equal)
+  assert_true!(equal.equal(F32.from_f64(F32.to_f64(F32.from_i64(42))), F32.from_i64(42)))
+}

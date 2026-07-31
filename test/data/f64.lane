@@ -1,0 +1,24 @@
+module Test.Data.F64
+
+import Basic.Data.I64 as I64
+import Basic.Data.F64 as F64
+import Test.Assert.{ Assert }
+
+pub fn test_f64() -> Unit ! Assert {
+  let add = F64.f64_impl_add
+  let sub = F64.f64_impl_sub
+  let mul = F64.f64_impl_mul
+  let div = F64.f64_impl_div
+  let neg = F64.f64_impl_neg
+  let equal = F64.f64_impl_equal
+  let compare = F64.f64_impl_compare
+  assert_true!(equal.equal(add.add(1.5, 2.25), 3.75))
+  assert_true!(equal.equal(sub.sub(4.0, 1.5), 2.5))
+  assert_true!(equal.equal(mul.mul(1.5, 2.0), 3.0))
+  assert_true!(equal.equal(div.div(7.5, 2.5), 3.0))
+  assert_true!(equal.equal(neg.neg(neg.neg(1.5)), 1.5))
+  assert_true!(compare.less(F64.ninf, F64.inf))
+  assert_false!(equal.equal(F64.nan, F64.nan))
+  assert_true!(equal.equal(F64.from_i64(42), 42.0))
+  assert_eq!(F64.to_i64(42.75), 42, I64.i64_impl_equal)
+}

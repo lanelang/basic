@@ -4,7 +4,9 @@ import Test.Assert.{ Assert, execute_all_test }
 import Test.Data.Option as Option
 import Test.Data.List as List
 import Test.Data.I32 as I32
-import Test.Data.Numbers as Numbers
+import Test.Data.I64 as I64
+import Test.Data.F64 as F64
+import Test.Data.F32 as F32
 import Test.Data.String as String
 import Test.Eff.Write as Write
 
@@ -34,9 +36,9 @@ pub fn test_utf8_and_bytes_entry() -> Unit ! Io {
 
 fn test_existing_entry() -> Unit ! Io {
   fn() {
-    Numbers.test_i64()
-    Numbers.test_f64()
-    Numbers.test_f32()
+    I64.test_i64()
+    F64.test_f64()
+    F32.test_f32()
     Write.test_write_log()
     Option.test_equal()
     List.test_equal()

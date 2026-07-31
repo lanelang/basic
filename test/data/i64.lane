@@ -1,0 +1,23 @@
+module Test.Data.I64
+
+import Basic.Builtins as Builtins
+import Basic.Data.I64 as I64
+import Test.Assert.{ Assert }
+
+pub fn test_i64() -> Unit ! Assert {
+  let add = I64.i64_impl_add
+  let sub = I64.i64_impl_sub
+  let mul = I64.i64_impl_mul
+  let div = I64.i64_impl_div
+  let rem = I64.i64_impl_rem
+  let neg = I64.i64_impl_neg
+  let equal = I64.i64_impl_equal
+  let compare = I64.i64_impl_compare
+  assert_eq!(add.add(40, 2), 42, equal)
+  assert_eq!(sub.sub(44, 2), 42, equal)
+  assert_eq!(mul.mul(6, 7), 42, equal)
+  assert_eq!(div.div(85, 2), 42, equal)
+  assert_eq!(rem.rem(85, 43), 42, equal)
+  assert_eq!(neg.neg(Builtins.i64_neg(42)), 42, equal)
+  assert_true!(compare.less(41, 42))
+}
