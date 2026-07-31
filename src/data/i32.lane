@@ -1,5 +1,6 @@
 module Basic.Data.I32
 
+import Basic.Ops.{ op_neg }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
@@ -15,6 +16,10 @@ import Basic.Builtins.{
   i32_to_i64,
   i64_to_i32
 }
+
+pub let maximum : I32 = 2147483647
+
+pub let minimum : I32 = -2147483648
 
 pub offer i32_impl_add : Add[I32] = Add::{ add: i32_add }
 

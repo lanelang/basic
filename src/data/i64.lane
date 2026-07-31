@@ -1,9 +1,14 @@
 module Basic.Data.I64
 
+import Basic.Ops.{ op_neg }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Builtins.{ i64_add, i64_sub, i64_mul, i64_div, i64_rem, i64_neg, i64_equal, i64_less }
+
+pub let maximum : I64 = 9223372036854775807
+
+pub let minimum : I64 = -9223372036854775808
 
 pub offer i64_impl_add : Add[I64] = Add::{ add: i64_add }
 
