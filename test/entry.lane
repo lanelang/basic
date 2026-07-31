@@ -1,8 +1,6 @@
 module Test.Entry
 
-import Test.Assert.{ Assert, execute_all_test }
-import Test.Data.Option as Option
-import Test.Data.List as List
+import Test.Assert.{ execute_all_tests }
 import Test.Data.I32 as I32
 import Test.Data.I64 as I64
 import Test.Data.F64 as F64
@@ -10,49 +8,52 @@ import Test.Data.F32 as F32
 import Test.Data.Char as Char
 import Test.Data.String as String
 import Test.Data.Bytes as Bytes
+import Test.Data.Option as Option
+import Test.Data.List as List
 import Test.Eff.Write as Write
 
-pub fn test_i32_entry() -> Unit ! Io {
+fn test_numbers_entry() -> Unit ! Io {
   fn() {
     I32.test_i32()
-  } |> execute_all_test()
-}
-
-pub fn test_char_entry() -> Unit ! Io {
-  fn() {
-    Char.test_char()
-  } |> execute_all_test()
-}
-
-pub fn test_string_entry() -> Unit ! Io {
-  fn() {
-    String.test_string()
-  } |> execute_all_test()
-}
-
-pub fn test_utf8_and_bytes_entry() -> Unit ! Io {
-  fn() {
-    Bytes.test_utf8_and_bytes()
-  } |> execute_all_test()
-}
-
-fn test_existing_entry() -> Unit ! Io {
-  fn() {
     I64.test_i64()
     F64.test_f64()
     F32.test_f32()
-    Write.test_write_log()
+  } |> execute_all_tests()
+}
+
+fn test_char_entry() -> Unit ! Io {
+  fn() {
+    Char.test_char()
+  } |> execute_all_tests()
+}
+
+fn test_string_entry() -> Unit ! Io {
+  fn() {
+    String.test_string()
+  } |> execute_all_tests()
+}
+
+fn test_utf8_and_bytes_entry() -> Unit ! Io {
+  fn() {
+    Bytes.test_utf8_and_bytes()
+  } |> execute_all_tests()
+}
+
+fn test_containers_entry() -> Unit ! Io {
+  fn() {
     Option.test_equal()
     List.test_equal()
     List.test_length()
+    List.test_map()
     List.test_foldl()
-  } |> execute_all_test()
+    Write.test_write_log()
+  } |> execute_all_tests()
 }
 
 pub fn test_entry() -> Unit ! Io {
-  test_existing_entry()
-  test_i32_entry()
+  test_numbers_entry()
   test_char_entry()
   test_string_entry()
   test_utf8_and_bytes_entry()
+  test_containers_entry()
 }

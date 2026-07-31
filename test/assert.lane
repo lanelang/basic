@@ -10,7 +10,7 @@ pub effect Assert {
   assert_not_eq[T](T, T, Equal[T]) -> Unit
 }
 
-pub fn[E : Effect] execute_all_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
+pub fn[E : Effect] execute_all_tests(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
   handle f() with {
     assert_true(b, resume) =>
       if b {
