@@ -7,7 +7,9 @@ import Test.Data.I32 as I32
 import Test.Data.I64 as I64
 import Test.Data.F64 as F64
 import Test.Data.F32 as F32
+import Test.Data.Char as Char
 import Test.Data.String as String
+import Test.Data.Bytes as Bytes
 import Test.Eff.Write as Write
 
 pub fn test_i32_entry() -> Unit ! Io {
@@ -18,7 +20,7 @@ pub fn test_i32_entry() -> Unit ! Io {
 
 pub fn test_char_entry() -> Unit ! Io {
   fn() {
-    String.test_char()
+    Char.test_char()
   } |> execute_all_test()
 }
 
@@ -30,7 +32,7 @@ pub fn test_string_entry() -> Unit ! Io {
 
 pub fn test_utf8_and_bytes_entry() -> Unit ! Io {
   fn() {
-    String.test_utf8_and_bytes()
+    Bytes.test_utf8_and_bytes()
   } |> execute_all_test()
 }
 

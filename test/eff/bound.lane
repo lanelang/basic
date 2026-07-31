@@ -1,0 +1,31 @@
+module Test.Eff.Bound
+
+import Basic.Eff.Bound.{ OutOfBound }
+import Test.Assert.{ Assert }
+
+// Run an action that is expected to stay in bounds, failing the test and
+// returning the fallback when it does not.
+pub fn[T] expect_in_bounds(action : () -> T ! OutOfBound, fallback : T) -> T ! Assert {
+  handle action() with {
+    out_of_min[R](_resume) => {
+      assert_true!(false)
+      fallback
+    }
+    out_of_max[R](_resume) => {
+      assert_true!(false)
+      fallback
+    }
+  } final value {
+    value
+  }
+}
+
+// Report whether an action leaves bounds.
+pub fn[T] is_out_of_bounds(action : () -> T ! OutOfBound) -> Bool {
+  handle action() with {
+    out_of_min[R](_resume) => true
+    out_of_max[R](_resume) => true
+  } final _value {
+    false
+  }
+}

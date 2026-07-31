@@ -1,223 +1,99 @@
 module Test.Data.String
 
-import Basic.Builtins as Builtins
-import Basic.Data.Byte as Byte
-import Basic.Data.Bytes as ByteSeq
-import Basic.Data.Char as Char
-import Basic.Data.String as String
-import Basic.Data.Option.{ Option }
+import Basic.Data.String.*
+import Basic.Data.Char.{ char_impl_equal, to_string }
 import Basic.Data.I64.{ i64_impl_equal }
-import Basic.Eff.Bound.{ OutOfBound }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Compare.{ Compare }
+import Basic.Summon.{ summon }
+import Basic.Ops.{ op_less }
+import Test.Eff.Bound.{ expect_in_bounds, is_out_of_bounds }
 import Test.Assert.{ Assert }
-
-fn[T] expect_in_bounds(action : () -> T ! OutOfBound, fallback : T) -> T ! Assert {
-  handle action() with {
-    out_of_min[R](_resume) => {
-      assert_true!(false)
-      fallback
-    }
-    out_of_max[R](_resume) => {
-      assert_true!(false)
-      fallback
-    }
-  } final value {
-    value
-  }
-}
-
-fn[T] is_out_of_bounds(action : () -> T ! OutOfBound) -> Bool {
-  handle action() with {
-    out_of_min[R](_resume) => true
-    out_of_max[R](_resume) => true
-  } final _value {
-    false
-  }
-}
-
-fn assert_some_char(value : Option[Char], expected : Char) -> Unit ! Assert {
-  match value {
-    some(actual) => assert_true!(char_equal(actual, expected))
-    none() => assert_true!(false)
-  }
-}
-
-fn assert_some_string(value : Option[String], expected : String) -> Unit ! Assert {
-  match value {
-    some(actual) => assert_true!(string_equal(actual, expected))
-    none() => assert_true!(false)
-  }
-}
-
-fn[T] is_none(value : Option[T]) -> Bool {
-  match value {
-    some(_) => false
-    none() => true
-  }
-}
-
-fn char_equal(left : Char, right : Char) -> Bool {
-  let equal = Char.char_impl_equal
-  equal.equal(left, right)
-}
-
-fn char_less(left : Char, right : Char) -> Bool {
-  let compare = Char.char_impl_compare
-  compare.less(left, right)
-}
-
-fn string_equal(left : String, right : String) -> Bool {
-  let equal = String.string_impl_equal
-  equal.equal(left, right)
-}
-
-fn string_less(left : String, right : String) -> Bool {
-  let compare = String.string_impl_compare
-  compare.less(left, right)
-}
-
-pub fn test_char() -> Unit ! Assert {
-  assert_some_char(Char.from_i64(0), '\0')
-  assert_some_char(Char.from_i64(233), 'é')
-  assert_some_char(Char.from_i64(20320), '你')
-  assert_some_char(Char.from_i64(128512), '😀')
-  assert_true!(is_none(Char.from_i64(Builtins.i64_neg(1))))
-  assert_true!(is_none(Char.from_i64(55296)))
-  assert_true!(is_none(Char.from_i64(1114112)))
-  assert_eq!(Char.to_i64('😀'), 128512, i64_impl_equal)
-  assert_true!(string_equal(Char.to_string('A'), "A"))
-  assert_true!(string_equal(Char.to_string('é'), "é"))
-  assert_true!(string_equal(Char.to_string('你'), "你"))
-  assert_true!(string_equal(Char.to_string('😀'), "😀"))
-  assert_true!(char_less('你', '😀'))
-}
 
 pub fn test_string() -> Unit ! Assert {
   let text = "Aé中😀\0"
-  assert_eq!(String.byte_length(text), 11, i64_impl_equal)
-  assert_eq!(String.scalar_count(text), 5, i64_impl_equal)
-  assert_true!(String.is_empty(""))
-  assert_false!(String.is_empty(text))
-  assert_true!(string_equal(String.from_char('中'), "中"))
-  assert_true!(string_equal(String.concat("中", "😀"), "中😀"))
-  assert_true!(string_less("a", "aa"))
-  assert_true!(string_less("中", "😀"))
-  assert_false!(string_less("😀", "中"))
-  let monoid = String.string_impl_monoid
-  assert_true!(string_equal(monoid.semigroup_impl.append("中", "😀"), "中😀"))
-  assert_true!(string_equal(monoid.empty, ""))
-  assert_true!(
-    char_equal(
-      expect_in_bounds(
-        fn() {
-          String.scalar_at(text, 2)
-        },
-        '\0'
-      ),
-      '中'
-    )
+  // Byte length is the UTF-8 size; scalar count is independent of it.
+  assert_eq!(byte_length(text), 11, summon())
+  assert_eq!(scalar_count(text), 5, summon())
+  assert_true!(is_empty(""))
+  assert_false!(is_empty(text))
+  assert_eq!(from_char('中'), "中", summon())
+  assert_eq!(concat("中", "😀"), "中😀", summon())
+  // Ordering compares scalar values, so a prefix sorts first.
+  assert_true!("a" < "aa")
+  assert_true!("中" < "😀")
+  assert_false!("😀" < "中")
+  let monoid = string_impl_monoid
+  assert_eq!(monoid.semigroup_impl.append("中", "😀"), "中😀", summon())
+  assert_eq!(monoid.empty, "", summon())
+  // Positions are scalar indices, not byte offsets.
+  assert_eq!(
+    expect_in_bounds(
+      fn() {
+        scalar_at(text, 2)
+      },
+      '\0'
+    ),
+    '中',
+    summon()
   )
-  assert_true!(
-    string_equal(
-      expect_in_bounds(
-        fn() {
-          String.slice(text, 1, 3)
-        },
-        ""
-      ),
-      "é中😀"
-    )
-  )
-  assert_true!(
-    string_equal(
-      expect_in_bounds(
-        fn() {
-          String.slice(text, 5, 0)
-        },
-        "invalid"
-      ),
+  assert_eq!(
+    expect_in_bounds(
+      fn() {
+        slice(text, 1, 3)
+      },
       ""
-    )
+    ),
+    "é中😀",
+    summon()
   )
+  assert_eq!(
+    expect_in_bounds(
+      fn() {
+        slice(text, 5, 0)
+      },
+      "invalid"
+    ),
+    "",
+    summon()
+  )
+  // Invalid positions and ranges report through OutOfBound.
   assert_true!(
     is_out_of_bounds[Char](
       fn() {
-        String.scalar_at(text, Builtins.i64_neg(1))
+        scalar_at(text, -1)
       }
     )
   )
   assert_true!(
     is_out_of_bounds[Char](
       fn() {
-        String.scalar_at(text, 5)
+        scalar_at(text, 5)
       }
     )
   )
   assert_true!(
     is_out_of_bounds[String](
       fn() {
-        String.slice(text, 4, 2)
+        slice(text, 4, 2)
       }
     )
   )
   assert_true!(
     is_out_of_bounds[String](
       fn() {
-        String.slice(text, 1, 9223372036854775807)
+        slice(text, 1, 9223372036854775807)
       }
     )
   )
-  let folded = String.foldl(
+  // Folding preserves the callback effect and visits every scalar in order.
+  let folded = foldl(
     text,
     "",
     fn(accumulator, scalar) {
       assert_true!(true)
-      String.concat(accumulator, Char.to_string(scalar))
+      concat(accumulator, to_string(scalar))
     }
   )
-  assert_true!(string_equal(folded, text))
-}
-
-pub fn test_utf8_and_bytes() -> Unit ! Assert {
-  let text = "Aé中😀\0"
-  let encoded = String.encode_utf8(text)
-  assert_eq!(ByteSeq.bytes_length(encoded), 11, i64_impl_equal)
-  assert_true!(ByteSeq.is_valid_utf8(encoded))
-  assert_some_string(String.decode_utf8(encoded), text)
-  let malformed = expect_in_bounds(
-    fn() {
-      ByteSeq.bytes_make(1, Byte.from_i64(255))
-    },
-    Builtins.bytes_make(0, Byte.from_i64(0))
-  )
-  assert_true!(is_none(String.decode_utf8(malformed)))
-  let original = "abc"
-  let original_bytes = String.encode_utf8(original)
-  let changed = expect_in_bounds(
-    fn() {
-      ByteSeq.bytes_set(original_bytes, 0, Byte.from_i64(122))
-    },
-    Builtins.bytes_make(0, Byte.from_i64(0))
-  )
-  assert_true!(string_equal(original, "abc"))
-  assert_some_string(String.decode_utf8(changed), "zbc")
-  let prefix = expect_in_bounds(
-    fn() {
-      ByteSeq.bytes_slice(encoded, 0, 6)
-    },
-    Builtins.bytes_make(0, Byte.from_i64(0))
-  )
-  let suffix = expect_in_bounds(
-    fn() {
-      ByteSeq.bytes_slice(encoded, 6, 5)
-    },
-    Builtins.bytes_make(0, Byte.from_i64(0))
-  )
-  assert_true!(ByteSeq.bytes_equal(ByteSeq.bytes_concat(prefix, suffix), encoded))
-  assert_true!(
-    is_out_of_bounds[Bytes](
-      fn() {
-        ByteSeq.bytes_slice(encoded, 10, 2)
-      }
-    )
-  )
+  assert_eq!(folded, text, summon())
 }

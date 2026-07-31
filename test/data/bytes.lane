@@ -1,0 +1,61 @@
+module Test.Data.Bytes
+
+import Basic.Builtins as Builtins
+import Basic.Data.Bytes.*
+import Basic.Data.Byte as Byte
+import Basic.Data.String.{ string_impl_equal, encode_utf8, decode_utf8 }
+import Basic.Data.Option.{ Option, option_impl_equal }
+import Basic.Data.I64.{ i64_impl_equal }
+import Basic.Trait.Equal.{ Equal }
+import Basic.Summon.{ summon, summon_via }
+import Test.Eff.Bound.{ expect_in_bounds, is_out_of_bounds }
+import Test.Assert.{ Assert }
+
+pub fn test_utf8_and_bytes() -> Unit ! Assert {
+  let empty = Builtins.bytes_make(0, Byte.from_i64(0))
+  let text = "Aé中😀\0"
+  let encoded = encode_utf8(text)
+  assert_eq!(bytes_length(encoded), 11, summon())
+  assert_true!(is_valid_utf8(encoded))
+  assert_eq!(decode_utf8(encoded), some(text), summon_via())
+  // A lone 0xFF byte is not valid UTF-8.
+  let malformed = expect_in_bounds(
+    fn() {
+      bytes_make(1, Byte.from_i64(255))
+    },
+    empty
+  )
+  assert_eq![Option[String]](decode_utf8(malformed), none(), summon_via())
+  // Update returns a new sequence and leaves the original observable.
+  let original = "abc"
+  let original_bytes = encode_utf8(original)
+  let changed = expect_in_bounds(
+    fn() {
+      bytes_set(original_bytes, 0, Byte.from_i64(122))
+    },
+    empty
+  )
+  assert_eq!(original, "abc", summon())
+  assert_eq!(decode_utf8(changed), some("zbc"), summon_via())
+  // Slicing and concatenation round-trip the whole sequence.
+  let prefix = expect_in_bounds(
+    fn() {
+      bytes_slice(encoded, 0, 6)
+    },
+    empty
+  )
+  let suffix = expect_in_bounds(
+    fn() {
+      bytes_slice(encoded, 6, 5)
+    },
+    empty
+  )
+  assert_true!(bytes_equal(bytes_concat(prefix, suffix), encoded))
+  assert_true!(
+    is_out_of_bounds[Bytes](
+      fn() {
+        bytes_slice(encoded, 10, 2)
+      }
+    )
+  )
+}
