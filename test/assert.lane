@@ -1,5 +1,6 @@
 module Test.Assert
 
+import Basic.Data.List.{ List }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Io.{ println }
 
@@ -10,7 +11,8 @@ pub effect Assert {
   assert_not_eq[T](T, T, Equal[T]) -> Unit
 }
 
-pub fn[E : Effect] execute_all_tests(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
+// Run one test function under the assertion handler.
+fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
   handle f() with {
     assert_true(b, resume) =>
       if b {
@@ -38,5 +40,19 @@ pub fn[E : Effect] execute_all_tests(f : () -> Unit ! { E, Assert }) -> Unit ! {
       } |> resume()
   } final _v {
     ()
+  }
+}
+
+// Run every test function. Each one gets its own handler so that the resumption
+// chain does not grow across tests.
+pub fn[E : Effect] execute_all_tests(
+  tests : List[() -> Unit ! { E, Assert }]
+) -> Unit ! { E, Io } {
+  match tests {
+    empty() => ()
+    cons(test, rest) => {
+      execute_test(test)
+      execute_all_tests(rest)
+    }
   }
 }
