@@ -17,7 +17,4 @@ run_test_entry() {
 }
 
 run_test_entry
-# The LoisVM interpreter behind --no-jit exhausts its call stack after fifty
-# resumptions in one handler scope, which any moderately sized test will reach.
-# Re-enable this once that limit is lifted.
 # run_test_entry --no-jit
