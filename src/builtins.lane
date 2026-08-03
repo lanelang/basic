@@ -1,12 +1,12 @@
 module Basic.Builtins
 
-// UB if overflow
+// if overflow, return the overflowed value
 pub let i64_add : (I64, I64) -> I64 = builtin("%i64_add")
 
-// UB if overflow
+// if overflow, return the overflowed value
 pub let i64_sub : (I64, I64) -> I64 = builtin("%i64_sub")
 
-// UB if overflow
+// if overflow, return the overflowed value
 pub let i64_mul : (I64, I64) -> I64 = builtin("%i64_mul")
 
 // UB if divisor is zero
@@ -76,10 +76,13 @@ pub let f32_to_f64 : (F32) -> F64 = builtin("%f32_to_f64")
 
 pub let f64_to_f32 : (F64) -> F32 = builtin("%f64_to_f32")
 
+// if overflow, return the overflowed value
 pub let i32_add : (I32, I32) -> I32 = builtin("%i32_add")
 
+// if overflow, return the overflowed value
 pub let i32_sub : (I32, I32) -> I32 = builtin("%i32_sub")
 
+// if overflow, return the overflowed value
 pub let i32_mul : (I32, I32) -> I32 = builtin("%i32_mul")
 
 // UB if divisor is zero or the quotient is not representable
