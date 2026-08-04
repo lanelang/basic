@@ -2,7 +2,7 @@ module Basic.Data.Bool
 
 import Basic.Trait.Bool.{ And, Or, Not }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Debug.{ Debug, make_debug }
+import Basic.Trait.Debug.{ Debug }
 
 pub offer bool_impl_and : And = And::{ and: bool_and }
 
@@ -51,4 +51,4 @@ pub offer bool_impl_debug : Debug[Bool] =
     } else {
       "false"
     }
-  } |> make_debug
+  }

@@ -1,10 +1,13 @@
 module Test.Assert
 
+import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.Bool.{ bool_impl_not }
 import Basic.Data.List.{ List }
 import Basic.Data.I64.{ i64_impl_add }
+import Basic.Data.String.{ concat }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
+import Basic.Trait.Debug.{ debug }
 import Basic.Io.{ println }
 import Basic.Eff.Write.{ Write, run_write, WriteResult }
 import Basic.Ops.{ op_not, op_add }
@@ -76,10 +79,13 @@ pub fn[E : Effect] execute_all_tests(tests : List[() -> Unit ! { E, Assert }]) -
   let result =
     fn() {
       execute_tests(tests)
-    } |> run_write[Unit, TestCounts, { E, Io }]()
+    } |> run_write[Unit, TestCounts, { E, Io }]
+  let result = result()
   println(
-    // TODO: "Tests passed: " + result.log.passed.to_string() + ", failed: " + result.log.failed.to_string() 
-    "Tests passed "
+    "Tests passed: "
+      |> concat(debug(result.log.passed))
+      |> concat(", failed: ")
+      |> concat(debug(result.log.failed))
   )
 }
 

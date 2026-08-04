@@ -5,18 +5,6 @@ pub struct Iso[T, R] {
   from : (R) -> T
 }
 
-pub struct Into[T, R] {
-  into : (T) -> R
-}
+pub type Into[T, R] = (T) -> R
 
-pub struct From[T, R] {
-  from : (R) -> T
-}
-
-pub offer fn[T, R] from_by_into(auto into : Into[T, R]) -> From[R, T] {
-  From::{ from: into.into }
-}
-
-pub offer fn[T, R] into_by_from(auto from : From[T, R]) -> Into[R, T] {
-  Into::{ into: from.from }
-}
+pub type From[T, R] = Into[R, T]

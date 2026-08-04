@@ -1,11 +1,8 @@
 module Basic.Data.I64
 
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
-import Basic.Data.I32.{ i32_impl_into_i64, i32_impl_from_i64 }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Iso.{ Into, From, into_by_from, from_by_into }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Summon.{ summon_via }
 import Basic.Builtins.{
   i64_add,
   i64_sub,
@@ -14,9 +11,7 @@ import Basic.Builtins.{
   i64_rem,
   i64_neg,
   i64_equal,
-  i64_less,
-  i32_to_i64,
-  i64_to_i32
+  i64_less
 }
 
 pub let maximum : I64 = 9223372036854775807
@@ -38,15 +33,3 @@ pub offer i64_impl_neg : Neg[I64] = Neg::{ neg: i64_neg }
 pub offer i64_impl_equal : Equal[I64] = Equal::{ equal: i64_equal }
 
 pub offer i64_impl_compare : Compare[I64] = Compare::{ equal_impl: i64_impl_equal, less: i64_less }
-
-pub fn to_i32(value : I64) -> I32 {
-  i64_to_i32(value)
-}
-
-pub fn from_i32(value : I32) -> I64 {
-  i32_to_i64(value)
-}
-
-pub offer i64_impl_into_i32 : Into[I64, I32] = into_by_from()
-
-pub offer i64_impl_from_i32 : From[I64, I32] = from_by_into()

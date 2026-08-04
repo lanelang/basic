@@ -1,0 +1,13 @@
+module Basic.Conv.I32
+
+import Basic.Trait.Iso.{ Into }
+import Basic.Builtins
+import Basic.Trait.Debug.{ Debug }
+import Basic.Conv.I64.{ i64_impl_debug }
+
+pub offer i32_to_i64 : Into[I32, I64] = Basic.Builtins.i32_to_i64
+
+pub offer i32_impl_debug : Debug[I32] = fn(value : I32) -> String {
+  i32_to_i64(value)
+    |> i64_impl_debug
+}

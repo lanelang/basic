@@ -1,15 +1,22 @@
 module Test.Derive.Debug
 
-import Basic.Trait.Debug.*
+import Basic.Trait.Debug.{ debug }
+import Basic.Conv.I64.{ i64_to_i32 }
+import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.String.{ string_impl_equal }
 import Basic.Summon.{ summon }
 import Test.Assert.{ Assert }
 import Basic.Data.Unit.{ unit_impl_debug }
 
-pub fn test_debug_unit() -> Unit ! Assert {
+fn test_debug_unit() -> Unit ! Assert {
   assert_eq!(debug(()), "()", summon())
+}
+
+fn test_debug_i32() -> Unit ! Assert {
+  assert_eq!(debug(i64_to_i32(42)), "42", summon())
 }
 
 pub fn test_debug() -> Unit ! Assert {
   test_debug_unit()
+  test_debug_i32()
 }

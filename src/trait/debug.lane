@@ -4,10 +4,6 @@ import Basic.Trait.Iso.{ Into }
 
 pub type Debug[T] = Into[T, String]
 
-pub fn[T] debug(t : T, auto offer debug : Debug[T]) -> String {
-  debug.into(t)
-}
-
-pub fn[T] make_debug(f : (T) -> String) -> Debug[T] {
-  Into::{ into: f }
+pub fn[T] debug(t : T, auto debug_impl : Debug[T]) -> String {
+  debug_impl(t)
 }

@@ -2,20 +2,8 @@ module Basic.Data.I32
 
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Iso.{ Into, From }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Builtins.{
-  i32_add,
-  i32_sub,
-  i32_mul,
-  i32_div,
-  i32_rem,
-  i32_neg,
-  i32_equal,
-  i32_less,
-  i32_to_i64,
-  i64_to_i32
-}
+import Basic.Builtins.{ i32_add, i32_sub, i32_mul, i32_div, i32_rem, i32_neg, i32_equal, i32_less }
 
 pub let maximum : I32 = 2147483647
 
@@ -36,21 +24,3 @@ pub offer i32_impl_neg : Neg[I32] = Neg::{ neg: i32_neg }
 pub offer i32_impl_equal : Equal[I32] = Equal::{ equal: i32_equal }
 
 pub offer i32_impl_compare : Compare[I32] = Compare::{ equal_impl: i32_impl_equal, less: i32_less }
-
-// Sign-extend an I32 value to I64.
-pub fn to_i64(value : I32) -> I64 {
-  i32_to_i64(value)
-}
-
-// Keep the low 32 bits of an I64 and interpret them as signed two's complement.
-pub fn from_i64(value : I64) -> I32 {
-  i64_to_i32(value)
-}
-
-pub offer i32_impl_into_i64 : Into[I32, I64] = Into::{
-  into : to_i64
-}
-
-pub offer i32_impl_from_i64 : From[I32, I64] = From::{
-  from : from_i64
-}

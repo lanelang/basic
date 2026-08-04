@@ -1,0 +1,45 @@
+module Basic.Conv.I64
+
+import Basic.Data.I64.{
+  i64_impl_add,
+  i64_impl_neg,
+  i64_impl_div,
+  i64_impl_equal,
+  i64_impl_compare,
+  i64_impl_rem
+}
+import Basic.Trait.Debug.{ Debug }
+import Basic.Data.String.{ concat }
+import Basic.Trait.Iso.{ Into }
+import Basic.Builtins
+import Basic.Builtins.{ bytes_make, bytes_to_string, i64_to_byte }
+import Basic.Ops.{ op_div, op_rem, op_neg, op_equal, op_less, op_add }
+
+pub offer i64_to_i32 : Into[I64, I32] = Basic.Builtins.i64_to_i32
+
+fn decimal_digit(digit : I64) -> String {
+  bytes_to_string(bytes_make(1, i64_to_byte(48 + digit)))
+}
+
+fn format_nonpositive(value : I64, suffix : String) -> String {
+  let digit = -(value % 10)
+  let result = concat(decimal_digit(digit), suffix)
+  let rest = value / 10
+  if rest == 0 {
+    result
+  } else {
+    format_nonpositive(rest, result)
+  }
+}
+
+fn i64_debug_string(value : I64) -> String {
+  if value == 0 {
+    "0"
+  } else if value < 0 {
+    concat("-", format_nonpositive(value, ""))
+  } else {
+    format_nonpositive(-value, "")
+  }
+}
+
+pub offer i64_impl_debug : Debug[I64] = i64_debug_string
