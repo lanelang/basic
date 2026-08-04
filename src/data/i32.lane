@@ -2,6 +2,7 @@ module Basic.Data.I32
 
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Iso.{ Into, From }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Builtins.{
   i32_add,
@@ -44,4 +45,12 @@ pub fn to_i64(value : I32) -> I64 {
 // Keep the low 32 bits of an I64 and interpret them as signed two's complement.
 pub fn from_i64(value : I64) -> I32 {
   i64_to_i32(value)
+}
+
+pub offer i32_impl_into_i64 : Into[I32, I64] = Into::{
+  into : to_i64
+}
+
+pub offer i32_impl_from_i64 : From[I32, I64] = From::{
+  from : from_i64
 }

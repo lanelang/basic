@@ -12,6 +12,7 @@ import Test.Data.Bytes as Bytes
 import Test.Data.Option as Option
 import Test.Data.List as List
 import Test.Eff.Write as Write
+import Test.Derive.Debug as Debug
 
 pub fn test_entry() -> Unit ! Io {
   execute_all_tests([
@@ -23,10 +24,8 @@ pub fn test_entry() -> Unit ! Io {
     String.test_string,
     Bytes.test_utf8_and_bytes,
     Option.test_equal,
-    List.test_equal,
-    List.test_length,
-    List.test_map,
-    List.test_foldl,
-    Write.test_write_log
+    List.test_list,
+    Write.test_write_log,
+    Debug.test_debug
   ])
 }

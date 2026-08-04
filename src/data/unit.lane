@@ -1,9 +1,13 @@
-module Basic.Data.Unit 
+module Basic.Data.Unit
 
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Debug.{ Debug }
+import Basic.Derive.Debug.{ derive_debug }
 
 pub offer unit_impl_equal : Equal[Unit] = Equal::{
   equal: fn(_a, _b) {
     true
   }
 }
+
+pub offer unit_impl_debug : Debug[Unit] = derive_debug.unit()

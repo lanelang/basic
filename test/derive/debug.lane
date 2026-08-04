@@ -1,0 +1,15 @@
+module Test.Derive.Debug
+
+import Basic.Trait.Debug.*
+import Basic.Data.String.{ string_impl_equal }
+import Basic.Summon.{ summon }
+import Test.Assert.{ Assert }
+import Basic.Data.Unit.{ unit_impl_debug }
+
+pub fn test_debug_unit() -> Unit ! Assert {
+  assert_eq!(debug(()), "()", summon())
+}
+
+pub fn test_debug() -> Unit ! Assert {
+  test_debug_unit()
+}

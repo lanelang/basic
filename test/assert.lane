@@ -2,7 +2,7 @@ module Test.Assert
 
 import Basic.Data.Bool.{ bool_impl_not }
 import Basic.Data.List.{ List }
-import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_mul, i64_impl_equal, i64_impl_compare }
+import Basic.Data.I64.{ i64_impl_add }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Io.{ println }
