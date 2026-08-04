@@ -4,3 +4,11 @@ pub struct Iso[T, R] {
   to : (T) -> R
   from : (R) -> T
 }
+
+pub struct Into[T, R] {
+  into : (T) -> R
+}
+
+pub struct From[T, R] {
+  from : (R) -> T
+}

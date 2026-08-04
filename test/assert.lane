@@ -1,8 +1,13 @@
 module Test.Assert
 
+import Basic.Data.Bool.{ bool_impl_not }
 import Basic.Data.List.{ List }
+import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_mul, i64_impl_equal, i64_impl_compare }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Io.{ println }
+import Basic.Eff.Write.{ Write, run_write, WriteResult }
+import Basic.Ops.{ op_not, op_add }
 
 pub effect Assert {
   assert_true(Bool) -> Unit
@@ -11,48 +16,87 @@ pub effect Assert {
   assert_not_eq[T](T, T, Equal[T]) -> Unit
 }
 
-// Run one test function under the assertion handler.
-fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io } {
-  handle f() with {
-    assert_true(b, resume) =>
-      if b {
-        ()
-      } else {
-        println("assert error")
-      } |> resume()
-    assert_false(b, resume) =>
-      if b {
-        println("assert error")
-      } else {
-        ()
-      } |> resume()
-    assert_eq[_T](a, b, e, resume) =>
-      if e.equal(a, b) {
-        ()
-      } else {
-        println("assert error")
-      } |> resume()
-    assert_not_eq[_T](a, b, e, resume) =>
-      if e.equal(a, b) {
-        println("assert error")
-      } else {
-        ()
-      } |> resume()
-  } final _v {
-    ()
+pub struct TestCounts {
+  passed : I64
+  failed : I64
+}
+
+offer test_counts_impl_semigroup : Semigroup[TestCounts] = Semigroup::{
+  append: fn(left, right) {
+    TestCounts::{ passed: left.passed + right.passed, failed: left.failed + right.failed }
   }
 }
 
-// Run every test function. Each one gets its own handler so that the resumption
-// chain does not grow across tests.
-pub fn[E : Effect] execute_all_tests(
+offer test_counts_impl_monoid : Monoid[TestCounts] = Monoid::{
+  semigroup_impl: test_counts_impl_semigroup,
+  empty: TestCounts::{ passed: 0, failed: 0 }
+}
+
+// Run one test function under the assertion handler.
+fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Bool ! E {
+  handle f() with {
+    assert_true(cond, resume) => {
+      let rest_passed = resume(())
+      if cond {
+        rest_passed
+      } else {
+        false
+      }
+    }
+    assert_false(cond, resume) => {
+      let rest_passed = resume(())
+      if !cond {
+        rest_passed
+      } else {
+        false
+      }
+    }
+    assert_eq[_T](a, b, e, resume) => {
+      let rest_passed = resume(())
+      if e.equal(a, b) {
+        rest_passed
+      } else {
+        false
+      }
+    }
+    assert_not_eq[_T](a, b, e, resume) => {
+      let rest_passed = resume(())
+      if e.equal(a, b) {
+        false
+      } else {
+        rest_passed
+      }
+    }
+  } final _v {
+    true
+  }
+}
+
+pub fn[E : Effect] execute_all_tests(tests : List[() -> Unit ! { E, Assert }]) -> Unit ! { E, Io } {
+  let result =
+    fn() {
+      execute_tests(tests)
+    } |> run_write[Unit, TestCounts, { E, Io }]()
+  println(
+    // TODO: "Tests passed: " + result.log.passed.to_string() + ", failed: " + result.log.failed.to_string() 
+    "Tests passed "
+  )
+}
+
+fn[E : Effect] execute_tests(
   tests : List[() -> Unit ! { E, Assert }]
-) -> Unit ! { E, Io } {
+) -> Unit ! { E, Io, Write[TestCounts] } {
   match tests {
     empty() => ()
     cons(test, rest) => {
-      execute_test(test)
-      execute_all_tests(rest)
+      if execute_test(test) {
+        println("ok")
+        write!(TestCounts::{ passed: 1, failed: 0 })
+      } else {
+        println("error")
+        write!(TestCounts::{ passed: 0, failed: 1 })
+      }
+      execute_tests(rest)
     }
   }
 }

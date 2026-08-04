@@ -1,0 +1,89 @@
+module Basic.Derive.Debug
+
+import Basic.Data.String.{ concat }
+import Basic.Data.Void.{ Void, absurd }
+import Basic.Trait.Debug.{ Debug, make_debug }
+import Basic.Trait.Derive.{ Product, Sum, Deriver, Recursive, FieldInfo, VariantInfo, TypeInfo }
+import Basic.Trait.Iso.{ Iso }
+
+pub offer derive_debug : Deriver[Debug] = Deriver[Debug]::{
+  unit: show_unit,
+  product: show_product,
+  void: show_void,
+  sum: show_sum,
+  field: show_field,
+  variant: show_variant,
+  record: show_record,
+  enumeration: show_enumeration
+}
+
+fn show_unit() -> Debug[Unit] {
+  fn(_u) {
+    "()"
+  } |> make_debug
+}
+
+fn show_void() -> Debug[Void] {
+  fn(v) {
+    absurd(v)
+  } |> make_debug
+}
+
+fn[A, B] show_product(show_a : Debug[A], show_b : Debug[B]) -> Debug[Product[A, B]] {
+  fn(p) {
+    "("
+      |> concat(show_a.into(p.head))
+      |> concat(", ")
+      |> concat(show_b.into(p.tail))
+      |> concat(")")
+  } |> make_debug
+}
+
+fn[A, B] show_sum(show_a : Debug[A], show_b : Debug[B]) -> Debug[Sum[A, B]] {
+  fn(s) {
+    match s {
+      here(a) => show_a.into(a)
+      there(b) => show_b.into(b)
+    }
+  } |> make_debug
+}
+
+fn[A] show_field(info : FieldInfo, show_a : Debug[A]) -> Debug[A] {
+  fn(a) {
+    info.name
+      |> concat(": ")
+      |> concat(show_a.into(a))
+  } |> make_debug
+}
+
+fn[A] show_variant(info : VariantInfo, show_a : Debug[A]) -> Debug[A] {
+  fn(a) {
+    info.name
+      |> concat(": ")
+      |> concat(show_a.into(a))
+  } |> make_debug
+}
+
+fn[T, R] show_record(info : TypeInfo, iso : Iso[T, R], show_r : Debug[R]) -> Debug[T] {
+  fn(t) {
+    info.name
+      |> concat(": ")
+      |> concat(show_r.into(iso.to(t)))
+  } |> make_debug
+}
+
+fn[T, R] show_enumeration(info : TypeInfo, iso : Iso[T, R], show_r : Debug[R]) -> Debug[T] {
+  fn(t) {
+    info.name
+      |> concat(": ")
+      |> concat(show_r.into(iso.to(t)))
+  } |> make_debug
+}
+
+pub let recursive_debug : Recursive[Debug] = Recursive::{
+  defer: fn[T](get_debug) {
+    fn(t) {
+      get_debug().into(t)
+    } |> make_debug[T]
+  }
+}
