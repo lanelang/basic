@@ -5,9 +5,9 @@ import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Builtins.{ i32_add, i32_sub, i32_mul, i32_div, i32_rem, i32_neg, i32_equal, i32_less }
 
-pub let maximum : I32 = 2147483647
+pub let maximum : I32 = 2147483647i32
 
-pub let minimum : I32 = -2147483648
+pub let minimum : I32 = -2147483648i32
 
 pub offer i32_impl_add : Add[I32] = Add::{ add: i32_add }
 
