@@ -83,8 +83,7 @@ fn[T, R] show_enumeration(info : TypeInfo, iso : Iso[T, R], show_r : Debug[R]) -
 pub let recursive_debug : Recursive[Debug] = Recursive::{
   defer: fn[T](get_debug) {
     fn(t : T) {
-      let db : Debug[T] = get_debug()
-      db(t)
+      get_debug()(t)
     }
   }
 }

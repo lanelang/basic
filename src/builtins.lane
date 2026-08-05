@@ -47,6 +47,8 @@ pub let i64_to_f64 : (I64) -> F64 = builtin("%i64_to_f64")
 // UB if the argument is NaN, infinite, or outside the I64 range
 pub let f64_to_i64 : (F64) -> I64 = builtin("%f64_to_i64")
 
+pub let f64_to_string : (F64) -> String = builtin("%f64_to_string")
+
 pub let f32_add : (F32, F32) -> F32 = builtin("%f32_add")
 
 pub let f32_sub : (F32, F32) -> F32 = builtin("%f32_sub")
@@ -75,6 +77,8 @@ pub let f32_to_i64 : (F32) -> I64 = builtin("%f32_to_i64")
 pub let f32_to_f64 : (F32) -> F64 = builtin("%f32_to_f64")
 
 pub let f64_to_f32 : (F64) -> F32 = builtin("%f64_to_f32")
+
+pub let f32_to_string : (F32) -> String = builtin("%f32_to_string")
 
 // if overflow, return the overflowed value
 pub let i32_add : (I32, I32) -> I32 = builtin("%i32_add")

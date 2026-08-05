@@ -6,6 +6,7 @@ lane_bin="${LANE_BIN:-lane}"
 
 run_test_entry() {
   local output
+  local expected_test_count=11
   if ! output="$("$lane_bin" run test/entry.lane:test_entry --lib-dir . --no-basic "$@" 2>&1)"; then
     printf '%s\n' "$output"
     return 1
@@ -19,7 +20,7 @@ run_test_entry() {
     fi
     if [[ "$line" == "ok" ]]; then
       ((ok_count += 1))
-    elif [[ "$ok_count" -gt 0 && "$line" == "Tests passed: ${ok_count}, failed: 0" ]]; then
+    elif [[ "$ok_count" -eq "$expected_test_count" && "$line" == "Tests passed: ${expected_test_count}, failed: 0" ]]; then
       ((summary_seen = 1))
     else
       printf '%s\n' "$output"
@@ -33,4 +34,6 @@ run_test_entry() {
 }
 
 run_test_entry
+# The interpreter is intentionally excluded from this library gate because it
+# is substantially slower; Lane's compiler suite covers it separately.
 # run_test_entry --no-jit
