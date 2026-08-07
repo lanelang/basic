@@ -1,20 +1,21 @@
 module Test.Data.I64
 
+import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.I64.*
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Summon.{ summon }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_rem, op_neg, op_less }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_i64() -> Unit ! Assert {
-  assert_eq!(40 + 2, 42, summon())
-  assert_eq!(44 - 2, 42, summon())
-  assert_eq!(6 * 7, 42, summon())
-  assert_eq!(85 / 2, 42, summon())
-  assert_eq!(85 % 43, 42, summon())
+  offer source_info : String = "test_i64"
+  assert_equal(40 + 2, 42)
+  assert_equal(44 - 2, 42)
+  assert_equal(6 * 7, 42)
+  assert_equal(85 / 2, 42)
+  assert_equal(85 % 43, 42)
   let negative : I64 = -42
-  assert_eq!(-negative, 42, summon())
-  assert_true!(41 < 42)
+  assert_equal(-negative, 42)
+  assert_true(41 < 42)
 }

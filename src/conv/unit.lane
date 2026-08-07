@@ -1,0 +1,7 @@
+module Basic.Conv.Unit
+
+import Basic.Trait.Debug.{ Debug }
+
+pub offer unit_impl_debug : Debug[Unit] = fn(_u : Unit) -> String {
+  "()"
+}

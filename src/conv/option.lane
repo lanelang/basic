@@ -1,0 +1,9 @@
+module Basic.Conv.Option
+
+import Basic.Data.Option.{ Option }
+import Basic.Trait.Debug.{ Debug }
+import Basic.Derive.Debug.{ derive_debug }
+
+pub offer fn[T] option_impl_debug(auto offer debug_impl : Debug[T]) -> Debug[Option[T]] {
+  derive[Debug, Option[T]]()
+}

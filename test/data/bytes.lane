@@ -1,23 +1,30 @@
 module Test.Data.Bytes
 
-import Basic.Builtins as Builtins
 import Basic.Data.Bytes.*
+import Basic.Builtins as Builtins
+import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Conv.Option.{ option_impl_debug }
 import Basic.Data.Byte as Byte
 import Basic.Data.String.{ string_impl_equal, encode_utf8, decode_utf8 }
 import Basic.Data.Option.{ Option, option_impl_equal }
 import Basic.Data.I64.{ i64_impl_equal }
+import Basic.Data.String.{ string_impl_debug }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Summon.{ summon, summon_via }
+import Basic.Trait.Debug.{ Debug }
+import Basic.Summon.{ summon_via }
 import Test.Eff.Bound.{ expect_in_bounds, is_out_of_bounds }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_utf8_and_bytes() -> Unit ! Assert {
+  offer source_info : String = "test_string"
+  offer option_string_impl_debug : Debug[Option[String]] = summon_via[Debug, Option, String]()
+  offer option_string_impl_equal : Equal[Option[String]] = summon_via()
   let empty = Builtins.bytes_make(0, Byte.from_i64(0))
   let text = "Aé中😀\0"
   let encoded = encode_utf8(text)
-  assert_eq!(bytes_length(encoded), 11, summon())
-  assert_true!(is_valid_utf8(encoded))
-  assert_eq!(decode_utf8(encoded), some(text), summon_via())
+  assert_equal(bytes_length(encoded), 11)
+  assert_true(is_valid_utf8(encoded))
+  assert_equal(decode_utf8(encoded), some(text))
   // A lone 0xFF byte is not valid UTF-8.
   let malformed = expect_in_bounds(
     fn() {
@@ -25,7 +32,7 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
     },
     empty
   )
-  assert_eq![Option[String]](decode_utf8(malformed), none(), summon_via())
+  assert_equal[Option[String]](decode_utf8(malformed), none())
   // Update returns a new sequence and leaves the original observable.
   let original = "abc"
   let original_bytes = encode_utf8(original)
@@ -35,8 +42,8 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
     },
     empty
   )
-  assert_eq!(original, "abc", summon())
-  assert_eq!(decode_utf8(changed), some("zbc"), summon_via())
+  assert_equal(original, "abc")
+  assert_equal(decode_utf8(changed), some("zbc"))
   // Slicing and concatenation round-trip the whole sequence.
   let prefix = expect_in_bounds(
     fn() {
@@ -50,8 +57,8 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
     },
     empty
   )
-  assert_true!(bytes_equal(bytes_concat(prefix, suffix), encoded))
-  assert_true!(
+  assert_true(bytes_equal(bytes_concat(prefix, suffix), encoded))
+  assert_true(
     is_out_of_bounds[Bytes](
       fn() {
         bytes_slice(encoded, 10, 2)

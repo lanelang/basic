@@ -1,85 +1,84 @@
 module Test.Data.String
 
 import Basic.Data.String.*
+import Basic.Conv.Char.{ char_impl_debug }
+import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.Char.{ char_impl_equal, to_string }
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Summon.{ summon }
 import Basic.Ops.{ op_less }
 import Test.Eff.Bound.{ expect_in_bounds, is_out_of_bounds }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal, assert_true, assert_false }
 
 pub fn test_string() -> Unit ! Assert {
+  offer source_info : String = "test_string"
   let text = "Aé中😀\0"
   // Byte length is the UTF-8 size; scalar count is independent of it.
-  assert_eq!(byte_length(text), 11, summon())
-  assert_eq!(scalar_count(text), 5, summon())
-  assert_true!(is_empty(""))
-  assert_false!(is_empty(text))
-  assert_eq!(from_char('中'), "中", summon())
-  assert_eq!(concat("中", "😀"), "中😀", summon())
+  assert_equal(byte_length(text), 11)
+  assert_equal(scalar_count(text), 5)
+  assert_true(is_empty(""))
+  assert_false(is_empty(text))
+  assert_equal(from_char('中'), "中")
+  assert_equal(concat("中", "😀"), "中😀")
   // Ordering compares scalar values, so a prefix sorts first.
-  assert_true!("a" < "aa")
-  assert_true!("中" < "😀")
-  assert_false!("😀" < "中")
+  assert_true("a" < "aa")
+  assert_true("中" < "😀")
+  assert_false("😀" < "中")
   let monoid = string_impl_monoid
-  assert_eq!(monoid.semigroup_impl.append("中", "😀"), "中😀", summon())
-  assert_eq!(monoid.empty, "", summon())
+  assert_equal(monoid.semigroup_impl.append("中", "😀"), "中😀")
+  assert_equal(monoid.empty, "")
   // Positions are scalar indices, not byte offsets.
-  assert_eq!(
+  assert_equal(
     expect_in_bounds(
       fn() {
         scalar_at(text, 2)
       },
       '\0'
     ),
-    '中',
-    summon()
+    '中'
   )
-  assert_eq!(
+  assert_equal(
     expect_in_bounds(
       fn() {
         slice(text, 1, 3)
       },
       ""
     ),
-    "é中😀",
-    summon()
+    "é中😀"
   )
-  assert_eq!(
+  assert_equal(
     expect_in_bounds(
       fn() {
         slice(text, 5, 0)
       },
       "invalid"
     ),
-    "",
-    summon()
+    ""
   )
   // Invalid positions and ranges report through OutOfBound.
-  assert_true!(
+  assert_true(
     is_out_of_bounds[Char](
       fn() {
         scalar_at(text, -1)
       }
     )
   )
-  assert_true!(
+  assert_true(
     is_out_of_bounds[Char](
       fn() {
         scalar_at(text, 5)
       }
     )
   )
-  assert_true!(
+  assert_true(
     is_out_of_bounds[String](
       fn() {
         slice(text, 4, 2)
       }
     )
   )
-  assert_true!(
+  assert_true(
     is_out_of_bounds[String](
       fn() {
         slice(text, 1, 9223372036854775807)
@@ -91,9 +90,9 @@ pub fn test_string() -> Unit ! Assert {
     text,
     "",
     fn(accumulator, scalar) {
-      assert_true!(true)
+      assert_true(true)
       concat(accumulator, to_string(scalar))
     }
   )
-  assert_eq!(folded, text, summon())
+  assert_equal(folded, text)
 }

@@ -1,0 +1,6 @@
+module Basic.Conv.F32
+
+import Basic.Builtins.{ f32_to_string }
+import Basic.Trait.Debug.{ Debug }
+
+pub offer f32_impl_debug : Debug[F32] = f32_to_string

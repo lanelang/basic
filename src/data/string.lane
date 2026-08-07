@@ -21,6 +21,7 @@ import Basic.Data.Char
 import Basic.Data.Option.{ Option }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Debug.{ Debug }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 
@@ -230,3 +231,5 @@ pub fn decode_utf8(bytes : Bytes) -> Option[String] {
     none()
   }
 }
+
+pub offer string_impl_debug : Debug[String] = fn (x) { x }

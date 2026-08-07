@@ -1,23 +1,24 @@
 module Test.Data.I32
 
+import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.I32.*
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Conv.I64.{ i64_to_i32 }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Summon.{ summon }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_rem, op_neg, op_less }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_i32() -> Unit ! Assert {
-  assert_eq!(maximum + i64_to_i32(1), minimum, summon())
-  assert_eq!(minimum - i64_to_i32(1), maximum, summon())
-  assert_eq!(i64_to_i32(65536) * i64_to_i32(65536), i64_to_i32(0), summon())
-  assert_eq!(-minimum, minimum, summon())
-  assert_eq!(i64_to_i32(-7) / i64_to_i32(3), i64_to_i32(-2), summon())
-  assert_eq!(i64_to_i32(-7) % i64_to_i32(3), i64_to_i32(-1), summon())
-  assert_eq!(minimum % i64_to_i32(-1), i64_to_i32(0), summon())
-  assert_eq!(i64_to_i32(2147483648), minimum, summon())
-  assert_eq!(i64_to_i32(42), i64_to_i32(42), summon())
-  assert_true!(i64_to_i32(-1) < i64_to_i32(0))
+  offer source_info : String = "test_i32"
+  assert_equal(maximum + i64_to_i32(1), minimum)
+  assert_equal(minimum - i64_to_i32(1), maximum)
+  assert_equal(i64_to_i32(65536) * i64_to_i32(65536), i64_to_i32(0))
+  assert_equal(-minimum, minimum)
+  assert_equal(i64_to_i32(-7) / i64_to_i32(3), i64_to_i32(-2))
+  assert_equal(i64_to_i32(-7) % i64_to_i32(3), i64_to_i32(-1))
+  assert_equal(minimum % i64_to_i32(-1), i64_to_i32(0))
+  assert_equal(i64_to_i32(2147483648), minimum)
+  assert_equal(i64_to_i32(42), i64_to_i32(42))
+  assert_true(i64_to_i32(-1) < i64_to_i32(0))
 }

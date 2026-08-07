@@ -1,0 +1,6 @@
+module Basic.Conv.F64
+
+import Basic.Builtins.{ f64_to_string }
+import Basic.Trait.Debug.{ Debug }
+
+pub offer f64_impl_debug : Debug[F64] = f64_to_string

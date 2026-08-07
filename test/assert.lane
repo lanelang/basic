@@ -7,16 +7,68 @@ import Basic.Data.I64.{ i64_impl_add }
 import Basic.Data.String.{ concat }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
-import Basic.Trait.Debug.{ debug }
+import Basic.Trait.Debug.{ debug, Debug }
 import Basic.Io.{ println }
 import Basic.Eff.Write.{ Write, run_write, WriteResult }
-import Basic.Ops.{ op_not, op_add }
+import Basic.Ops.{ op_not, op_add, op_equal, op_not_equal }
 
 pub effect Assert {
-  assert_true(Bool) -> Unit
-  assert_false(Bool) -> Unit
-  assert_eq[T](T, T, Equal[T]) -> Unit
-  assert_not_eq[T](T, T, Equal[T]) -> Unit
+  // assert(condition, source_info, fail_message)
+  assert(Bool, String, String) -> Unit
+}
+
+pub fn assert_true(cond : Bool, auto info : String) -> Unit ! Assert {
+  assert!(
+    cond,
+    "source info: "
+      |> concat(info),
+    "should be true, but is false"
+  )
+}
+
+pub fn assert_false(cond : Bool, auto info : String) -> Unit ! Assert {
+  assert!(
+    !cond,
+    "source info: "
+      |> concat(info),
+    "should be false, but is true"
+  )
+}
+
+pub fn[T] assert_equal(
+  lhs : T,
+  rhs : T,
+  auto info : String,
+  auto offer debug_impl : Debug[T],
+  auto offer equal_impl : Equal[T]
+) -> Unit ! Assert {
+  assert!(
+    lhs == rhs,
+    "source info: "
+      |> concat(info),
+    "lhs"
+      |> concat(debug(lhs))
+      |> concat(" != ")
+      |> concat(debug(rhs))
+  )
+}
+
+pub fn[T] assert_not_equal(
+  lhs : T,
+  rhs : T,
+  auto info : String,
+  auto offer debug_impl : Debug[T],
+  auto offer equal_impl : Equal[T]
+) -> Unit ! Assert {
+  assert!(
+    lhs != rhs,
+    "source info: "
+      |> concat(info),
+    "lhs"
+      |> concat(debug(lhs))
+      |> concat(" == ")
+      |> concat(debug(rhs))
+  )
 }
 
 pub struct TestCounts {
@@ -36,42 +88,18 @@ offer test_counts_impl_monoid : Monoid[TestCounts] = Monoid::{
 }
 
 // Run one test function under the assertion handler.
-fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Bool ! E {
+fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io, Write[TestCounts] } {
   handle f() with {
-    assert_true(cond, resume) => {
-      let rest_passed = resume(())
+    assert(cond, info, msg, resume) => {
       if cond {
-        rest_passed
+        resume(())
       } else {
-        false
-      }
-    }
-    assert_false(cond, resume) => {
-      let rest_passed = resume(())
-      if !cond {
-        rest_passed
-      } else {
-        false
-      }
-    }
-    assert_eq[_T](a, b, e, resume) => {
-      let rest_passed = resume(())
-      if e.equal(a, b) {
-        rest_passed
-      } else {
-        false
-      }
-    }
-    assert_not_eq[_T](a, b, e, resume) => {
-      let rest_passed = resume(())
-      if e.equal(a, b) {
-        false
-      } else {
-        rest_passed
+        println(info)
+        println(msg)
       }
     }
   } final _v {
-    true
+    ()
   }
 }
 
@@ -95,13 +123,7 @@ fn[E : Effect] execute_tests(
   match tests {
     empty() => ()
     cons(test, rest) => {
-      if execute_test(test) {
-        println("ok")
-        write!(TestCounts::{ passed: 1, failed: 0 })
-      } else {
-        println("error")
-        write!(TestCounts::{ passed: 0, failed: 1 })
-      }
+      execute_test(test)
       execute_tests(rest)
     }
   }

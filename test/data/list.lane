@@ -1,25 +1,35 @@
 module Test.Data.List
 
+import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Conv.List.{ list_impl_debug }
 import Basic.Data.List.*
 import Basic.Data.I64.{ i64_impl_add, i64_impl_equal }
 import Basic.Ops.{ op_add }
 import Basic.Trait.Num.{ Add }
-import Basic.Summon.{ summon, summon_via }
+import Basic.Summon.{ summon_via }
 import Basic.Trait.Equal.{ Equal }
-import Test.Assert.{ Assert }
+import Basic.Trait.Debug.{ Debug }
+import Test.Assert.{ Assert, assert_equal, assert_not_equal }
 
 fn test_length() -> Unit ! Assert {
-  assert_eq!(length([1, 2, 3, 4]), 4, summon())
-  assert_eq!(length[Unit]([]), 0, summon())
+  offer source_info : String = "test_length"
+  assert_equal(length([1, 2, 3, 4]), 4)
+  assert_equal(length[Unit]([]), 0)
 }
 
+offer list_i64_impl_equal : Equal[List[I64]] = summon_via()
+
+offer list_i64_impl_debug : Debug[List[I64]] = summon_via[Debug, List, I64]()
+
 fn test_equal() -> Unit ! Assert {
-  assert_eq!([1, 2, 3], [1, 2, 3], summon_via())
-  assert_eq![List[I64]]([], [], summon_via())
-  assert_not_eq!([1, 2, 3], [1, 2], summon_via())
+  offer source_info : String = "test_equal"
+  assert_equal([1, 2, 3], [1, 2, 3])
+  assert_equal[List[I64]]([], [])
+  assert_not_equal([1, 2, 3], [1, 2])
 }
 
 fn test_map() -> Unit ! Assert {
+  offer source_info : String = "test_map"
   let l1 = [1, 2, 3]
   let l2 = map[I64, I64, {}](
     l1,
@@ -27,13 +37,14 @@ fn test_map() -> Unit ! Assert {
       x + 2
     }
   )
-  assert_eq!(l2, [3, 4, 5], summon_via())
+  assert_equal(l2, [3, 4, 5])
 }
 
 fn test_foldl() -> Unit ! Assert {
+  offer source_info : String = "test_foldl"
   let l1 = [1, 2, 3]
   let s = foldl(l1, 0, i64_impl_add.add)
-  assert_eq!(s, 6, summon())
+  assert_equal(s, 6)
 }
 
 pub fn test_list() -> Unit ! Assert {

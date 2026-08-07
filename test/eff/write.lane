@@ -1,11 +1,14 @@
 module Test.Eff.Write
 
 import Basic.Eff.Write.*
+import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Conv.List.{ list_impl_debug }
 import Basic.Data.List.{ List, list_impl_monoid, list_impl_equal }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Debug.{ Debug }
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Summon.{ summon_via }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal }
 
 fn program() -> Unit ! Write[List[I64]] {
   write!([1])
@@ -16,6 +19,14 @@ fn program() -> Unit ! Write[List[I64]] {
 }
 
 pub fn test_write_log() -> Unit ! Assert {
+  offer source_info : String = "test_write_log"
   let res = run_write(program, monoid_impl=list_impl_monoid())()
-  assert_eq!(res.log, [1, 2, 3, 4, 5, 6], summon_via[Equal, List, I64]())
+  assert_equal(
+    res.log,
+    [1, 2, 3, 4, 5, 6],
+    equal_impl=summon_via(),
+    debug_impl=summon_via[Debug, List, I64]()
+  )
 }
+
+// TODO: missing contextual offer; need to display argument name

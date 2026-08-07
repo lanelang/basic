@@ -1,30 +1,37 @@
 module Test.Data.Char
 
 import Basic.Data.Char.*
+import Basic.Conv.Char.{ char_impl_debug }
+import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Conv.Option.{ option_impl_debug }
 import Basic.Data.Option.{ Option, option_impl_equal }
-import Basic.Data.String.{ string_impl_equal }
+import Basic.Data.String.{ string_impl_equal, string_impl_debug }
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Debug.{ Debug }
 import Basic.Trait.Compare.{ Compare }
-import Basic.Summon.{ summon, summon_via }
+import Basic.Summon.{ summon_via }
 import Basic.Ops.{ op_less }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_char() -> Unit ! Assert {
+  offer source_info : String = "test_char"
+  offer option_char_impl_equal : Equal[Option[Char]] = summon_via()
+  offer option_char_impl_debug : Debug[Option[Char]] = summon_via[Debug, Option, Char]() // TODO: Why this not infer?
   // Scalar construction accepts the whole Unicode scalar range.
-  assert_eq!(from_i64(0), some('\0'), summon_via())
-  assert_eq!(from_i64(233), some('é'), summon_via())
-  assert_eq!(from_i64(20320), some('你'), summon_via())
-  assert_eq!(from_i64(128512), some('😀'), summon_via())
+  assert_equal(from_i64(0), some('\0'))
+  assert_equal(from_i64(233), some('é'))
+  assert_equal(from_i64(20320), some('你'))
+  assert_equal(from_i64(128512), some('😀'))
   // Negative values, surrogates, and out-of-range values are rejected.
-  assert_eq![Option[Char]](from_i64(-1), none(), summon_via())
-  assert_eq![Option[Char]](from_i64(55296), none(), summon_via())
-  assert_eq![Option[Char]](from_i64(1114112), none(), summon_via())
-  assert_eq!(to_i64('😀'), 128512, summon())
+  assert_equal[Option[Char]](from_i64(-1), none())
+  assert_equal[Option[Char]](from_i64(55296), none())
+  assert_equal[Option[Char]](from_i64(1114112), none())
+  assert_equal(to_i64('😀'), 128512)
   // UTF-8 encoding covers all four widths.
-  assert_eq!(to_string('A'), "A", summon())
-  assert_eq!(to_string('é'), "é", summon())
-  assert_eq!(to_string('你'), "你", summon())
-  assert_eq!(to_string('😀'), "😀", summon())
-  assert_true!('你' < '😀')
+  assert_equal(to_string('A'), "A")
+  assert_equal(to_string('é'), "é")
+  assert_equal(to_string('你'), "你")
+  assert_equal(to_string('😀'), "😀")
+  assert_true('你' < '😀')
 }

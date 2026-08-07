@@ -1,4 +1,4 @@
 module Test.Eff.Loop
 
 // import Basic.Eff.Loop.* 
-// import Test.Assert.{ Assert }
+// import Test.Assert.{ Assert, assert_equal, assert_true }

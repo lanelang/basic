@@ -1,0 +1,14 @@
+module Basic.Conv.List
+
+import Basic.Data.List.{ List }
+import Basic.Trait.Debug.{ Debug }
+import Basic.Derive.Debug.{ derive_debug, recursive_debug }
+
+pub offer fn[T] list_impl_debug(auto offer debug_impl : Debug[T]) -> Debug[List[T]] {
+  offer recursive_list_debug : Debug[List[T]] = recursive_debug.defer(
+    fn() {
+      list_impl_debug()
+    }
+  )
+  derive[Debug, List[T]]()
+}

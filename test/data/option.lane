@@ -1,16 +1,28 @@
 module Test.Data.Option
 
 import Basic.Data.Option.*
+import Basic.Conv.Unit.{ unit_impl_debug }
+import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.I64.{ i64_impl_equal }
+import Basic.Conv.Option.{ option_impl_debug }
 import Basic.Data.Unit.{ unit_impl_equal }
 import Basic.Trait.Equal.{ Equal }
+import Basic.Trait.Debug.{ Debug }
 import Basic.Summon.{ summon_via }
-import Test.Assert.{ Assert }
+import Test.Assert.{ Assert, assert_equal, assert_not_equal }
 
 pub fn test_equal() -> Unit ! Assert {
-  assert_eq!(some(1), some(1), summon_via())
-  assert_eq![Option[I64]](none(), none(), summon_via())
-  assert_eq![Option[Unit]](none(), none(), summon_via())
-  assert_not_eq![Option[I64]](some(1), none(), summon_via())
-  assert_not_eq![Option[I64]](some(1), some(2), summon_via())
+  offer source_info : String = "test_equal"
+  offer option_i64_impl_equal : Equal[Option[I64]] = summon_via()
+  offer option_i64_impl_debug : Debug[Option[I64]] = summon_via[Debug, Option, I64]()
+  assert_equal(some(1), some(1))
+  assert_equal[Option[I64]](none(), none())
+  assert_equal[Option[Unit]](
+    none(),
+    none(),
+    debug_impl=summon_via[Debug, Option, Unit](),
+    equal_impl=summon_via()
+  )
+  assert_not_equal[Option[I64]](some(1), none())
+  assert_not_equal[Option[I64]](some(1), some(2))
 }
