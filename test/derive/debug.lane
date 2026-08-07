@@ -1,7 +1,8 @@
 module Test.Derive.Debug
 
-import Basic.Trait.Debug.{ debug }
-import Basic.Conv.I64.{ i64_to_i32 }
+import Basic.Derive.Debug.*
+import Basic.Trait.Debug.{ Debug, debug }
+import Basic.Conv.I64.{ i64_to_i32, i64_impl_debug }
 import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.String.{ string_impl_equal }
 import Basic.Summon.{ summon }
@@ -16,7 +17,20 @@ fn test_debug_i32() -> Unit ! Assert {
   assert_eq!(debug(i64_to_i32(42)), "42", summon())
 }
 
+struct Point {
+  x : I64
+  y : I32
+}
+
+offer point_impl_debug : Debug[Point] = derive[Debug, Point]()
+
+fn test_debug_derive_struct() -> Unit ! Assert {
+  let point = Point::{ x: 1, y: 2i32 }
+  assert_eq!(debug(point), "Point::{ x: 1, y: 2 }", summon())
+}
+
 pub fn test_debug() -> Unit ! Assert {
   test_debug_unit()
   test_debug_i32()
+  test_debug_derive_struct()
 }

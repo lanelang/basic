@@ -2,7 +2,6 @@ module Basic.Data.Unit
 
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }
-import Basic.Derive.Debug.{ derive_debug }
 
 pub offer unit_impl_equal : Equal[Unit] = Equal::{
   equal: fn(_a, _b) {
@@ -10,4 +9,9 @@ pub offer unit_impl_equal : Equal[Unit] = Equal::{
   }
 }
 
-pub offer unit_impl_debug : Debug[Unit] = derive_debug.unit()
+// The capability for the `Unit` *type*, which renders as `()`. This is a
+// different thing from `Deriver[Debug].unit`, which terminates a field or
+// payload sequence and renders nothing.
+pub offer unit_impl_debug : Debug[Unit] = fn(_u : Unit) -> String {
+  "()"
+}
