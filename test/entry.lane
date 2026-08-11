@@ -11,6 +11,7 @@ import Test.Data.String as String
 import Test.Data.Bytes as Bytes
 import Test.Data.Option as Option
 import Test.Data.List as List
+import Test.Data.AList as AList
 import Test.Eff.Write as Write
 import Test.Derive.Debug as Debug
 
@@ -25,6 +26,7 @@ pub fn test_entry() -> Unit ! Io {
     Bytes.test_utf8_and_bytes,
     Option.test_equal,
     List.test_list,
+    AList.test_alist,
     Write.test_write_log,
     Debug.test_debug
   ])

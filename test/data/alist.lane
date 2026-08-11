@@ -1,0 +1,22 @@
+module Test.Data.AList
+
+import Basic.Data.AList as AList
+import Basic.Data.I64.{ i64_impl_equal }
+import Test.Assert.{ Assert, assert_true }
+
+pub fn test_alist() -> Unit ! Assert {
+  offer source_info : String = "test_alist"
+  let table = AList.set(AList.set(AList.empty(), 1, 10), 1, 20)
+  assert_true(
+    match AList.get(table, 1) {
+      some(20) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match AList.get(AList.del(table, 1), 1) {
+      none() => true
+      _ => false
+    }
+  )
+}

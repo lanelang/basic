@@ -28,5 +28,3 @@ pub fn test_write_log() -> Unit ! Assert {
     debug_impl=summon_via[Debug, List, I64]()
   )
 }
-
-// TODO: missing contextual offer; need to display argument name

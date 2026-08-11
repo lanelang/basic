@@ -17,7 +17,7 @@ import Test.Assert.{ Assert, assert_equal, assert_true }
 pub fn test_char() -> Unit ! Assert {
   offer source_info : String = "test_char"
   offer option_char_impl_equal : Equal[Option[Char]] = summon_via()
-  offer option_char_impl_debug : Debug[Option[Char]] = summon_via[Debug, Option, Char]() // TODO: Why this not infer?
+  offer option_char_impl_debug : Debug[Option[Char]] = summon_via[Debug, Option, Char]()
   // Scalar construction accepts the whole Unicode scalar range.
   assert_equal(from_i64(0), some('\0'))
   assert_equal(from_i64(233), some('é'))

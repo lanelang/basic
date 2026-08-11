@@ -10,6 +10,12 @@ pub fn[T] summon_on(auto x : T) -> () -> T {
   }
 }
 
+// `summon_via` uses local structural inference only. A nominal expected type
+// such as `Equal[Option[Char]]` preserves enough constructor shape to infer
+// Evid, T1, and T2. A transparent capability alias such as `Debug[T]`, however,
+// reduces to its underlying function type before matching; recovering `Debug`
+// would require non-unique higher-order type-lambda synthesis. Callers of a
+// transparent capability therefore pass these generic arguments explicitly.
 pub fn[Evid : [Type] -> Type, T1 : [Type] -> Type, T2 : Type] summon_via(
   auto provider : [T](Evid[T]) -> Evid[T1[T]],
   auto base : Evid[T2]

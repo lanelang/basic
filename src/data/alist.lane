@@ -4,7 +4,6 @@ import Basic.Data.List.{ List, push_head, filter, find }
 import Basic.Data.Tuple.{ Tuple, fst, snd }
 import Basic.Data.Option.{ Option, map }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Table.{ Table }
 import Basic.Ops.{ op_equal, op_not_equal }
 
 pub type AList[A, B] = List[(A, B)]
@@ -37,24 +36,4 @@ pub fn[K, V] del(list : AList[K, V], key : K, auto offer equal_impl : Equal[K]) 
       fst(e) != key
     }
   )
-}
-
-pub fn[K, V] assoc_list_impl_table(auto offer key_equal_impl : Equal[K]) -> Table[AList[K, V]] {
-  Table::{
-    K = K,
-    V = V,
-    key_equal_impl,
-    empty: fn() {
-      empty()
-    },
-    set: fn(t, k, v) {
-      set(t, k, v)
-    },
-    get: fn(t, k) {
-      get(t, k)
-    },
-    del: fn(t, k) {
-      del(t, k)
-    }
-  }
 }
