@@ -2,13 +2,13 @@ module Test.Assert
 
 import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.Bool.{ bool_impl_not }
-import Basic.Data.List.{ List }
-import Basic.Data.I64.{ i64_impl_add }
+import Basic.Data.List.{ List, length }
+import Basic.Data.I64.{ i64_impl_add, i64_impl_equal }
 import Basic.Data.String.{ concat }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Debug.{ debug, Debug }
-import Basic.Io.{ println }
+import Basic.Io.{ println, panic }
 import Basic.Eff.Write.{ Write, run_write, WriteResult }
 import Basic.Ops.{ op_not, op_add, op_equal, op_not_equal }
 
@@ -46,8 +46,7 @@ pub fn[T] assert_equal(
     lhs == rhs,
     "source info: "
       |> concat(info),
-    "lhs"
-      |> concat(debug(lhs))
+    debug(lhs)
       |> concat(" != ")
       |> concat(debug(rhs))
   )
@@ -64,8 +63,7 @@ pub fn[T] assert_not_equal(
     lhs != rhs,
     "source info: "
       |> concat(info),
-    "lhs"
-      |> concat(debug(lhs))
+    debug(lhs)
       |> concat(" == ")
       |> concat(debug(rhs))
   )
@@ -94,23 +92,29 @@ fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io, W
       if cond {
         resume(())
       } else {
+        write!(TestCounts::{ passed: 0, failed: 1 })
         println(info)
         println(msg)
       }
     }
   } final _v {
+    write!(TestCounts::{ passed: 1, failed: 0 })
     ()
   }
 }
 
-pub fn[E : Effect] execute_all_tests(tests : List[() -> Unit ! { E, Assert }]) -> Unit ! { E, Io } {
+pub fn[E : Effect] execute_all_tests(
+  tests : List[() -> Unit ! { E, Assert }]
+) -> Unit ! { E, Io } {
   let result =
     fn() {
       execute_tests(tests)
-    } |> run_write[Unit, TestCounts, { E, Io }]
+    } |> run_write[Unit, TestCounts, { E, Io }]()
   let result = result()
   println(
-    "Tests passed: "
+    "Total tests: "
+      |> concat(debug(length(tests)))
+      |> concat(", passed: ")
       |> concat(debug(result.log.passed))
       |> concat(", failed: ")
       |> concat(debug(result.log.failed))
