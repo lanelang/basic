@@ -3,12 +3,12 @@ module Test.Assert
 import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.Bool.{ bool_impl_not }
 import Basic.Data.List.{ List, length }
-import Basic.Data.I64.{ i64_impl_add, i64_impl_equal }
+import Basic.Data.I64.{ i64_impl_add }
 import Basic.Data.String.{ concat }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Debug.{ debug, Debug }
-import Basic.Io.{ println, panic }
+import Basic.Io.{ println }
 import Basic.Eff.Write.{ Write, run_write, WriteResult }
 import Basic.Ops.{ op_not, op_add, op_equal, op_not_equal }
 
