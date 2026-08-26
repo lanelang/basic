@@ -1,5 +1,7 @@
 module Basic.Io
 
+import Basic.Data.Void.{ Void }
+
 pub let println : (String) -> Unit ! Io = extern("println")
 
-pub let panic : (String) -> Unit ! Panic = builtin("%panic")
+pub let panic : (String) -> Void ! Panic = builtin("%panic")
