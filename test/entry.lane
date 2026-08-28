@@ -9,6 +9,7 @@ import Test.Data.F32 as F32
 import Test.Data.Char as Char
 import Test.Data.String as String
 import Test.Data.Bytes as Bytes
+import Test.Data.Array as Array
 import Test.Data.Option as Option
 import Test.Data.List as List
 import Test.Data.AList as AList
@@ -16,18 +17,21 @@ import Test.Eff.Write as Write
 import Test.Derive.Debug as Debug
 
 pub fn test_entry() -> Unit ! Io {
-  execute_all_tests([
-    I32.test_i32,
-    I64.test_i64,
-    F64.test_f64,
-    F32.test_f32,
-    Char.test_char,
-    String.test_string,
-    Bytes.test_utf8_and_bytes,
-    Option.test_equal,
-    List.test_list,
-    AList.test_alist,
-    Write.test_write_log,
-    Debug.test_debug
-  ])
+  execute_all_tests(
+    [
+      I32.test_i32,
+      I64.test_i64,
+      F64.test_f64,
+      F32.test_f32,
+      Char.test_char,
+      String.test_string,
+      Bytes.test_utf8_and_bytes,
+      Array.test_array,
+      Option.test_equal,
+      List.test_list,
+      AList.test_alist,
+      Write.test_write_log,
+      Debug.test_debug
+    ]
+  )
 }

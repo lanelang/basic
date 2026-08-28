@@ -1,0 +1,47 @@
+module Basic.Data.Array
+
+import Basic.Builtins as Builtins
+import Basic.Ops.{ op_less, op_greater_eq }
+import Basic.Data.I64.{ i64_impl_compare }
+import Basic.Eff.Bound.{ OutOfBound }
+
+// Create an empty immutable array.
+pub fn[T] empty() -> Array[T] {
+  Builtins.array_empty[T]()
+}
+
+// Create an immutable array, reporting a negative length through OutOfBound.
+pub fn[T] make(length : I64, fill : T) -> Array[T] ! OutOfBound {
+  if length < 0 {
+    out_of_min!()
+  } else {
+    Builtins.array_make[T](length, fill)
+  }
+}
+
+// Return the number of elements in the array.
+pub fn[T] length(array : Array[T]) -> I64 {
+  Builtins.array_length[T](array)
+}
+
+// Read an element, reporting a negative or past-the-end index through OutOfBound.
+pub fn[T] get(array : Array[T], index : I64) -> T ! OutOfBound {
+  if index < 0 {
+    out_of_min!()
+  } else if index >= Builtins.array_length[T](array) {
+    out_of_max!()
+  } else {
+    Builtins.array_get[T](array, index)
+  }
+}
+
+// Return an array with one element replaced while preserving the input value.
+pub fn[T] set(array : Array[T], index : I64, value : T) -> Array[T] ! OutOfBound {
+  if index < 0 {
+    out_of_min!()
+  } else if index >= Builtins.array_length[T](array) {
+    out_of_max!()
+  } else {
+    Builtins.array_set[T](array, index, value)
+  }
+}

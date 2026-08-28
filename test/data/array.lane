@@ -1,0 +1,124 @@
+module Test.Data.Array
+
+import Basic.Builtins as Builtins
+import Basic.Data.Array.{ empty, make, length, get, set }
+import Basic.Data.Void.{ Void }
+import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Data.I64.{ i64_impl_equal }
+import Basic.Data.String.{ string_impl_debug, string_impl_equal }
+import Test.Eff.Bound.{ expect_in_bounds, is_out_of_bounds }
+import Test.Assert.{ Assert, assert_equal, assert_true }
+
+pub struct Box {
+  value : I64
+}
+
+fn[T] checked_get(array : Array[T], index : I64, fallback : T) -> T ! Assert {
+  expect_in_bounds(
+    fn() {
+      get(array, index)
+    },
+    fallback
+  )
+}
+
+pub fn test_array() -> Unit ! Assert {
+  offer source_info : String = "test_array"
+  let numbers = expect_in_bounds[Array[I64]](
+    fn() {
+      make[I64](3, 4)
+    },
+    empty[I64]()
+  )
+  assert_equal(length[I64](numbers), 3)
+  assert_equal(checked_get[I64](numbers, 1, 0), 4)
+  let changed = expect_in_bounds[Array[I64]](
+    fn() {
+      set[I64](numbers, 1, 9)
+    },
+    empty[I64]()
+  )
+  assert_equal(checked_get[I64](numbers, 1, 0), 4)
+  assert_equal(checked_get[I64](changed, 1, 0), 9)
+  let words = expect_in_bounds[Array[String]](
+    fn() {
+      make[String](2, "lane")
+    },
+    empty[String]()
+  )
+  assert_equal(checked_get[String](words, 0, ""), "lane")
+  let inner = expect_in_bounds[Array[I64]](
+    fn() {
+      make[I64](1, 7)
+    },
+    empty[I64]()
+  )
+  let nested = expect_in_bounds[Array[Array[I64]]](
+    fn() {
+      make[Array[I64]](1, inner)
+    },
+    empty[Array[I64]]()
+  )
+  assert_equal(checked_get[I64](checked_get[Array[I64]](nested, 0, empty[I64]()), 0, 0), 7)
+  let boxes = expect_in_bounds[Array[Box]](
+    fn() {
+      make[Box](1, Box::{ value: 12 })
+    },
+    empty[Box]()
+  )
+  assert_equal(checked_get[Box](boxes, 0, Box::{ value: 0 }).value, 12)
+  let functions = expect_in_bounds[Array[(I64) -> I64]](
+    fn() {
+      make[(I64) -> I64](
+        1,
+        fn(value : I64) {
+          value
+        }
+      )
+    },
+    empty[(I64) -> I64]()
+  )
+  assert_equal(
+    checked_get[(I64) -> I64](
+      functions,
+      0,
+      fn(_value : I64) {
+        0
+      }
+    )(14),
+    14
+  )
+  let no_values : Array[Void] = empty[Void]()
+  assert_equal(length[Void](no_values), 0)
+  let make_i64 : (I64, I64) -> Array[I64] = Builtins.array_make[I64]
+  let raw = make_i64(1, 21)
+  assert_equal(Builtins.array_get[I64](raw, 0), 21)
+  assert_true(
+    is_out_of_bounds[Array[I64]](
+      fn() {
+        make[I64](-1, 0)
+      }
+    )
+  )
+  assert_true(
+    is_out_of_bounds[I64](
+      fn() {
+        get[I64](numbers, -1)
+      }
+    )
+  )
+  assert_true(
+    is_out_of_bounds[I64](
+      fn() {
+        get[I64](numbers, 3)
+      }
+    )
+  )
+  assert_true(
+    is_out_of_bounds[Array[I64]](
+      fn() {
+        set[I64](numbers, 3, 0)
+      }
+    )
+  )
+}
