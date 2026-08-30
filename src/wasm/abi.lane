@@ -1,0 +1,127 @@
+module Basic.Wasm.Abi
+
+import Basic.Builtins.{
+  bytes_get,
+  bytes_length,
+  bytes_make,
+  bytes_set,
+  i32_to_i64,
+  i64_add,
+  i64_div,
+  i64_equal,
+  i64_less,
+  i64_rem,
+  i64_to_byte,
+  wasm_abi_store_address
+}
+
+pub enum WasmAbiRelocations {
+  none()
+  relocation(I64, I32, WasmAbiRelocations)
+}
+
+pub struct WasmAbiFrameBuilder {
+  storage : Bytes
+  relocations : WasmAbiRelocations
+}
+
+// An owned, sealed wasm32 guest-memory frame. Address relocations have already
+// been materialized, so the frame exposes no further update operations.
+pub struct WasmAbiFrame {
+  storage : Bytes
+}
+
+// The canonical guest-address carrier accepted by raw Wasm extern parameters.
+// It is deliberately not convertible to I32 in Lane source.
+pub struct WasmAddress {
+  storage : Bytes
+  offset : I32
+}
+
+pub fn allocate(size : I64) -> WasmAbiFrameBuilder {
+  WasmAbiFrameBuilder::{ storage: bytes_make(size, i64_to_byte(0)), relocations: none() }
+}
+
+pub fn address(frame : WasmAbiFrame, offset : I32) -> WasmAddress {
+  WasmAddress::{ storage: frame.storage, offset }
+}
+
+pub fn store_i32(frame : WasmAbiFrameBuilder, index : I64, value : I32) -> WasmAbiFrameBuilder {
+  let signed = i32_to_i64(value)
+  let bits = if i64_less(signed, 0) {
+    i64_add(signed, 4294967296)
+  } else {
+    signed
+  }
+  let byte0 = i64_to_byte(i64_rem(bits, 256))
+  let byte1 = i64_to_byte(i64_rem(i64_div(bits, 256), 256))
+  let byte2 = i64_to_byte(i64_rem(i64_div(bits, 65536), 256))
+  let byte3 = i64_to_byte(i64_div(bits, 16777216))
+  let storage = bytes_set(frame.storage, index, byte0)
+  let storage = bytes_set(storage, i64_add(index, 1), byte1)
+  let storage = bytes_set(storage, i64_add(index, 2), byte2)
+  let storage = bytes_set(storage, i64_add(index, 3), byte3)
+  WasmAbiFrameBuilder::{ storage, relocations: frame.relocations }
+}
+
+// Record an address that points into this same frame. The address is not
+// materialized until `seal`, so subsequent builder updates cannot stale it.
+pub fn store_address(
+  frame : WasmAbiFrameBuilder,
+  index : I64,
+  target_offset : I32
+) -> WasmAbiFrameBuilder {
+  WasmAbiFrameBuilder::{
+    storage: frame.storage,
+    relocations: relocation(index, target_offset, frame.relocations)
+  }
+}
+
+pub fn copy_bytes(
+  frame : WasmAbiFrameBuilder,
+  destination : I64,
+  source : Bytes
+) -> WasmAbiFrameBuilder {
+  WasmAbiFrameBuilder::{
+    storage: copy_bytes_loop(frame.storage, destination, source, 0, bytes_length(source)),
+    relocations: frame.relocations
+  }
+}
+
+pub fn seal(frame : WasmAbiFrameBuilder) -> WasmAbiFrame {
+  WasmAbiFrame::{ storage: materialize_relocations(frame.storage, frame.relocations) }
+}
+
+fn materialize_relocations(storage : Bytes, relocations : WasmAbiRelocations) -> Bytes {
+  match relocations {
+    none() => storage
+    relocation(index, target_offset, rest) => materialize_relocations(
+      wasm_abi_store_address(storage, index, target_offset),
+      rest
+    )
+  }
+}
+
+fn copy_bytes_loop(
+  destination : Bytes,
+  destination_offset : I64,
+  source : Bytes,
+  source_offset : I64,
+  source_length : I64
+) -> Bytes {
+  if i64_equal(source_offset, source_length) {
+    destination
+  } else {
+    copy_bytes_loop(
+      bytes_set(
+        destination,
+        i64_add(destination_offset, source_offset),
+        bytes_get(source, source_offset)
+      ),
+      destination_offset,
+      source,
+      i64_add(source_offset, 1),
+      source_length
+    )
+  }
+}
