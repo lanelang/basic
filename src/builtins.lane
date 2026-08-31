@@ -139,4 +139,16 @@ pub let bytes_concat : (Bytes, Bytes) -> Bytes = builtin("%bytes_concat")
 // UB unless start and length select an in-bounds byte range
 pub let bytes_slice : (Bytes, I64, I64) -> Bytes = builtin("%bytes_slice")
 
-pub let wasm_abi_store_address : (Bytes, I64, I32) -> Bytes = builtin("%wasm_abi_store_address")
+pub let byte_buffer_make : (I64) -> ByteBuffer ! Io = builtin("%byte_buffer_make")
+
+pub let byte_buffer_write_bytes : (ByteBuffer, I64, Bytes) -> Unit ! Io =
+  builtin("%byte_buffer_write_bytes")
+
+pub let byte_buffer_write_i32 : (ByteBuffer, I64, I32) -> Unit ! Io =
+  builtin("%byte_buffer_write_i32")
+
+pub let byte_buffer_write_address : (ByteBuffer, I64, ByteBuffer, I32) -> Unit ! Io =
+  builtin("%byte_buffer_write_address")
+
+pub let byte_buffer_read_i32 : (ByteBuffer, I64) -> I32 ! Io =
+  builtin("%byte_buffer_read_i32")
