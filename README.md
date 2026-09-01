@@ -6,4 +6,9 @@ This directory contains Lane's ordinary Basic library. It defines no compiler-re
 
 `Basic.Data.AList` exposes its immutable association-list operations directly. Basic intentionally has no generic `Table` dictionary: construction from entries and traversal need explicit duplicate-key and ordering laws before they become a shared collection capability.
 
+`Basic.Platform.Wasip1` exposes the complete raw `wasi_snapshot_preview1`
+function surface supported by Lane's pinned Wasmoon runtime. These bindings use
+`WasmAddress` for guest-memory pointers and intentionally do not replace
+domain-level wrappers such as `Basic.Io.println`.
+
 Run the integration suite with `./test.sh`. Set `LANE_BIN=/path/to/lane` when testing against a compiler build that is not installed on `PATH`.

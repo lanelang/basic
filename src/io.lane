@@ -2,10 +2,8 @@ module Basic.Io
 
 import Basic.Builtins.{ bytes_concat, bytes_length, i64_add, i64_to_i32, string_to_bytes }
 import Basic.Data.Void.{ Void }
+import Basic.Platform.Wasip1.{ fd_write }
 import Basic.Wasm.Abi.{ WasmAddress, address, allocate, write_address, write_bytes, write_i32 }
-
-let wasi_fd_write : (I32, WasmAddress, I32, WasmAddress) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_write")
 
 pub fn println(value : String) -> Unit ! Io {
   let bytes = bytes_concat(string_to_bytes(value), string_to_bytes("\n"))
@@ -15,7 +13,7 @@ pub fn println(value : String) -> Unit ! Io {
   write_address(frame, 0, frame, 12i32)
   write_i32(frame, 4, i64_to_i32(length))
   write_i32(frame, 8, 0i32)
-  let _errno = wasi_fd_write(1i32, address(frame, 0i32), 1i32, address(frame, 8i32))
+  let _errno = fd_write(1i32, address(frame, 0i32), 1i32, address(frame, 8i32))
   ()
 }
 

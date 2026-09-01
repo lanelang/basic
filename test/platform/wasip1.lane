@@ -1,0 +1,11 @@
+module Test.Platform.Wasip1
+
+import Basic.Conv.I32.{ i32_impl_debug }
+import Basic.Data.I32.{ i32_impl_equal }
+import Basic.Platform.Wasip1.{ sched_yield }
+import Test.Assert.{ Assert, assert_equal }
+
+pub fn test_wasip1() -> Unit ! { Assert, Io } {
+  offer source_info : String = "test_wasip1"
+  assert_equal(sched_yield(), 0i32)
+}
