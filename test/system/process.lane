@@ -1,0 +1,24 @@
+module Test.System.Process
+
+import Basic.Data.Option.{ Option }
+import Basic.System.Process.{ Command, CommandResult, run_command }
+import Test.Assert.{ Assert, assert_true }
+
+pub fn test_missing_command() -> Unit ! { Assert, Io } {
+  offer source_info : String = "test_missing_command"
+  let result = run_command(
+    Command::{
+      executable: "lane-command-that-does-not-exist-4b8e64f1",
+      arguments: [],
+      working_directory: none(),
+      environment: [],
+      inherit_environment: true
+    }
+  )
+  assert_true(
+    match result {
+      executable_not_found() => true
+      _ => false
+    }
+  )
+}

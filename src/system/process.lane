@@ -1,0 +1,201 @@
+module Basic.System.Process
+
+import Basic.Builtins.{ bytes_length, i32_equal, i64_add, i64_mul, i64_to_i32, string_to_bytes }
+import Basic.Data.List.{ List, length }
+import Basic.Data.Option.{ Option }
+import Basic.Wasm.Abi.{ WasmAddress, address, allocate, read_i32, write_bytes, write_i32 }
+
+pub struct EnvironmentVariable {
+  key : String
+  value : String
+}
+
+pub struct Command {
+  executable : String
+  arguments : List[String]
+  working_directory : Option[String]
+  environment : List[EnvironmentVariable]
+  inherit_environment : Bool
+}
+
+pub enum CommandResult {
+  exited(I32)
+  signaled(I32)
+  invalid_request()
+  executable_not_found()
+  permission_denied()
+  system_failure()
+}
+
+let run_command_raw : (WasmAddress, I32, WasmAddress) -> I32 ! Io =
+  extern("lane_runtime_v1", "run_command")
+
+fn string_size(value : String) -> I64 {
+  bytes_length(string_to_bytes(value))
+}
+
+fn string_list_size(values : List[String]) -> I64 {
+  match values {
+    empty() => 0
+    cons(value, rest) => i64_add(string_size(value), string_list_size(rest))
+  }
+}
+
+fn environment_size(values : List[EnvironmentVariable]) -> I64 {
+  match values {
+    empty() => 0
+    cons(value, rest) => i64_add(
+      i64_add(string_size(value.key), string_size(value.value)),
+      environment_size(rest)
+    )
+  }
+}
+
+fn working_directory_size(directory : Option[String]) -> I64 {
+  match directory {
+    none() => 0
+    some(value) => string_size(value)
+  }
+}
+
+fn write_frame_i32(frame : ByteBuffer, request_start : I64, offset : I64, value : I64) -> Unit ! Io {
+  write_i32(frame, i64_add(request_start, offset), i64_to_i32(value))
+}
+
+fn write_frame_bytes(
+  frame : ByteBuffer,
+  request_start : I64,
+  offset : I64,
+  value : String
+) -> Unit ! Io {
+  write_bytes(frame, i64_add(request_start, offset), string_to_bytes(value))
+}
+
+fn write_arguments(
+  frame : ByteBuffer,
+  request_start : I64,
+  arguments : List[String],
+  table_offset : I64,
+  payload_offset : I64
+) -> Unit ! Io {
+  match arguments {
+    empty() => ()
+    cons(argument, rest) => {
+      let length = string_size(argument)
+      write_frame_i32(frame, request_start, table_offset, payload_offset)
+      write_frame_i32(frame, request_start, i64_add(table_offset, 4), length)
+      write_frame_bytes(frame, request_start, payload_offset, argument)
+      write_arguments(
+        frame,
+        request_start,
+        rest,
+        i64_add(table_offset, 8),
+        i64_add(payload_offset, length)
+      )
+    }
+  }
+}
+
+fn write_environment(
+  frame : ByteBuffer,
+  request_start : I64,
+  environment : List[EnvironmentVariable],
+  table_offset : I64,
+  payload_offset : I64
+) -> Unit ! Io {
+  match environment {
+    empty() => ()
+    cons(variable, rest) => {
+      let key_length = string_size(variable.key)
+      let value_length = string_size(variable.value)
+      let value_offset = i64_add(payload_offset, key_length)
+      write_frame_i32(frame, request_start, table_offset, payload_offset)
+      write_frame_i32(frame, request_start, i64_add(table_offset, 4), key_length)
+      write_frame_i32(frame, request_start, i64_add(table_offset, 8), value_offset)
+      write_frame_i32(frame, request_start, i64_add(table_offset, 12), value_length)
+      write_frame_bytes(frame, request_start, payload_offset, variable.key)
+      write_frame_bytes(frame, request_start, value_offset, variable.value)
+      write_environment(
+        frame,
+        request_start,
+        rest,
+        i64_add(table_offset, 16),
+        i64_add(value_offset, value_length)
+      )
+    }
+  }
+}
+
+pub fn run_command(command : Command) -> CommandResult ! Io {
+  let response_size = 8
+  let request_header_size = 36
+  let argument_count = length(command.arguments)
+  let environment_count = length(command.environment)
+  let argument_table_offset = request_header_size
+  let environment_table_offset = i64_add(argument_table_offset, i64_mul(argument_count, 8))
+  let executable_offset = i64_add(environment_table_offset, i64_mul(environment_count, 16))
+  let executable_length = string_size(command.executable)
+  let arguments_payload_offset = i64_add(executable_offset, executable_length)
+  let working_directory_offset =
+    i64_add(arguments_payload_offset, string_list_size(command.arguments))
+  let environment_payload_offset =
+    i64_add(working_directory_offset, working_directory_size(command.working_directory))
+  let request_size = i64_add(environment_payload_offset, environment_size(command.environment))
+  let frame = allocate(i64_add(response_size, request_size))
+  let flags = if command.inherit_environment {
+    1
+  } else {
+    0
+  }
+  write_frame_i32(frame, response_size, 0, flags)
+  write_frame_i32(frame, response_size, 4, executable_offset)
+  write_frame_i32(frame, response_size, 8, executable_length)
+  write_frame_i32(frame, response_size, 12, argument_table_offset)
+  write_frame_i32(frame, response_size, 16, argument_count)
+  match command.working_directory {
+    none() => {
+      write_frame_i32(frame, response_size, 20, -1)
+      write_frame_i32(frame, response_size, 24, 0)
+    }
+    some(directory) => {
+      write_frame_i32(frame, response_size, 20, working_directory_offset)
+      write_frame_i32(frame, response_size, 24, string_size(directory))
+      write_frame_bytes(frame, response_size, working_directory_offset, directory)
+    }
+  }
+  write_frame_i32(frame, response_size, 28, environment_table_offset)
+  write_frame_i32(frame, response_size, 32, environment_count)
+  write_frame_bytes(frame, response_size, executable_offset, command.executable)
+  write_arguments(
+    frame,
+    response_size,
+    command.arguments,
+    argument_table_offset,
+    arguments_payload_offset
+  )
+  write_environment(
+    frame,
+    response_size,
+    command.environment,
+    environment_table_offset,
+    environment_payload_offset
+  )
+  let status = run_command_raw(address(frame, 8i32), i64_to_i32(request_size), address(frame, 0i32))
+  if i32_equal(status, 0i32) {
+    let kind = read_i32(frame, 0)
+    let code = read_i32(frame, 4)
+    if i32_equal(kind, 0i32) {
+      exited(code)
+    } else {
+      signaled(code)
+    }
+  } else if i32_equal(status, 1i32) {
+    invalid_request()
+  } else if i32_equal(status, 2i32) {
+    executable_not_found()
+  } else if i32_equal(status, 3i32) {
+    permission_denied()
+  } else {
+    system_failure()
+  }
+}
