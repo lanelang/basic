@@ -3,6 +3,7 @@ module Basic.Wasm.Abi
 import Basic.Builtins.{
   byte_buffer_make,
   byte_buffer_read_i32,
+  byte_buffer_to_bytes,
   byte_buffer_write_address,
   byte_buffer_write_bytes,
   byte_buffer_write_i32
@@ -23,11 +24,7 @@ pub fn address(storage : ByteBuffer, offset : I32) -> WasmAddress {
   WasmAddress::{ storage, offset }
 }
 
-pub fn write_bytes(
-  storage : ByteBuffer,
-  destination : I64,
-  source : Bytes
-) -> Unit ! Io {
+pub fn write_bytes(storage : ByteBuffer, destination : I64, source : Bytes) -> Unit ! Io {
   byte_buffer_write_bytes(storage, destination, source)
 }
 
@@ -46,4 +43,8 @@ pub fn write_address(
 
 pub fn read_i32(storage : ByteBuffer, index : I64) -> I32 ! Io {
   byte_buffer_read_i32(storage, index)
+}
+
+pub fn to_bytes(storage : ByteBuffer) -> Bytes ! Io {
+  byte_buffer_to_bytes(storage)
 }

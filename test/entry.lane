@@ -36,5 +36,7 @@ pub fn test_entry() -> Unit ! Io {
       Debug.test_debug
     ]
   )
-  execute_all_tests[{ Io }]([Process.test_missing_command, Wasip1.test_wasip1])
+  execute_all_tests[{ Io }](
+    [Process.test_missing_command, Process.test_inspect_source_output, Wasip1.test_wasip1]
+  )
 }

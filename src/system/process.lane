@@ -1,9 +1,18 @@
 module Basic.System.Process
 
-import Basic.Builtins.{ bytes_length, i32_equal, i64_add, i64_mul, i64_to_i32, string_to_bytes }
+import Basic.Builtins.{
+  bytes_length,
+  bytes_slice,
+  i32_equal,
+  i32_to_i64,
+  i64_add,
+  i64_mul,
+  i64_to_i32,
+  string_to_bytes
+}
 import Basic.Data.List.{ List, length }
 import Basic.Data.Option.{ Option }
-import Basic.Wasm.Abi.{ WasmAddress, address, allocate, read_i32, write_bytes, write_i32 }
+import Basic.Wasm.Abi.{ WasmAddress, address, allocate, read_i32, to_bytes, write_bytes, write_i32 }
 
 pub struct EnvironmentVariable {
   key : String
@@ -16,6 +25,7 @@ pub struct Command {
   working_directory : Option[String]
   environment : List[EnvironmentVariable]
   inherit_environment : Bool
+  stdin : Bytes
 }
 
 pub enum CommandResult {
@@ -27,8 +37,17 @@ pub enum CommandResult {
   system_failure()
 }
 
+pub struct CommandOutput {
+  result : CommandResult
+  stdout : Bytes
+  stderr : Bytes
+}
+
 let run_command_raw : (WasmAddress, I32, WasmAddress) -> I32 ! Io =
   extern("lane_runtime_v1", "run_command")
+
+let take_command_output_raw : (I32, WasmAddress, I32) -> I32 ! Io =
+  extern("lane_runtime_v1", "take_command_output")
 
 fn string_size(value : String) -> I64 {
   bytes_length(string_to_bytes(value))
@@ -126,9 +145,9 @@ fn write_environment(
   }
 }
 
-pub fn run_command(command : Command) -> CommandResult ! Io {
-  let response_size = 8
-  let request_header_size = 36
+pub fn run_command(command : Command) -> CommandOutput ! Io {
+  let response_size = 20
+  let request_header_size = 44
   let argument_count = length(command.arguments)
   let environment_count = length(command.environment)
   let argument_table_offset = request_header_size
@@ -140,7 +159,9 @@ pub fn run_command(command : Command) -> CommandResult ! Io {
     i64_add(arguments_payload_offset, string_list_size(command.arguments))
   let environment_payload_offset =
     i64_add(working_directory_offset, working_directory_size(command.working_directory))
-  let request_size = i64_add(environment_payload_offset, environment_size(command.environment))
+  let stdin_offset = i64_add(environment_payload_offset, environment_size(command.environment))
+  let stdin_length = bytes_length(command.stdin)
+  let request_size = i64_add(stdin_offset, stdin_length)
   let frame = allocate(i64_add(response_size, request_size))
   let flags = if command.inherit_environment {
     1
@@ -165,6 +186,8 @@ pub fn run_command(command : Command) -> CommandResult ! Io {
   }
   write_frame_i32(frame, response_size, 28, environment_table_offset)
   write_frame_i32(frame, response_size, 32, environment_count)
+  write_frame_i32(frame, response_size, 36, stdin_offset)
+  write_frame_i32(frame, response_size, 40, stdin_length)
   write_frame_bytes(frame, response_size, executable_offset, command.executable)
   write_arguments(
     frame,
@@ -180,22 +203,46 @@ pub fn run_command(command : Command) -> CommandResult ! Io {
     environment_table_offset,
     environment_payload_offset
   )
-  let status = run_command_raw(address(frame, 8i32), i64_to_i32(request_size), address(frame, 0i32))
+  write_bytes(frame, i64_add(response_size, stdin_offset), command.stdin)
+  let status =
+    run_command_raw(address(frame, 20i32), i64_to_i32(request_size), address(frame, 0i32))
+  let empty = string_to_bytes("")
   if i32_equal(status, 0i32) {
     let kind = read_i32(frame, 0)
     let code = read_i32(frame, 4)
-    if i32_equal(kind, 0i32) {
-      exited(code)
+    let output_handle = read_i32(frame, 8)
+    let stdout_length = i32_to_i64(read_i32(frame, 12))
+    let stderr_length = i32_to_i64(read_i32(frame, 16))
+    let output_length = i64_add(stdout_length, stderr_length)
+    let output_buffer = allocate(output_length)
+    let output_status =
+      take_command_output_raw(
+        output_handle,
+        address(output_buffer, 0i32),
+        i64_to_i32(output_length)
+      )
+    if i32_equal(output_status, 0i32) {
+      let output = to_bytes(output_buffer)
+      let result = if i32_equal(kind, 0i32) {
+        exited(code)
+      } else {
+        signaled(code)
+      }
+      CommandOutput::{
+        result,
+        stdout: bytes_slice(output, 0, stdout_length),
+        stderr: bytes_slice(output, stdout_length, stderr_length)
+      }
     } else {
-      signaled(code)
+      CommandOutput::{ result: system_failure(), stdout: empty, stderr: empty }
     }
   } else if i32_equal(status, 1i32) {
-    invalid_request()
+    CommandOutput::{ result: invalid_request(), stdout: empty, stderr: empty }
   } else if i32_equal(status, 2i32) {
-    executable_not_found()
+    CommandOutput::{ result: executable_not_found(), stdout: empty, stderr: empty }
   } else if i32_equal(status, 3i32) {
-    permission_denied()
+    CommandOutput::{ result: permission_denied(), stdout: empty, stderr: empty }
   } else {
-    system_failure()
+    CommandOutput::{ result: system_failure(), stdout: empty, stderr: empty }
   }
 }
