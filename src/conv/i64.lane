@@ -13,7 +13,6 @@ import Basic.Data.String.{ concat }
 import Basic.Trait.Iso.{ Into }
 import Basic.Builtins
 import Basic.Builtins.{ bytes_make, bytes_to_string, i64_to_byte }
-import Basic.Ops.{ op_div, op_rem, op_neg, op_equal, op_less, op_add }
 
 pub offer i64_to_i32 : Into[I64, I32] = Basic.Builtins.i64_to_i32
 

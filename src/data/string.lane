@@ -1,6 +1,5 @@
 module Basic.Data.String
 
-import Basic.Ops.{ op_add, op_sub, op_mul, op_equal, op_less }
 import Basic.Builtins.{
   byte_to_i64,
   bytes_length,
@@ -232,4 +231,6 @@ pub fn decode_utf8(bytes : Bytes) -> Option[String] {
   }
 }
 
-pub offer string_impl_debug : Debug[String] = fn (x) { x }
+pub offer string_impl_debug : Debug[String] = fn(x) {
+  x
+}
