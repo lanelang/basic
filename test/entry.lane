@@ -2,6 +2,7 @@ module Test.Entry
 
 import Basic.Data.List.{ List }
 import Test.Assert.{ execute_all_tests }
+import Test.Assert.Summary as AssertSummary
 import Test.Data.I32 as I32
 import Test.Data.I64 as I64
 import Test.Data.F64 as F64
@@ -20,6 +21,7 @@ import Test.Platform.Wasip1 as Wasip1
 pub fn test_entry() -> Unit ! Io {
   execute_all_tests(
     [
+      AssertSummary.test_summary,
       I32.test_i32,
       I64.test_i64,
       F64.test_f64,

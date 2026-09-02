@@ -2,7 +2,7 @@ module Test.Assert
 
 import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.Bool.{ bool_impl_not }
-import Basic.Data.List.{ List }
+import Basic.Data.List.{ List, length }
 import Basic.Data.I64.{ i64_impl_add }
 import Basic.Data.String.{ concat }
 import Basic.Trait.Equal.{ Equal }
@@ -46,8 +46,7 @@ pub fn[T] assert_equal(
     lhs == rhs,
     "source info: "
       |> concat(info),
-    "lhs"
-      |> concat(debug(lhs))
+    debug(lhs)
       |> concat(" != ")
       |> concat(debug(rhs))
   )
@@ -64,8 +63,7 @@ pub fn[T] assert_not_equal(
     lhs != rhs,
     "source info: "
       |> concat(info),
-    "lhs"
-      |> concat(debug(lhs))
+    debug(lhs)
       |> concat(" == ")
       |> concat(debug(rhs))
   )
@@ -87,21 +85,30 @@ offer test_counts_impl_monoid : Monoid[TestCounts] = Monoid::{
   empty: TestCounts::{ passed: 0, failed: 0 }
 }
 
+pub fn format_test_summary(total : I64, counts : TestCounts) -> String {
+  "Total tests: "
+    |> concat(debug(total))
+    |> concat(", passed: ")
+    |> concat(debug(counts.passed))
+    |> concat(", failed: ")
+    |> concat(debug(counts.failed))
+}
+
 // Run one test function under the assertion handler.
-fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Bool ! { E, Io } {
+fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io, Write[TestCounts] } {
   handle f() with {
     assert(cond, info, msg, resume) => {
-      let rest_passed = resume(())
       if cond {
-        rest_passed
+        resume(())
       } else {
+        write!(TestCounts::{ passed: 0, failed: 1 })
         println(info)
         println(msg)
-        false
       }
     }
   } final _v {
-    true
+    write!(TestCounts::{ passed: 1, failed: 0 })
+    ()
   }
 }
 
@@ -111,12 +118,7 @@ pub fn[E : Effect] execute_all_tests(tests : List[() -> Unit ! { E, Assert }]) -
       execute_tests(tests)
     } |> run_write[Unit, TestCounts, { E, Io }]
   let result = result()
-  println(
-    "Tests passed: "
-      |> concat(debug(result.log.passed))
-      |> concat(", failed: ")
-      |> concat(debug(result.log.failed))
-  )
+  println(format_test_summary(length(tests), result.log))
 }
 
 fn[E : Effect] execute_tests(
@@ -125,13 +127,7 @@ fn[E : Effect] execute_tests(
   match tests {
     empty() => ()
     cons(test, rest) => {
-      if execute_test(test) {
-        println("ok")
-        write!(TestCounts::{ passed: 1, failed: 0 })
-      } else {
-        println("error")
-        write!(TestCounts::{ passed: 0, failed: 1 })
-      }
+      execute_test(test)
       execute_tests(rest)
     }
   }

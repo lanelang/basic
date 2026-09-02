@@ -1,0 +1,12 @@
+module Test.Assert.Summary
+
+import Basic.Data.String.{ string_impl_debug, string_impl_equal }
+import Test.Assert.{ Assert, TestCounts, assert_equal, format_test_summary }
+
+pub fn test_summary() -> Unit ! Assert {
+  offer source_info : String = "test_summary"
+  assert_equal(
+    format_test_summary(3, TestCounts::{ passed: 2, failed: 1 }),
+    "Total tests: 3, passed: 2, failed: 1"
+  )
+}

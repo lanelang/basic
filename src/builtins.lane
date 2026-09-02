@@ -150,5 +150,4 @@ pub let byte_buffer_write_i32 : (ByteBuffer, I64, I32) -> Unit ! Io =
 pub let byte_buffer_write_address : (ByteBuffer, I64, ByteBuffer, I32) -> Unit ! Io =
   builtin("%byte_buffer_write_address")
 
-pub let byte_buffer_read_i32 : (ByteBuffer, I64) -> I32 ! Io =
-  builtin("%byte_buffer_read_i32")
+pub let byte_buffer_read_i32 : (ByteBuffer, I64) -> I32 ! Io = builtin("%byte_buffer_read_i32")

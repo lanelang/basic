@@ -11,4 +11,11 @@ function surface supported by Lane's pinned Wasmoon runtime. These bindings use
 `WasmAddress` for guest-memory pointers and intentionally do not replace
 domain-level wrappers such as `Basic.Io.println`.
 
-Run the integration suite with `./test.sh`. Set `LANE_BIN=/path/to/lane` when testing against a compiler build that is not installed on `PATH`.
+Run the integration suite through the Lane-authored build workflow:
+
+```sh
+lane run build.lane:test
+```
+
+Use `./test.sh` when testing against a compiler build that is not installed on
+`PATH`. Set `LANE_BIN=/path/to/lane` to select that compiler explicitly.
