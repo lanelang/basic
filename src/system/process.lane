@@ -51,6 +51,31 @@ pub struct CommandOutput {
   stderr : Bytes
 }
 
+pub effect Process {
+  execute(Command) -> CommandOutput
+}
+
+pub fn run_command(command : Command) -> CommandOutput ! Process {
+  execute!(command)
+}
+
+pub fn[T, E : Effect, AdapterEffect : Effect] run_process_with(
+  action : () -> T ! { E, Process },
+  adapter : (Command) -> CommandOutput ! AdapterEffect
+) -> () -> T ! { E, AdapterEffect } {
+  fn() {
+    handle action() with {
+      execute(command, resume) => resume(adapter(command))
+    } final value {
+      value
+    }
+  }
+}
+
+pub fn[T, E : Effect] run_process(action : () -> T ! { E, Process }) -> () -> T ! { E, Io } {
+  run_process_with[T, E, { Io }](action, execute_command_on_host)
+}
+
 let run_command_raw : (WasmAddress, I32, WasmAddress) -> I32 ! Io =
   extern("lane_runtime_v1", "run_command")
 
@@ -153,7 +178,7 @@ fn write_environment(
   }
 }
 
-pub fn run_command(command : Command) -> CommandOutput ! Io {
+fn execute_command_on_host(command : Command) -> CommandOutput ! Io {
   let response_size = 20
   let request_header_size = 44
   let argument_count = list_length(command.arguments)

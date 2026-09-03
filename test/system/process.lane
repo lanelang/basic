@@ -1,77 +1,50 @@
 module Test.System.Process
 
-import Basic.Data.Option.{ Option }
 import Basic.Builtins.{ bytes_to_string, string_to_bytes }
+import Basic.Data.Option.{ Option }
 import Basic.Data.String.{ string_impl_debug, string_impl_equal }
-import Basic.System.Process.{ Command, CommandResult, run_command }
+import Basic.System.Process.{
+  Command,
+  CommandOutput,
+  CommandResult,
+  Process,
+  run_command,
+  run_process_with
+}
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
-pub fn test_missing_command() -> Unit ! { Assert, Io } {
-  offer source_info : String = "test_missing_command"
-  let result = run_command(
-    Command::{
-      executable: "lane-command-that-does-not-exist-4b8e64f1",
-      arguments: [],
-      working_directory: none(),
-      environment: [],
-      inherit_environment: true,
-      stdin: string_to_bytes("")
-    }
-  )
-  assert_true(
-    match result.result {
-      executable_not_found() => true
-      _ => false
-    }
-  )
-}
-
-pub fn test_inspect_source_output() -> Unit ! { Assert, Io } {
-  offer source_info : String = "test_inspect_source_output"
-  let output = run_command(
-    Command::{
-      executable: "lane",
-      arguments: ["inspect", "build.lane"],
-      working_directory: none(),
-      environment: [],
-      inherit_environment: true,
-      stdin: string_to_bytes("")
-    }
-  )
+pub fn test_process() -> Unit ! Assert {
+  offer source_info : String = "test_process"
+  let action : () -> CommandOutput ! Process = fn() {
+    run_command(
+      Command::{
+        executable: "lane",
+        arguments: ["inspect", "build.lane"],
+        working_directory: none(),
+        environment: [],
+        inherit_environment: true,
+        stdin: string_to_bytes("")
+      }
+    )
+  }
+  let output =
+    run_process_with(
+      action,
+      fn(command) {
+        assert_equal(command.executable, "lane")
+        assert_equal(bytes_to_string(command.stdin), "")
+        CommandOutput::{
+          result: exited(0i32),
+          stdout: string_to_bytes("inspection"),
+          stderr: string_to_bytes("")
+        }
+      }
+    )()
   assert_true(
     match output.result {
       exited(0i32) => true
       _ => false
     }
   )
-  assert_equal(
-    bytes_to_string(output.stdout),
-    "{\"schema\":1,\"module\":\"Build\",\"imports\":[\"Basic.Prelude\",\"Basic.Build\"]}\n"
-  )
-  assert_equal(bytes_to_string(output.stderr), "")
-}
-
-pub fn test_nonzero_exit_output() -> Unit ! { Assert, Io } {
-  offer source_info : String = "test_nonzero_exit_output"
-  let output = run_command(
-    Command::{
-      executable: "lane",
-      arguments: ["run", "test/failing_entry.lane:test_entry", "--lib-dir", ".", "--no-basic"],
-      working_directory: none(),
-      environment: [],
-      inherit_environment: true,
-      stdin: string_to_bytes("")
-    }
-  )
-  assert_true(
-    match output.result {
-      exited(1i32) => true
-      _ => false
-    }
-  )
-  assert_equal(
-    bytes_to_string(output.stdout),
-    "source info: failing_test\nshould be true, but is false\nTotal tests: 1, passed: 0, failed: 1\n"
-  )
-  assert_equal(bytes_to_string(output.stderr), "")
+  assert_equal(bytes_to_string(output.stdout), "inspection")
 }

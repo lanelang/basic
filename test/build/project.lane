@@ -1,0 +1,106 @@
+module Test.Build.Project
+
+import Basic.Build.{ BuildFailure, Export, Project, build }
+import Basic.Builtins.{ bytes_equal, string_to_bytes }
+import Basic.Data.Bool.{ bool_impl_and }
+import Basic.Data.List.{ List, list_impl_monoid }
+import Basic.Eff.Write.{ Write, run_write }
+import Basic.Ops.{ op_and }
+import Basic.System.Process.{ Command, CommandOutput, CommandResult, Process, run_process_with }
+import Test.Assert.{ Assert, assert_true }
+
+fn string_equal(left : String, right : String) -> Bool {
+  bytes_equal(string_to_bytes(left), string_to_bytes(right))
+}
+
+fn string_list_equal(left : List[String], right : List[String]) -> Bool {
+  match (left, right) {
+    (empty(), empty()) => true
+    (cons(left_head, left_tail), cons(right_head, right_tail)) => string_equal(
+      left_head,
+      right_head
+    )
+      && string_list_equal(left_tail, right_tail)
+    _ => false
+  }
+}
+
+fn successful_command(stdout : String) -> CommandOutput {
+  CommandOutput::{
+    result: exited(0i32),
+    stdout: string_to_bytes(stdout),
+    stderr: string_to_bytes("")
+  }
+}
+
+fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[String]] } {
+  match command.arguments {
+    empty() => {
+      assert_true(false, info="mock process received an empty command")
+      successful_command("")
+    }
+    cons(name, _arguments) =>
+      if string_equal(name, "inspect") {
+        assert_true(
+          string_list_equal(command.arguments, ["inspect", "Main.lane"]),
+          info="inspect command"
+        )
+        write!(["inspect"])
+        successful_command("{\"schema\":1,\"module\":\"Main\",\"imports\":[]}\n")
+      } else if string_equal(name, "compile") {
+        assert_true(
+          string_list_equal(
+            command.arguments,
+            ["compile", "-I", ".lane-build-Main.lmi", "-o", ".lane-build-Main.lmo", "Main.lane"]
+          ),
+          info="compile command"
+        )
+        write!(["compile"])
+        successful_command("")
+      } else if string_equal(name, "link") {
+        assert_true(
+          string_list_equal(
+            command.arguments,
+            ["link", "-o", "main.wasm", "--export", "Main.test:test", ".lane-build-Main.lmo"]
+          ),
+          info="link command"
+        )
+        write!(["link"])
+        successful_command("")
+      } else {
+        assert_true(false, info="mock process received an unexpected command")
+        successful_command("")
+      }
+  }
+}
+
+pub fn test_project_build() -> Unit ! Assert {
+  offer source_info : String = "test_project_build"
+  let action : () -> Unit ! { Process, BuildFailure } = fn() {
+    build(
+      Project::{
+        sources: ["Main.lane"],
+        exports: [Export::{ module_name: "Main", value_name: "test", wasm_name: "test" }],
+        output: "main.wasm",
+        artifact_prefix: ".lane-build-"
+      }
+    )
+  }
+  let mocked = run_process_with(action, mock_command)
+  let checked : () -> Unit ! { Assert, Write[List[String]] } = fn() {
+    handle mocked() with {
+      fail(_error, _resume) => assert_true(false)
+    } final _value {
+      ()
+    }
+  }
+  let report = run_write[Unit, List[String], { Assert }](checked, monoid_impl=list_impl_monoid())()
+  assert_true(
+    match report.log {
+      cons(first, cons(second, cons(third, empty()))) => string_equal(first, "inspect")
+        && string_equal(second, "compile")
+        && string_equal(third, "link")
+      _ => false
+    }
+  )
+}

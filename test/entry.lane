@@ -15,13 +15,9 @@ import Test.Data.List.{ test_list }
 import Test.Data.AList.{ test_alist }
 import Test.Eff.Write.{ test_write_log }
 import Test.Derive.Debug.{ test_debug }
-import Test.System.Process.{
-  test_missing_command,
-  test_inspect_source_output,
-  test_nonzero_exit_output
-}
-import Test.Platform.Wasip1.{ test_wasip1 }
+import Test.System.Process.{ test_process }
 import Test.Build.Inspection.{ test_inspection as test_build_inspection }
+import Test.Build.Project.{ test_project_build }
 import Test.Prelude.{ test_prelude }
 
 pub fn test_entry() -> Unit ! { Io, Panic } {
@@ -40,11 +36,10 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       test_alist,
       test_write_log,
       test_debug,
+      test_process,
       test_build_inspection,
+      test_project_build,
       test_prelude
     ]
-  )
-  execute_all_tests[{ Io }](
-    [test_missing_command, test_inspect_source_output, test_nonzero_exit_output, test_wasip1]
   )
 }

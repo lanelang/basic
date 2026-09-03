@@ -5,7 +5,6 @@ import Basic.Data.List.{ length as list_length }
 import Basic.Data.String.{ concat }
 import Basic.Io.{ println }
 import Basic.Platform.Wasip1.{ proc_exit }
-import Basic.Eff.Write.{ Write, run_write, WriteResult }
 
 pub effect Assert {
   // assert(condition, source_info, fail_message)
@@ -69,17 +68,6 @@ pub struct TestCounts {
   failed : I64
 }
 
-offer test_counts_impl_semigroup : Semigroup[TestCounts] = Semigroup::{
-  append: fn(left, right) {
-    TestCounts::{ passed: left.passed + right.passed, failed: left.failed + right.failed }
-  }
-}
-
-offer test_counts_impl_monoid : Monoid[TestCounts] = Monoid::{
-  semigroup_impl: test_counts_impl_semigroup,
-  empty: TestCounts::{ passed: 0, failed: 0 }
-}
-
 pub fn format_test_summary(total : I64, counts : TestCounts) -> String {
   "Total tests: "
     |> concat(debug(total))
@@ -89,48 +77,73 @@ pub fn format_test_summary(total : I64, counts : TestCounts) -> String {
     |> concat(debug(counts.failed))
 }
 
-// Run one test function under the assertion handler.
-fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io, Write[TestCounts] } {
+struct TestFailure {
+  info : String
+  message : String
+}
+
+enum TestOutcome {
+  passed()
+  failed(TestFailure)
+}
+
+struct TestReport {
+  counts : TestCounts
+  failures : List[TestFailure]
+}
+
+fn execute_test(f : () -> Unit ! Assert) -> TestOutcome {
   handle f() with {
     assert(cond, info, msg, resume) => {
       if cond {
         resume(())
       } else {
-        write!(TestCounts::{ passed: 0, failed: 1 })
-        println(info)
-        println(msg)
+        failed(TestFailure::{ info, message: msg })
       }
     }
   } final _v {
-    write!(TestCounts::{ passed: 1, failed: 0 })
-    ()
+    passed()
   }
 }
 
-pub fn[E : Effect] execute_all_tests(
-  tests : List[() -> Unit ! { E, Assert }]
-) -> Unit ! { E, Io, Panic } {
-  let result =
-    fn() {
-      execute_tests(tests)
-    } |> run_write[Unit, TestCounts, { E, Io }]
-  let result = result()
-  println(format_test_summary(list_length(tests), result.log))
-  if result.log.failed == 0 {
+fn print_failures(failures : List[TestFailure]) -> Unit ! Io {
+  match failures {
+    empty() => ()
+    cons(failure, rest) => {
+      println(failure.info)
+      println(failure.message)
+      print_failures(rest)
+    }
+  }
+}
+
+pub fn execute_all_tests(tests : List[() -> Unit ! Assert]) -> Unit ! { Io, Panic } {
+  let report = execute_tests(tests)
+  print_failures(report.failures)
+  println(format_test_summary(list_length(tests), report.counts))
+  if report.counts.failed == 0 {
     ()
   } else {
     proc_exit(1i32)
   }
 }
 
-fn[E : Effect] execute_tests(
-  tests : List[() -> Unit ! { E, Assert }]
-) -> Unit ! { E, Io, Write[TestCounts] } {
+fn execute_tests(tests : List[() -> Unit ! Assert]) -> TestReport {
   match tests {
-    empty() => ()
+    empty() => TestReport::{ counts: TestCounts::{ passed: 0, failed: 0 }, failures: [] }
     cons(test, rest) => {
-      execute_test(test)
-      execute_tests(rest)
+      let outcome = execute_test(test)
+      let report = execute_tests(rest)
+      match outcome {
+        passed() => TestReport::{
+          counts: TestCounts::{ passed: report.counts.passed + 1, failed: report.counts.failed },
+          failures: report.failures
+        }
+        failed(failure) => TestReport::{
+          counts: TestCounts::{ passed: report.counts.passed, failed: report.counts.failed + 1 },
+          failures: cons(failure, report.failures)
+        }
+      }
     }
   }
 }

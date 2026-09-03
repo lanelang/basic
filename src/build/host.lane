@@ -1,0 +1,15 @@
+module Basic.Build.Host
+
+import Basic.Build.{ BuildError, BuildFailure, build_error_message }
+import Basic.Data.Void.{ absurd }
+import Basic.Io.{ panic }
+import Basic.System.Process.{ Process, run_process }
+
+pub fn run(action : () -> Unit ! { Process, BuildFailure }) -> Unit ! { Io, Panic } {
+  let hosted = run_process(action)
+  handle hosted() with {
+    fail(error, _resume) => absurd(panic(build_error_message(error)))
+  } final _value {
+    ()
+  }
+}
