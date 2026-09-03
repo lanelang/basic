@@ -1,0 +1,21 @@
+module Test.Prelude
+
+import Basic.Prelude.*
+import Test.Assert.{ Assert, assert_equal, assert_true }
+
+struct Pair {
+  left : I64
+  right : I64
+}
+
+pub fn test_prelude() -> Unit ! Assert {
+  offer source_info : String = "test_prelude"
+  offer pair_equal : Equal[Pair] = derive[Equal, Pair]()
+  assert_equal(1 + 1, 2)
+  let _option : Option[I64] = some(42)
+  let _values : List[I64] = [1, 2, 3]
+  let _constructed_values : List[I64] = cons(1, empty())
+  let _pair : (I64, I64) = (1, 2)
+  let _product : Product[I64, Unit] = Product::{ head: 1, tail: () }
+  assert_true(pair_equal.equal(Pair::{ left: 1, right: 2 }, Pair::{ left: 1, right: 2 }))
+}

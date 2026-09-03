@@ -9,6 +9,7 @@ import Basic.Data.String.{ concat }
 import Basic.Data.Void.{ absurd }
 import Basic.Io.{ panic }
 import Basic.System.Process.{ Command, CommandOutput, CommandResult, run_command }
+import Basic.Ops.{ op_greater }
 
 pub struct Export {
   module_name : String

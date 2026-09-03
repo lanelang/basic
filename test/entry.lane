@@ -18,6 +18,7 @@ import Test.Derive.Debug as Debug
 import Test.System.Process as Process
 import Test.Platform.Wasip1 as Wasip1
 import Test.Build.Inspection as BuildInspection
+import Test.Prelude as Prelude
 
 pub fn test_entry() -> Unit ! { Io, Panic } {
   execute_all_tests(
@@ -35,7 +36,8 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       AList.test_alist,
       Write.test_write_log,
       Debug.test_debug,
-      BuildInspection.test_inspection
+      BuildInspection.test_inspection,
+      Prelude.test_prelude
     ]
   )
   execute_all_tests[{ Io }](

@@ -1,6 +1,7 @@
 module Test.Derive.Debug
 
 import Basic.Derive.Debug.*
+import Basic.Derive.*
 import Basic.Trait.Debug.{ Debug, debug }
 import Basic.Conv.Unit.{ unit_impl_debug }
 import Basic.Conv.I64.{ i64_to_i32, i64_impl_debug }

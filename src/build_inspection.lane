@@ -12,6 +12,7 @@ import Basic.Builtins.{
 import Basic.Data.Bool.{ bool_impl_and, bool_impl_or, bool_impl_not }
 import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_equal, i64_impl_compare }
 import Basic.Data.List.{ List }
+import Basic.Ops.{ op_add, op_equal, op_greater_eq, op_less, op_and, op_or, op_not }
 import Basic.Data.Option.{ Option }
 
 pub struct SourceInspection {

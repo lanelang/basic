@@ -1,0 +1,97 @@
+module Basic.Prelude
+
+pub import Basic.Ops.{
+  op_add,
+  op_sub,
+  op_mul,
+  op_div,
+  op_rem,
+  op_neg,
+  op_equal,
+  op_not_equal,
+  op_and,
+  op_or,
+  op_not,
+  op_less,
+  op_less_eq,
+  op_greater,
+  op_greater_eq
+}
+pub import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
+pub import Basic.Trait.Equal.{ Equal }
+pub import Basic.Trait.Compare.{ Compare }
+pub import Basic.Trait.Bool.{ And, Or, Not }
+pub import Basic.Trait.Debug.{ Debug, debug }
+pub import Basic.Trait.Iso.{ Iso, Into, From }
+pub import Basic.Trait.Map.{ Mappable }
+pub import Basic.Trait.App.{ Applicative }
+pub import Basic.Trait.Flat.{ FlatMappable }
+pub import Basic.Trait.Monoid.{ Semigroup, Monoid }
+pub import Basic.Data.I64.{
+  i64_impl_add,
+  i64_impl_sub,
+  i64_impl_mul,
+  i64_impl_div,
+  i64_impl_rem,
+  i64_impl_neg,
+  i64_impl_equal,
+  i64_impl_compare
+}
+pub import Basic.Data.I32.{
+  i32_impl_add,
+  i32_impl_sub,
+  i32_impl_mul,
+  i32_impl_div,
+  i32_impl_rem,
+  i32_impl_neg,
+  i32_impl_equal,
+  i32_impl_compare
+}
+pub import Basic.Data.F64.{
+  f64_impl_add,
+  f64_impl_sub,
+  f64_impl_mul,
+  f64_impl_div,
+  f64_impl_neg,
+  f64_impl_equal,
+  f64_impl_compare
+}
+pub import Basic.Data.F32.{
+  f32_impl_add,
+  f32_impl_sub,
+  f32_impl_mul,
+  f32_impl_div,
+  f32_impl_neg,
+  f32_impl_equal,
+  f32_impl_compare
+}
+pub import Basic.Data.Bool.{
+  bool_impl_and,
+  bool_impl_or,
+  bool_impl_not,
+  bool_impl_equal,
+  bool_impl_debug
+}
+pub import Basic.Data.Char.{ char_impl_equal, char_impl_compare }
+pub import Basic.Data.String.{
+  string_impl_equal,
+  string_impl_compare,
+  string_impl_semigroup,
+  string_impl_monoid,
+  string_impl_debug
+}
+pub import Basic.Data.Unit.{ unit_impl_equal }
+pub import Basic.Conv.I64.{ i64_impl_debug }
+pub import Basic.Conv.I32.{ i32_impl_debug }
+pub import Basic.Conv.F64.{ f64_impl_debug }
+pub import Basic.Conv.F32.{ f32_impl_debug }
+pub import Basic.Conv.Char.{ char_impl_debug }
+pub import Basic.Conv.Unit.{ unit_impl_debug }
+pub import Basic.Data.Option.{ Option }
+pub import Basic.Data.Result.{ Result, PartialResult }
+pub import Basic.Data.List.{ List }
+pub import Basic.Data.Tuple.{ Tuple }
+pub import Basic.Data.Void.{ Void, absurd }
+pub import Basic.Derive.{ Deriver, Recursive, Lift, Product, Sum, TypeInfo, FieldInfo, VariantInfo }
+pub import Basic.Derive.Equal.{ derive_equal, recursive_equal }
+pub import Basic.Derive.Debug.{ derive_debug, recursive_debug }

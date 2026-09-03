@@ -2,6 +2,7 @@ module Basic.Data.Tuple
 
 import Basic.Trait.Equal.{ Equal }
 import Basic.Derive.Equal.{ derive_equal }
+import Basic.Derive.*
 
 pub enum Tuple[A, B] {
   tuple(A, B)

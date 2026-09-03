@@ -35,6 +35,7 @@ pub fn build() -> Unit ! { Io, Panic } {
         "src/data/void.lane",
         "src/derive/debug.lane",
         "src/derive/equal.lane",
+        "src/derive.lane",
         "src/eff/bound.lane",
         "src/eff/exn.lane",
         "src/eff/loop.lane",
@@ -45,6 +46,7 @@ pub fn build() -> Unit ! { Io, Panic } {
         "src/io.lane",
         "src/ops.lane",
         "src/platform/wasip1.lane",
+        "src/prelude.lane",
         "src/summon.lane",
         "src/system/process.lane",
         "src/trait/app.lane",
@@ -79,6 +81,7 @@ pub fn build() -> Unit ! { Io, Panic } {
         "test/entry.lane",
         "test/failing_entry.lane",
         "test/platform/wasip1.lane",
+        "test/prelude.lane",
         "test/system/process.lane"
       ],
       exports: [

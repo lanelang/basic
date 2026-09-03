@@ -5,6 +5,7 @@ import Basic.Trait.Map.{ Mappable }
 // import Basic.Trait.App.{ Applicative }
 // import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Derive.Equal.{ derive_equal }
+import Basic.Derive.*
 
 pub enum Result[T, E] {
   ok(T)

@@ -3,6 +3,7 @@ module Basic.Data.Bytes
 import Basic.Builtins as Builtins
 import Basic.Data.I64.{ i64_impl_compare, i64_impl_sub }
 import Basic.Eff.Bound.{ OutOfBound }
+import Basic.Ops.{ op_sub, op_greater_eq, op_less }
 
 // Create an immutable byte sequence, reporting a negative length through OutOfBound.
 pub fn bytes_make(len : I64, init : Byte) -> Bytes ! OutOfBound {

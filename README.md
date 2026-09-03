@@ -6,6 +6,13 @@ This directory contains Lane's ordinary Basic library. It defines no compiler-re
 
 `Basic.Data.AList` exposes its immutable association-list operations directly. Basic intentionally has no generic `Table` dictionary: construction from entries and traversal need explicit duplicate-key and ordering laws before they become a shared collection capability.
 
+Lane never inserts an implicit dependency on Basic. Applications that want the
+ordinary Basic-backed operators, primitive offers, list and tuple syntax, and
+derivation providers may opt in once with `import Basic.Prelude.*`. Modules with
+a narrower surface, including `--no-basic` programs, can instead import the
+precise provider modules they use. `Basic.Derive` is the smaller facade for the
+complete structural-derivation ABI.
+
 `Basic.Platform.Wasip1` exposes the complete raw `wasi_snapshot_preview1`
 function surface supported by Lane's pinned Wasmoon runtime. These bindings use
 `WasmAddress` for guest-memory pointers and intentionally do not replace

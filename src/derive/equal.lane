@@ -5,6 +5,7 @@ import Basic.Trait.Iso.{ Iso }
 import Basic.Data.Void.{ Void, absurd }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Data.Bool.{ bool_impl_and }
+import Basic.Ops.{ op_and }
 
 fn equal_unit() -> Equal[Unit] {
   Equal::{
