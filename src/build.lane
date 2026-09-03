@@ -6,7 +6,7 @@ import Basic.Data.I64.{ i64_impl_compare }
 import Basic.Data.List.{ List, append as append_list }
 import Basic.Data.Option.{ Option }
 import Basic.Data.String.{ concat }
-import Basic.Data.Void.{ Void, absurd }
+import Basic.Eff.Exn.{ Exception, throw }
 import Basic.System.Process.{
   Command,
   CommandOutput,
@@ -14,6 +14,7 @@ import Basic.System.Process.{
   Process,
   run_command as execute_command
 }
+import Basic.System.FileSystem.{ FileSystem, ensure_directory_exists }
 import Basic.Ops.{ op_greater }
 
 pub struct Export {
@@ -26,19 +27,7 @@ pub struct Project {
   sources : List[String]
   exports : List[Export]
   output : String
-  artifact_prefix : String
-}
-
-pub enum BuildError {
-  command_failed(Command, CommandOutput)
-  invalid_source_inspection(String)
-  duplicate_source_module(String)
-  missing_source_module(String)
-  cyclic_source_dependency(String)
-}
-
-pub effect BuildFailure {
-  fail(BuildError) -> Void
+  artifact_directory : String
 }
 
 struct SourceModule {
@@ -52,8 +41,8 @@ struct CompilationState {
   objects : List[String]
 }
 
-fn[T] fail(error : BuildError) -> T ! BuildFailure {
-  absurd(fail!(error))
+fn[T] fail(message : String) -> T ! Exception {
+  throw[T](message)
 }
 
 fn string_equal(left : String, right : String) -> Bool {
@@ -83,29 +72,7 @@ fn command_failure(output : CommandOutput) -> String {
   }
 }
 
-pub fn build_error_message(error : BuildError) -> String {
-  match error {
-    command_failed(_command, output) => command_failure(output)
-    invalid_source_inspection(path) => concat(
-      concat("lane inspect returned an invalid source inspection for `", path),
-      "`"
-    )
-    duplicate_source_module(module_name) => concat(
-      concat("duplicate source module `", module_name),
-      "`"
-    )
-    missing_source_module(module_name) => concat(
-      concat("missing source module `", module_name),
-      "`"
-    )
-    cyclic_source_dependency(module_name) => concat(
-      concat("cyclic source dependency through `", module_name),
-      "`"
-    )
-  }
-}
-
-fn run_lane(arguments : List[String]) -> CommandOutput ! { Process, BuildFailure } {
+fn run_lane(arguments : List[String]) -> CommandOutput ! { Process, Exception } {
   let command = Command::{
     executable: "lane",
     arguments,
@@ -117,14 +84,16 @@ fn run_lane(arguments : List[String]) -> CommandOutput ! { Process, BuildFailure
   let output = execute_command(command)
   match output.result {
     exited(0i32) => output
-    _ => fail[CommandOutput](command_failed(command, output))
+    _ => fail[CommandOutput](command_failure(output))
   }
 }
 
-fn inspect_source(path : String) -> SourceModule ! { Process, BuildFailure } {
+fn inspect_source(path : String) -> SourceModule ! { Process, Exception } {
   let output = run_lane(["inspect", path])
   match decode_inspection(bytes_to_string(output.stdout)) {
-    none() => fail[SourceModule](invalid_source_inspection(path))
+    none() => fail[SourceModule](
+      concat(concat("lane inspect returned an invalid source inspection for `", path), "`")
+    )
     some(inspection) => SourceModule::{
       path,
       module_name: inspection.module_name,
@@ -133,7 +102,7 @@ fn inspect_source(path : String) -> SourceModule ! { Process, BuildFailure } {
   }
 }
 
-fn inspect_sources(paths : List[String]) -> List[SourceModule] ! { Process, BuildFailure } {
+fn inspect_sources(paths : List[String]) -> List[SourceModule] ! { Process, Exception } {
   match paths {
     empty() => []
     cons(path, rest) => cons(inspect_source(path), inspect_sources(rest))
@@ -152,12 +121,12 @@ fn find_source(sources : List[SourceModule], module_name : String) -> Option[Sou
   }
 }
 
-fn ensure_unique_modules(sources : List[SourceModule], seen : List[String]) -> Unit ! BuildFailure {
+fn ensure_unique_modules(sources : List[SourceModule], seen : List[String]) -> Unit ! Exception {
   match sources {
     empty() => ()
     cons(source, rest) => {
       if contains_string(seen, source.module_name) {
-        fail[Unit](duplicate_source_module(source.module_name))
+        fail[Unit](concat(concat("duplicate source module `", source.module_name), "`"))
       } else {
         ensure_unique_modules(rest, cons(source.module_name, seen))
       }
@@ -165,12 +134,16 @@ fn ensure_unique_modules(sources : List[SourceModule], seen : List[String]) -> U
   }
 }
 
-fn interface_path(prefix : String, module_name : String) -> String {
-  concat(concat(prefix, module_name), ".lmi")
+fn artifact_path(directory : String, module_name : String, extension : String) -> String {
+  concat(concat(concat(concat(directory, "/"), module_name), "."), extension)
 }
 
-fn object_path(prefix : String, module_name : String) -> String {
-  concat(concat(prefix, module_name), ".lmo")
+fn interface_path(directory : String, module_name : String) -> String {
+  artifact_path(directory, module_name, "lmi")
+}
+
+fn object_path(directory : String, module_name : String) -> String {
+  artifact_path(directory, module_name, "lmo")
 }
 
 fn interface_arguments(imports : List[String], prefix : String) -> List[String] {
@@ -189,12 +162,12 @@ fn compile_imports(
   prefix : String,
   visiting : List[String],
   state : CompilationState
-) -> CompilationState ! { Process, BuildFailure } {
+) -> CompilationState ! { Process, Exception } {
   match imports {
     empty() => state
     cons(import_, rest) => {
       let dependency = match find_source(sources, import_) {
-        none() => fail[SourceModule](missing_source_module(import_))
+        none() => fail[SourceModule](concat(concat("missing source module `", import_), "`"))
         some(source) => source
       }
       let state = compile_source(dependency, sources, prefix, visiting, state)
@@ -209,11 +182,13 @@ fn compile_source(
   prefix : String,
   visiting : List[String],
   state : CompilationState
-) -> CompilationState ! { Process, BuildFailure } {
+) -> CompilationState ! { Process, Exception } {
   if contains_string(state.built, source.module_name) {
     state
   } else if contains_string(visiting, source.module_name) {
-    fail[CompilationState](cyclic_source_dependency(source.module_name))
+    fail[CompilationState](
+      concat(concat("cyclic source dependency through `", source.module_name), "`")
+    )
   } else {
     let state =
       compile_imports(source.imports, sources, prefix, cons(source.module_name, visiting), state)
@@ -237,7 +212,7 @@ fn compile_sources(
   sources : List[SourceModule],
   prefix : String,
   state : CompilationState
-) -> CompilationState ! { Process, BuildFailure } {
+) -> CompilationState ! { Process, Exception } {
   match remaining {
     empty() => state
     cons(source, rest) => {
@@ -263,13 +238,14 @@ fn export_arguments(exports : List[Export]) -> List[String] {
   }
 }
 
-pub fn build(project : Project) -> Unit ! { Process, BuildFailure } {
+pub fn build(project : Project) -> Unit ! { Process, FileSystem, Exception } {
+  ensure_directory_exists(project.artifact_directory)
   let sources = inspect_sources(project.sources)
   ensure_unique_modules(sources, [])
   let state = compile_sources(
     sources,
     sources,
-    project.artifact_prefix,
+    project.artifact_directory,
     CompilationState::{ built: [], objects: [] }
   )
   let arguments =

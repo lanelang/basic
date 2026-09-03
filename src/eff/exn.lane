@@ -2,13 +2,35 @@ module Basic.Eff.Exn
 
 import Basic.Data.Option.{ Option }
 
+pub enum ExceptionInfo {
+  error()
+  system(I32)
+}
+
+pub struct ExceptionValue {
+  message : String
+  info : ExceptionInfo
+}
+
 pub effect Exception {
-  raise[T](String) -> T
+  raise[T](ExceptionValue) -> T
+}
+
+pub fn[T] throw(message : String) -> T ! Exception {
+  raise!(ExceptionValue::{ message, info: error() })
+}
+
+pub fn[T] throw_system(message : String, errno : I32) -> T ! Exception {
+  raise!(ExceptionValue::{ message, info: system(errno) })
+}
+
+pub fn message(exception : ExceptionValue) -> String {
+  exception.message
 }
 
 pub fn[T] to_option(e : () -> T ! Exception) -> Option[T] {
   handle e() with {
-    raise[R](_msg, _resume) => none()
+    raise[R](_error, _resume) => none()
   } final v {
     some(v)
   }

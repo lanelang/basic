@@ -1,0 +1,47 @@
+module Test.Eff.Exn
+
+import Basic.Builtins.{ bytes_equal, string_to_bytes }
+import Basic.Eff.Exn.{ Exception, throw, throw_system }
+import Test.Assert.{ Assert, assert_true }
+
+fn string_equal(left : String, right : String) -> Bool {
+  bytes_equal(string_to_bytes(left), string_to_bytes(right))
+}
+
+fn ordinary_failure() -> Unit ! Exception {
+  throw[Unit]("ordinary failure")
+}
+
+fn system_failure() -> Unit ! Exception {
+  throw_system[Unit]("system failure", 8i32)
+}
+
+pub fn test_exception_info() -> Unit ! Assert {
+  offer source_info : String = "test_exception_info"
+  handle ordinary_failure() with {
+    raise[R](exception, _resume) => {
+      assert_true(string_equal(exception.message, "ordinary failure"))
+      assert_true(
+        match exception.info {
+          error() => true
+          _ => false
+        }
+      )
+    }
+  } final _value {
+    ()
+  }
+  handle system_failure() with {
+    raise[R](exception, _resume) => {
+      assert_true(string_equal(exception.message, "system failure"))
+      assert_true(
+        match exception.info {
+          system(8i32) => true
+          _ => false
+        }
+      )
+    }
+  } final _value {
+    ()
+  }
+}

@@ -14,6 +14,7 @@ import Test.Data.Option.{ test_equal as test_option }
 import Test.Data.List.{ test_list }
 import Test.Data.AList.{ test_alist }
 import Test.Eff.Write.{ test_write_log }
+import Test.Eff.Exn.{ test_exception_info }
 import Test.Derive.Debug.{ test_debug }
 import Test.System.Process.{ test_process }
 import Test.Build.Inspection.{ test_inspection as test_build_inspection }
@@ -35,6 +36,7 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       test_list,
       test_alist,
       test_write_log,
+      test_exception_info,
       test_debug,
       test_process,
       test_build_inspection,

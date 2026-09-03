@@ -1,0 +1,92 @@
+module Basic.System.FileSystem
+
+import Basic.Builtins.{
+  bytes_equal,
+  bytes_length,
+  i32_add,
+  i32_to_i64,
+  i64_to_i32,
+  string_to_bytes
+}
+import Basic.Conv.I32.{ i32_impl_debug }
+import Basic.Data.String.{ concat }
+import Basic.Eff.Exn.{ Exception, throw_system }
+import Basic.Platform.Wasip1.{ fd_prestat_dir_name, fd_prestat_get, path_create_directory }
+import Basic.Trait.Debug.{ debug }
+import Basic.Wasm.Abi.{ address, allocate, read_i32, to_bytes, write_bytes }
+
+pub effect FileSystem {
+  ensure_directory(String) -> Unit
+}
+
+pub fn ensure_directory_exists(path : String) -> Unit ! FileSystem {
+  ensure_directory!(path)
+}
+
+pub fn[T, E : Effect, AdapterEffect : Effect] run_file_system_with(
+  action : () -> T ! { E, FileSystem },
+  adapter : (String) -> Unit ! AdapterEffect
+) -> () -> T ! { E, AdapterEffect } {
+  fn() {
+    handle action() with {
+      ensure_directory(path, resume) => resume(adapter(path))
+    } final value {
+      value
+    }
+  }
+}
+
+pub fn[T, E : Effect] run_file_system(
+  action : () -> T ! { E, FileSystem }
+) -> () -> T ! { E, Io, Exception } {
+  run_file_system_with[T, E, { Io, Exception }](action, ensure_directory_on_host)
+}
+
+fn ensure_directory_on_host(path : String) -> Unit ! { Io, Exception } {
+  let directory = working_directory_preopen(3i32)
+  let bytes = string_to_bytes(path)
+  let length = bytes_length(bytes)
+  let storage = allocate(length)
+  write_bytes(storage, 0, bytes)
+  let errno = path_create_directory(directory, address(storage, 0i32), i64_to_i32(length))
+  match errno {
+    0i32 => ()
+    20i32 => ()
+    errno => throw_system[Unit](
+      concat(
+        concat(concat("unable to create directory `", path), "`: platform error "),
+        debug(errno)
+      ),
+      errno
+    )
+  }
+}
+
+fn working_directory_preopen(descriptor : I32) -> I32 ! { Io, Exception } {
+  let prestat = allocate(8)
+  let errno = fd_prestat_get(descriptor, address(prestat, 0i32))
+  match errno {
+    0i32 => {
+      let name_length = read_i32(prestat, 4)
+      let name = allocate(i32_to_i64(name_length))
+      let name_errno = fd_prestat_dir_name(descriptor, address(name, 0i32), name_length)
+      match name_errno {
+        0i32 =>
+          if bytes_equal(to_bytes(name), string_to_bytes(".")) {
+            descriptor
+          } else {
+            working_directory_preopen(i32_add(descriptor, 1i32))
+          }
+        errno => throw_system[I32](
+          concat("unable to read a WASIp1 preopen: platform error ", debug(errno)),
+          errno
+        )
+      }
+    }
+    8i32 => throw_system[I32]("the current directory is not available through WASIp1", errno)
+    errno => throw_system[I32](
+      concat("unable to inspect WASIp1 preopens: platform error ", debug(errno)),
+      errno
+    )
+  }
+}

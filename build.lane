@@ -54,6 +54,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             "src/prelude.lane",
             "src/summon.lane",
             "src/system/process.lane",
+            "src/system/file_system.lane",
             "src/trait/app.lane",
             "src/trait/bool.lane",
             "src/trait/compare.lane",
@@ -82,6 +83,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             "test/data/string.lane",
             "test/derive/debug.lane",
             "test/eff/bound.lane",
+            "test/eff/exn.lane",
             "test/eff/loop.lane",
             "test/eff/write.lane",
             "test/entry.lane",
@@ -93,7 +95,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             Export::{ module_name: "Test.Entry", value_name: "test_entry", wasm_name: "test" }
           ],
           output: "basic.wasm",
-          artifact_prefix: ".lane-build-"
+          artifact_directory: ".lanebuild"
         }
       )
     }

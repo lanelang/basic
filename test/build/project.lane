@@ -1,11 +1,13 @@
 module Test.Build.Project
 
-import Basic.Build.{ BuildFailure, Export, Project, build }
+import Basic.Build.{ Export, Project, build }
 import Basic.Builtins.{ bytes_equal, string_to_bytes }
 import Basic.Data.Bool.{ bool_impl_and }
 import Basic.Data.List.{ List, list_impl_monoid }
+import Basic.Eff.Exn.{ Exception }
 import Basic.Eff.Write.{ Write, run_write }
 import Basic.Ops.{ op_and }
+import Basic.System.FileSystem.{ FileSystem, run_file_system_with }
 import Basic.System.Process.{ Command, CommandOutput, CommandResult, Process, run_process_with }
 import Test.Assert.{ Assert, assert_true }
 
@@ -51,7 +53,7 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
         assert_true(
           string_list_equal(
             command.arguments,
-            ["compile", "-I", ".lane-build-Main.lmi", "-o", ".lane-build-Main.lmo", "Main.lane"]
+            ["compile", "-I", ".lanebuild/Main.lmi", "-o", ".lanebuild/Main.lmo", "Main.lane"]
           ),
           info="compile command"
         )
@@ -61,7 +63,7 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
         assert_true(
           string_list_equal(
             command.arguments,
-            ["link", "-o", "main.wasm", "--export", "Main.test:test", ".lane-build-Main.lmo"]
+            ["link", "-o", "main.wasm", "--export", "Main.test:test", ".lanebuild/Main.lmo"]
           ),
           info="link command"
         )
@@ -74,22 +76,37 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
   }
 }
 
+fn mock_file_system(path : String) -> Unit ! { Assert, Write[List[String]] } {
+  assert_true(string_equal(path, ".lanebuild"), info="artifact directory")
+  write!(["directory"])
+}
+
 pub fn test_project_build() -> Unit ! Assert {
   offer source_info : String = "test_project_build"
-  let action : () -> Unit ! { Process, BuildFailure } = fn() {
+  let action : () -> Unit ! { Process, FileSystem, Exception } = fn() {
     build(
       Project::{
         sources: ["Main.lane"],
         exports: [Export::{ module_name: "Main", value_name: "test", wasm_name: "test" }],
         output: "main.wasm",
-        artifact_prefix: ".lane-build-"
+        artifact_directory: ".lanebuild"
       }
     )
   }
-  let mocked = run_process_with(action, mock_command)
+  let process_mocked =
+    run_process_with[Unit, { FileSystem, Exception }, { Assert, Write[List[String]] }](
+      action,
+      mock_command
+    )
+  let mocked =
+    run_file_system_with[
+      Unit,
+      { Exception, Assert, Write[List[String]] },
+      { Assert, Write[List[String]] }
+    ](process_mocked, mock_file_system)
   let checked : () -> Unit ! { Assert, Write[List[String]] } = fn() {
     handle mocked() with {
-      fail(_error, _resume) => assert_true(false)
+      raise[R](_error, _resume) => assert_true(false)
     } final _value {
       ()
     }
@@ -97,9 +114,13 @@ pub fn test_project_build() -> Unit ! Assert {
   let report = run_write[Unit, List[String], { Assert }](checked, monoid_impl=list_impl_monoid())()
   assert_true(
     match report.log {
-      cons(first, cons(second, cons(third, empty()))) => string_equal(first, "inspect")
-        && string_equal(second, "compile")
-        && string_equal(third, "link")
+      cons(first, cons(second, cons(third, cons(fourth, empty())))) => string_equal(
+        first,
+        "directory"
+      )
+        && string_equal(second, "inspect")
+        && string_equal(third, "compile")
+        && string_equal(fourth, "link")
       _ => false
     }
   )
