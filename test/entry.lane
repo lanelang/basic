@@ -18,7 +18,7 @@ import Test.Derive.Debug as Debug
 import Test.System.Process as Process
 import Test.Platform.Wasip1 as Wasip1
 
-pub fn test_entry() -> Unit ! Io {
+pub fn test_entry() -> Unit ! { Io, Panic } {
   execute_all_tests(
     [
       AssertSummary.test_summary,
@@ -37,6 +37,11 @@ pub fn test_entry() -> Unit ! Io {
     ]
   )
   execute_all_tests[{ Io }](
-    [Process.test_missing_command, Process.test_inspect_source_output, Wasip1.test_wasip1]
+    [
+      Process.test_missing_command,
+      Process.test_inspect_source_output,
+      Process.test_nonzero_exit_output,
+      Wasip1.test_wasip1
+    ]
   )
 }

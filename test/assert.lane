@@ -1,6 +1,7 @@
 module Test.Assert
 
 import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Builtins.{ i64_equal }
 import Basic.Data.Bool.{ bool_impl_not }
 import Basic.Data.List.{ List, length }
 import Basic.Data.I64.{ i64_impl_add }
@@ -9,6 +10,7 @@ import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 import Basic.Trait.Debug.{ debug, Debug }
 import Basic.Io.{ println }
+import Basic.Platform.Wasip1.{ proc_exit }
 import Basic.Eff.Write.{ Write, run_write, WriteResult }
 import Basic.Ops.{ op_not, op_add, op_equal, op_not_equal }
 
@@ -112,13 +114,20 @@ fn[E : Effect] execute_test(f : () -> Unit ! { E, Assert }) -> Unit ! { E, Io, W
   }
 }
 
-pub fn[E : Effect] execute_all_tests(tests : List[() -> Unit ! { E, Assert }]) -> Unit ! { E, Io } {
+pub fn[E : Effect] execute_all_tests(
+  tests : List[() -> Unit ! { E, Assert }]
+) -> Unit ! { E, Io, Panic } {
   let result =
     fn() {
       execute_tests(tests)
     } |> run_write[Unit, TestCounts, { E, Io }]
   let result = result()
   println(format_test_summary(length(tests), result.log))
+  if i64_equal(result.log.failed, 0) {
+    ()
+  } else {
+    proc_exit(1i32)
+  }
 }
 
 fn[E : Effect] execute_tests(

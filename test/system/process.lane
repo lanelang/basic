@@ -50,3 +50,28 @@ pub fn test_inspect_source_output() -> Unit ! { Assert, Io } {
   )
   assert_equal(bytes_to_string(output.stderr), "")
 }
+
+pub fn test_nonzero_exit_output() -> Unit ! { Assert, Io } {
+  offer source_info : String = "test_nonzero_exit_output"
+  let output = run_command(
+    Command::{
+      executable: "lane",
+      arguments: ["run", "test/failing_entry.lane:test_entry", "--lib-dir", ".", "--no-basic"],
+      working_directory: none(),
+      environment: [],
+      inherit_environment: true,
+      stdin: string_to_bytes("")
+    }
+  )
+  assert_true(
+    match output.result {
+      exited(1i32) => true
+      _ => false
+    }
+  )
+  assert_equal(
+    bytes_to_string(output.stdout),
+    "source info: failing_test\nshould be true, but is false\nTotal tests: 1, passed: 0, failed: 1\n"
+  )
+  assert_equal(bytes_to_string(output.stderr), "")
+}

@@ -1,0 +1,12 @@
+module Test.FailingEntry
+
+import Test.Assert.{ Assert, assert_true, execute_all_tests }
+
+fn failing_test() -> Unit ! Assert {
+  offer source_info : String = "failing_test"
+  assert_true(false)
+}
+
+pub fn test_entry() -> Unit ! { Io, Panic } {
+  execute_all_tests([failing_test])
+}
