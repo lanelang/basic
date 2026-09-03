@@ -46,7 +46,7 @@ pub fn test_inspect_source_output() -> Unit ! { Assert, Io } {
   )
   assert_equal(
     bytes_to_string(output.stdout),
-    "{\"schema\":1,\"module\":\"Build\",\"imports\":[\"Basic.Data.Option\",\"Basic.Data.Void\",\"Basic.Builtins\",\"Basic.Io\",\"Basic.System.Process\"]}\n"
+    "{\"schema\":1,\"module\":\"Build\",\"imports\":[\"Basic.Build\"]}\n"
   )
   assert_equal(bytes_to_string(output.stderr), "")
 }

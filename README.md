@@ -11,10 +11,16 @@ function surface supported by Lane's pinned Wasmoon runtime. These bindings use
 `WasmAddress` for guest-memory pointers and intentionally do not replace
 domain-level wrappers such as `Basic.Io.println`.
 
+`Basic.Build` is the ordinary Lane library for explicit build manifests. It
+uses `lane inspect` for compiler-owned module and import facts, constructs the
+source dependency graph, invokes `lane compile` once per module, and passes the
+resulting object set explicitly to `lane link`.
+
 Run the integration suite through the Lane-authored build workflow:
 
 ```sh
-lane run build.lane:test
+lane run build.lane:build
+lane exec basic.wasm:test
 ```
 
 Use `./test.sh` when testing against a compiler build that is not installed on

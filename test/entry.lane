@@ -17,6 +17,7 @@ import Test.Eff.Write as Write
 import Test.Derive.Debug as Debug
 import Test.System.Process as Process
 import Test.Platform.Wasip1 as Wasip1
+import Test.Build as Build
 
 pub fn test_entry() -> Unit ! { Io, Panic } {
   execute_all_tests(
@@ -33,7 +34,8 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       List.test_list,
       AList.test_alist,
       Write.test_write_log,
-      Debug.test_debug
+      Debug.test_debug,
+      Build.test_build
     ]
   )
   execute_all_tests[{ Io }](

@@ -1,0 +1,42 @@
+module Test.Build
+
+import Basic.Build.{ SourceInspection, decode_source_inspection }
+import Basic.Data.Option.{ Option }
+import Basic.Data.String.{ string_impl_debug, string_impl_equal }
+import Test.Assert.{ Assert, assert_equal, assert_true }
+
+pub fn test_build() -> Unit ! Assert {
+  offer source_info : String = "test_build"
+  let decoded =
+    decode_source_inspection(
+      " { \"imports\" : [\"Basic.A\", \"Basic.B\"], \"module\" : \"App.Main\", \"schema\" : 1 }\n"
+    )
+  match decoded {
+    none() => assert_true(false)
+    some(SourceInspection::{ module_name, imports }) => {
+      assert_equal(module_name, "App.Main")
+      match imports {
+        cons(first, cons(second, empty())) => {
+          assert_equal(first, "Basic.A")
+          assert_equal(second, "Basic.B")
+        }
+        _ => assert_true(false)
+      }
+    }
+  }
+  assert_true(
+    match decode_source_inspection("{\"schema\":2,\"module\":\"App.Main\",\"imports\":[]}") {
+      none() => true
+      some(_) => false
+    }
+  )
+  assert_true(
+    match
+      decode_source_inspection(
+        "{\"schema\":1,\"module\":\"App.Main\",\"module\":\"Other\",\"imports\":[]}"
+      ) {
+      none() => true
+      some(_) => false
+    }
+  )
+}

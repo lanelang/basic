@@ -1,0 +1,482 @@
+module Basic.Build
+
+import Basic.Builtins.{
+  byte_to_i64,
+  bytes_get,
+  bytes_length,
+  bytes_slice,
+  bytes_to_string,
+  bytes_equal,
+  string_to_bytes
+}
+import Basic.Data.List.{ List, append }
+import Basic.Data.Bool.{ bool_impl_and, bool_impl_or, bool_impl_not }
+import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_equal, i64_impl_compare }
+import Basic.Data.Option.{ Option }
+import Basic.Data.String.{ concat }
+import Basic.Data.Void.{ absurd }
+import Basic.Io.{ panic }
+import Basic.System.Process.{ Command, CommandOutput, CommandResult, run_command }
+
+pub struct Export {
+  module_name : String
+  value_name : String
+  wasm_name : String
+}
+
+pub struct Project {
+  sources : List[String]
+  exports : List[Export]
+  output : String
+  artifact_prefix : String
+}
+
+pub struct SourceInspection {
+  module_name : String
+  imports : List[String]
+}
+
+struct SourceModule {
+  path : String
+  module_name : String
+  imports : List[String]
+}
+
+struct CompilationState {
+  built : List[String]
+  objects : List[String]
+}
+
+struct ParsedInspectionField {
+  after_value : I64
+  schema_seen : Bool
+  module_name : Option[String]
+  imports : Option[List[String]]
+}
+
+fn[T] fail(message : String) -> T ! { Io, Panic } {
+  absurd(panic(message))
+}
+
+fn string_equal(left : String, right : String) -> Bool {
+  bytes_equal(string_to_bytes(left), string_to_bytes(right))
+}
+
+fn[T] is_some(value : Option[T]) -> Bool {
+  match value {
+    none() => false
+    some(_) => true
+  }
+}
+
+fn contains_string(values : List[String], value : String) -> Bool {
+  match values {
+    empty() => false
+    cons(head, tail) =>
+      if string_equal(head, value) {
+        true
+      } else {
+        contains_string(tail, value)
+      }
+  }
+}
+
+fn byte_at(input : Bytes, index : I64) -> I64 {
+  byte_to_i64(bytes_get(input, index))
+}
+
+fn has_byte(input : Bytes, index : I64, value : I64) -> Bool {
+  index < bytes_length(input) && byte_at(input, index) == value
+}
+
+fn skip_space(input : Bytes, index : I64) -> I64 {
+  if index < bytes_length(input) {
+    let byte = byte_at(input, index)
+    if byte == 32 || byte == 9 || byte == 10 || byte == 13 {
+      skip_space(input, index + 1)
+    } else {
+      index
+    }
+  } else {
+    index
+  }
+}
+
+fn string_end(input : Bytes, index : I64) -> Option[I64] {
+  if index >= bytes_length(input) {
+    none()
+  } else {
+    let byte = byte_at(input, index)
+    if byte == 34 {
+      some(index)
+    } else if byte == 92 || byte < 32 {
+      none()
+    } else {
+      string_end(input, index + 1)
+    }
+  }
+}
+
+fn parse_string(input : Bytes, index : I64) -> Option[(String, I64)] {
+  let start = skip_space(input, index)
+  if has_byte(input, start, 34) {
+    match string_end(input, start + 1) {
+      none() => none()
+      some(end) => some((bytes_to_string(bytes_slice(input, start + 1, end - start - 1)), end + 1))
+    }
+  } else {
+    none()
+  }
+}
+
+fn reverse_strings(values : List[String], result : List[String]) -> List[String] {
+  match values {
+    empty() => result
+    cons(head, tail) => reverse_strings(tail, cons(head, result))
+  }
+}
+
+fn parse_string_array_items(
+  input : Bytes,
+  index : I64,
+  reversed : List[String]
+) -> Option[(List[String], I64)] {
+  match parse_string(input, index) {
+    none() => none()
+    some((value, after_value)) => {
+      let separator = skip_space(input, after_value)
+      if has_byte(input, separator, 93) {
+        some((reverse_strings(cons(value, reversed), []), separator + 1))
+      } else if has_byte(input, separator, 44) {
+        parse_string_array_items(input, separator + 1, cons(value, reversed))
+      } else {
+        none()
+      }
+    }
+  }
+}
+
+fn parse_string_array(input : Bytes, index : I64) -> Option[(List[String], I64)] {
+  let start = skip_space(input, index)
+  if has_byte(input, start, 91) {
+    let first = skip_space(input, start + 1)
+    if has_byte(input, first, 93) {
+      some(([], first + 1))
+    } else {
+      parse_string_array_items(input, first, [])
+    }
+  } else {
+    none()
+  }
+}
+
+fn finish_source_inspection(
+  input : Bytes,
+  index : I64,
+  schema_seen : Bool,
+  module_name : Option[String],
+  imports : Option[List[String]]
+) -> Option[SourceInspection] {
+  let end = skip_space(input, index)
+  if end == bytes_length(input) && schema_seen {
+    match (module_name, imports) {
+      (some(module_name), some(imports)) => some(SourceInspection::{ module_name, imports })
+      _ => none()
+    }
+  } else {
+    none()
+  }
+}
+
+fn parse_source_inspection_fields(
+  input : Bytes,
+  index : I64,
+  schema_seen : Bool,
+  module_name : Option[String],
+  imports : Option[List[String]]
+) -> Option[SourceInspection] {
+  match parse_string(input, index) {
+    none() => none()
+    some((key, after_key)) => {
+      let colon = skip_space(input, after_key)
+      if !has_byte(input, colon, 58) {
+        none()
+      } else {
+        let value_start = colon + 1
+        let parsed : Option[ParsedInspectionField] = if string_equal(key, "schema") {
+          let value = skip_space(input, value_start)
+          if schema_seen || !has_byte(input, value, 49) {
+            none()
+          } else {
+            some(
+              ParsedInspectionField::{
+                after_value: value + 1,
+                schema_seen: true,
+                module_name,
+                imports
+              }
+            )
+          }
+        } else if string_equal(key, "module") {
+          if is_some(module_name) {
+            none()
+          } else {
+            match parse_string(input, value_start) {
+              none() => none()
+              some((value, after_value)) => some(
+                ParsedInspectionField::{
+                  after_value,
+                  schema_seen,
+                  module_name: some(value),
+                  imports
+                }
+              )
+            }
+          }
+        } else if string_equal(key, "imports") {
+          if is_some(imports) {
+            none()
+          } else {
+            match parse_string_array(input, value_start) {
+              none() => none()
+              some((value, after_value)) => some(
+                ParsedInspectionField::{
+                  after_value,
+                  schema_seen,
+                  module_name,
+                  imports: some(value)
+                }
+              )
+            }
+          }
+        } else {
+          none()
+        }
+        match parsed {
+          none() => none()
+          some(field) => {
+            let separator = skip_space(input, field.after_value)
+            if has_byte(input, separator, 125) {
+              finish_source_inspection(
+                input,
+                separator + 1,
+                field.schema_seen,
+                field.module_name,
+                field.imports
+              )
+            } else if has_byte(input, separator, 44) {
+              parse_source_inspection_fields(
+                input,
+                separator + 1,
+                field.schema_seen,
+                field.module_name,
+                field.imports
+              )
+            } else {
+              none()
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+pub fn decode_source_inspection(text : String) -> Option[SourceInspection] {
+  let input = string_to_bytes(text)
+  let start = skip_space(input, 0)
+  if has_byte(input, start, 123) {
+    parse_source_inspection_fields(input, start + 1, false, none(), none())
+  } else {
+    none()
+  }
+}
+
+fn command_failure(output : CommandOutput) -> String {
+  let stderr = bytes_to_string(output.stderr)
+  if bytes_length(output.stderr) > 0 {
+    stderr
+  } else if bytes_length(output.stdout) > 0 {
+    bytes_to_string(output.stdout)
+  } else {
+    "Lane command failed"
+  }
+}
+
+fn run_lane(arguments : List[String]) -> CommandOutput ! { Io, Panic } {
+  let output = run_command(
+    Command::{
+      executable: "lane",
+      arguments,
+      working_directory: none(),
+      environment: [],
+      inherit_environment: true,
+      stdin: string_to_bytes("")
+    }
+  )
+  match output.result {
+    exited(0i32) => output
+    _ => fail[CommandOutput](command_failure(output))
+  }
+}
+
+fn inspect_source(path : String) -> SourceModule ! { Io, Panic } {
+  let output = run_lane(["inspect", path])
+  match decode_source_inspection(bytes_to_string(output.stdout)) {
+    none() => fail[SourceModule](
+      concat(concat("lane inspect returned an invalid source inspection for `", path), "`")
+    )
+    some(inspection) => SourceModule::{
+      path,
+      module_name: inspection.module_name,
+      imports: inspection.imports
+    }
+  }
+}
+
+fn inspect_sources(paths : List[String]) -> List[SourceModule] ! { Io, Panic } {
+  match paths {
+    empty() => []
+    cons(path, rest) => cons(inspect_source(path), inspect_sources(rest))
+  }
+}
+
+fn find_source(sources : List[SourceModule], module_name : String) -> Option[SourceModule] {
+  match sources {
+    empty() => none()
+    cons(source, rest) =>
+      if string_equal(source.module_name, module_name) {
+        some(source)
+      } else {
+        find_source(rest, module_name)
+      }
+  }
+}
+
+fn ensure_unique_modules(sources : List[SourceModule], seen : List[String]) -> Unit ! { Io, Panic } {
+  match sources {
+    empty() => ()
+    cons(source, rest) => {
+      if contains_string(seen, source.module_name) {
+        fail[Unit](concat(concat("duplicate source module `", source.module_name), "`"))
+      } else {
+        ensure_unique_modules(rest, cons(source.module_name, seen))
+      }
+    }
+  }
+}
+
+fn interface_path(prefix : String, module_name : String) -> String {
+  concat(concat(prefix, module_name), ".lmi")
+}
+
+fn object_path(prefix : String, module_name : String) -> String {
+  concat(concat(prefix, module_name), ".lmo")
+}
+
+fn interface_arguments(imports : List[String], prefix : String) -> List[String] {
+  match imports {
+    empty() => []
+    cons(import_, rest) => cons(
+      "-i",
+      cons(interface_path(prefix, import_), interface_arguments(rest, prefix))
+    )
+  }
+}
+
+fn compile_imports(
+  imports : List[String],
+  sources : List[SourceModule],
+  prefix : String,
+  visiting : List[String],
+  state : CompilationState
+) -> CompilationState ! { Io, Panic } {
+  match imports {
+    empty() => state
+    cons(import_, rest) => {
+      let dependency = match find_source(sources, import_) {
+        none() => fail[SourceModule](concat(concat("missing source module `", import_), "`"))
+        some(source) => source
+      }
+      let state = compile_source(dependency, sources, prefix, visiting, state)
+      compile_imports(rest, sources, prefix, visiting, state)
+    }
+  }
+}
+
+fn compile_source(
+  source : SourceModule,
+  sources : List[SourceModule],
+  prefix : String,
+  visiting : List[String],
+  state : CompilationState
+) -> CompilationState ! { Io, Panic } {
+  if contains_string(state.built, source.module_name) {
+    state
+  } else if contains_string(visiting, source.module_name) {
+    fail[CompilationState](
+      concat(concat("cyclic source dependency through `", source.module_name), "`")
+    )
+  } else {
+    let state =
+      compile_imports(source.imports, sources, prefix, cons(source.module_name, visiting), state)
+    let interface = interface_path(prefix, source.module_name)
+    let object = object_path(prefix, source.module_name)
+    let arguments =
+      append(
+        ["compile", "-I", interface, "-o", object],
+        append(interface_arguments(state.built, prefix), [source.path])
+      )
+    let _output = run_lane(arguments)
+    CompilationState::{
+      built: cons(source.module_name, state.built),
+      objects: cons(object, state.objects)
+    }
+  }
+}
+
+fn compile_sources(
+  remaining : List[SourceModule],
+  sources : List[SourceModule],
+  prefix : String,
+  state : CompilationState
+) -> CompilationState ! { Io, Panic } {
+  match remaining {
+    empty() => state
+    cons(source, rest) => {
+      let state = compile_source(source, sources, prefix, [], state)
+      compile_sources(rest, sources, prefix, state)
+    }
+  }
+}
+
+fn export_arguments(exports : List[Export]) -> List[String] {
+  match exports {
+    empty() => []
+    cons(export_, rest) => cons(
+      "--export",
+      cons(
+        concat(
+          concat(concat(concat(export_.module_name, "."), export_.value_name), ":"),
+          export_.wasm_name
+        ),
+        export_arguments(rest)
+      )
+    )
+  }
+}
+
+pub fn build(project : Project) -> Unit ! { Io, Panic } {
+  let sources = inspect_sources(project.sources)
+  ensure_unique_modules(sources, [])
+  let state = compile_sources(
+    sources,
+    sources,
+    project.artifact_prefix,
+    CompilationState::{ built: [], objects: [] }
+  )
+  let arguments =
+    append(["link", "-o", project.output], append(export_arguments(project.exports), state.objects))
+  let _output = run_lane(arguments)
+  ()
+}

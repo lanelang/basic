@@ -1,33 +1,94 @@
 module Build
 
-import Basic.Data.Option.{ Option }
-import Basic.Data.Void.{ absurd }
-import Basic.Builtins.{ string_to_bytes }
-import Basic.Io.{ panic }
-import Basic.System.Process.{ Command, CommandResult, run_command }
+import Basic.Build as BasicBuild
 
-fn fail(message : String) -> Unit ! { Io, Panic } {
-  absurd(panic(message))
-}
-
-pub fn test() -> Unit ! { Io, Panic } {
-  let result = run_command(
-    Command::{
-      executable: "lane",
-      arguments: ["run", "test/entry.lane:test_entry", "--lib-dir", ".", "--no-basic"],
-      working_directory: none(),
-      environment: [],
-      inherit_environment: true,
-      stdin: string_to_bytes("")
+pub fn build() -> Unit ! { Io, Panic } {
+  BasicBuild.build(
+    BasicBuild.Project::{
+      sources: [
+        "src/build.lane",
+        "src/builtins.lane",
+        "src/conv/char.lane",
+        "src/conv/f32.lane",
+        "src/conv/f64.lane",
+        "src/conv/i32.lane",
+        "src/conv/i64.lane",
+        "src/conv/list.lane",
+        "src/conv/option.lane",
+        "src/conv/unit.lane",
+        "src/data/alist.lane",
+        "src/data/bool.lane",
+        "src/data/byte.lane",
+        "src/data/bytes.lane",
+        "src/data/char.lane",
+        "src/data/f32.lane",
+        "src/data/f64.lane",
+        "src/data/i32.lane",
+        "src/data/i64.lane",
+        "src/data/list.lane",
+        "src/data/option.lane",
+        "src/data/result.lane",
+        "src/data/string.lane",
+        "src/data/tuple.lane",
+        "src/data/unit.lane",
+        "src/data/void.lane",
+        "src/derive/debug.lane",
+        "src/derive/equal.lane",
+        "src/eff/bound.lane",
+        "src/eff/exn.lane",
+        "src/eff/loop.lane",
+        "src/eff/read.lane",
+        "src/eff/ref.lane",
+        "src/eff/state.lane",
+        "src/eff/write.lane",
+        "src/io.lane",
+        "src/ops.lane",
+        "src/platform/wasip1.lane",
+        "src/summon.lane",
+        "src/system/process.lane",
+        "src/trait/app.lane",
+        "src/trait/bool.lane",
+        "src/trait/compare.lane",
+        "src/trait/debug.lane",
+        "src/trait/derive.lane",
+        "src/trait/equal.lane",
+        "src/trait/flat.lane",
+        "src/trait/iso.lane",
+        "src/trait/map.lane",
+        "src/trait/monoid.lane",
+        "src/trait/num.lane",
+        "src/wasm/abi.lane",
+        "test/assert.lane",
+        "test/assert_summary.lane",
+        "test/build.lane",
+        "test/data/alist.lane",
+        "test/data/bytes.lane",
+        "test/data/char.lane",
+        "test/data/f32.lane",
+        "test/data/f64.lane",
+        "test/data/i32.lane",
+        "test/data/i64.lane",
+        "test/data/list.lane",
+        "test/data/option.lane",
+        "test/data/string.lane",
+        "test/derive/debug.lane",
+        "test/eff/bound.lane",
+        "test/eff/loop.lane",
+        "test/eff/write.lane",
+        "test/entry.lane",
+        "test/failing_entry.lane",
+        "test/platform/wasip1.lane",
+        "test/system/process.lane"
+      ],
+      exports: [
+        BasicBuild.Export::{
+          module_name: "Test.Entry",
+          value_name: "test_entry",
+          wasm_name: "test"
+        }
+      ],
+      output: "basic.wasm",
+      artifact_prefix: ".lane-build-"
     }
   )
-  match result.result {
-    exited(0i32) => ()
-    exited(_) => fail("Basic test command failed")
-    signaled(_) => fail("Basic test command was terminated by a signal")
-    invalid_request() => fail("Basic test command request was invalid")
-    executable_not_found() => fail("the `lane` executable was not found on PATH")
-    permission_denied() => fail("the `lane` executable could not be executed")
-    system_failure() => fail("the Basic test command could not be started")
-  }
 }
