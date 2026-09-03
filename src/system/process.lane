@@ -10,9 +10,17 @@ import Basic.Builtins.{
   i64_to_i32,
   string_to_bytes
 }
-import Basic.Data.List.{ List, length }
+import Basic.Data.List.{ List, length as list_length }
 import Basic.Data.Option.{ Option }
-import Basic.Wasm.Abi.{ WasmAddress, address, allocate, read_i32, to_bytes, write_bytes, write_i32 }
+import Basic.Wasm.Abi.{
+  WasmAddress,
+  address as buffer_address,
+  allocate as allocate_buffer,
+  read_i32 as read_buffer_i32,
+  to_bytes as buffer_to_bytes,
+  write_bytes as write_buffer_bytes,
+  write_i32 as write_buffer_i32
+}
 
 pub struct EnvironmentVariable {
   key : String
@@ -78,7 +86,7 @@ fn working_directory_size(directory : Option[String]) -> I64 {
 }
 
 fn write_frame_i32(frame : ByteBuffer, request_start : I64, offset : I64, value : I64) -> Unit ! Io {
-  write_i32(frame, i64_add(request_start, offset), i64_to_i32(value))
+  write_buffer_i32(frame, i64_add(request_start, offset), i64_to_i32(value))
 }
 
 fn write_frame_bytes(
@@ -87,7 +95,7 @@ fn write_frame_bytes(
   offset : I64,
   value : String
 ) -> Unit ! Io {
-  write_bytes(frame, i64_add(request_start, offset), string_to_bytes(value))
+  write_buffer_bytes(frame, i64_add(request_start, offset), string_to_bytes(value))
 }
 
 fn write_arguments(
@@ -148,8 +156,8 @@ fn write_environment(
 pub fn run_command(command : Command) -> CommandOutput ! Io {
   let response_size = 20
   let request_header_size = 44
-  let argument_count = length(command.arguments)
-  let environment_count = length(command.environment)
+  let argument_count = list_length(command.arguments)
+  let environment_count = list_length(command.environment)
   let argument_table_offset = request_header_size
   let environment_table_offset = i64_add(argument_table_offset, i64_mul(argument_count, 8))
   let executable_offset = i64_add(environment_table_offset, i64_mul(environment_count, 16))
@@ -162,7 +170,7 @@ pub fn run_command(command : Command) -> CommandOutput ! Io {
   let stdin_offset = i64_add(environment_payload_offset, environment_size(command.environment))
   let stdin_length = bytes_length(command.stdin)
   let request_size = i64_add(stdin_offset, stdin_length)
-  let frame = allocate(i64_add(response_size, request_size))
+  let frame = allocate_buffer(i64_add(response_size, request_size))
   let flags = if command.inherit_environment {
     1
   } else {
@@ -203,26 +211,30 @@ pub fn run_command(command : Command) -> CommandOutput ! Io {
     environment_table_offset,
     environment_payload_offset
   )
-  write_bytes(frame, i64_add(response_size, stdin_offset), command.stdin)
+  write_buffer_bytes(frame, i64_add(response_size, stdin_offset), command.stdin)
   let status =
-    run_command_raw(address(frame, 20i32), i64_to_i32(request_size), address(frame, 0i32))
+    run_command_raw(
+      buffer_address(frame, 20i32),
+      i64_to_i32(request_size),
+      buffer_address(frame, 0i32)
+    )
   let empty = string_to_bytes("")
   if i32_equal(status, 0i32) {
-    let kind = read_i32(frame, 0)
-    let code = read_i32(frame, 4)
-    let output_handle = read_i32(frame, 8)
-    let stdout_length = i32_to_i64(read_i32(frame, 12))
-    let stderr_length = i32_to_i64(read_i32(frame, 16))
+    let kind = read_buffer_i32(frame, 0)
+    let code = read_buffer_i32(frame, 4)
+    let output_handle = read_buffer_i32(frame, 8)
+    let stdout_length = i32_to_i64(read_buffer_i32(frame, 12))
+    let stderr_length = i32_to_i64(read_buffer_i32(frame, 16))
     let output_length = i64_add(stdout_length, stderr_length)
-    let output_buffer = allocate(output_length)
+    let output_buffer = allocate_buffer(output_length)
     let output_status =
       take_command_output_raw(
         output_handle,
-        address(output_buffer, 0i32),
+        buffer_address(output_buffer, 0i32),
         i64_to_i32(output_length)
       )
     if i32_equal(output_status, 0i32) {
-      let output = to_bytes(output_buffer)
+      let output = buffer_to_bytes(output_buffer)
       let result = if i32_equal(kind, 0i32) {
         exited(code)
       } else {

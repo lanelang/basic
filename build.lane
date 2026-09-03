@@ -1,10 +1,11 @@
 module Build
 
-import Basic.Build as BasicBuild
+import Basic.Prelude.*
+import Basic.Build.{ Export, Project, build as build_project }
 
 pub fn build() -> Unit ! { Io, Panic } {
-  BasicBuild.build(
-    BasicBuild.Project::{
+  build_project(
+    Project::{
       sources: [
         "src/build.lane",
         "src/build_inspection.lane",
@@ -84,13 +85,7 @@ pub fn build() -> Unit ! { Io, Panic } {
         "test/prelude.lane",
         "test/system/process.lane"
       ],
-      exports: [
-        BasicBuild.Export::{
-          module_name: "Test.Entry",
-          value_name: "test_entry",
-          wasm_name: "test"
-        }
-      ],
+      exports: [Export::{ module_name: "Test.Entry", value_name: "test_entry", wasm_name: "test" }],
       output: "basic.wasm",
       artifact_prefix: ".lane-build-"
     }

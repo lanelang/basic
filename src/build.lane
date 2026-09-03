@@ -1,14 +1,19 @@
 module Basic.Build
 
-import Basic.Build.Inspection.{ SourceInspection, decode }
+import Basic.Build.Inspection.{ SourceInspection, decode as decode_inspection }
 import Basic.Builtins.{ bytes_length, bytes_to_string, bytes_equal, string_to_bytes }
 import Basic.Data.I64.{ i64_impl_compare }
-import Basic.Data.List.{ List, append }
+import Basic.Data.List.{ List, append as append_list }
 import Basic.Data.Option.{ Option }
 import Basic.Data.String.{ concat }
 import Basic.Data.Void.{ absurd }
 import Basic.Io.{ panic }
-import Basic.System.Process.{ Command, CommandOutput, CommandResult, run_command }
+import Basic.System.Process.{
+  Command,
+  CommandOutput,
+  CommandResult,
+  run_command as execute_command
+}
 import Basic.Ops.{ op_greater }
 
 pub struct Export {
@@ -67,7 +72,7 @@ fn command_failure(output : CommandOutput) -> String {
 }
 
 fn run_lane(arguments : List[String]) -> CommandOutput ! { Io, Panic } {
-  let output = run_command(
+  let output = execute_command(
     Command::{
       executable: "lane",
       arguments,
@@ -85,7 +90,7 @@ fn run_lane(arguments : List[String]) -> CommandOutput ! { Io, Panic } {
 
 fn inspect_source(path : String) -> SourceModule ! { Io, Panic } {
   let output = run_lane(["inspect", path])
-  match decode(bytes_to_string(output.stdout)) {
+  match decode_inspection(bytes_to_string(output.stdout)) {
     none() => fail[SourceModule](
       concat(concat("lane inspect returned an invalid source inspection for `", path), "`")
     )
@@ -186,9 +191,9 @@ fn compile_source(
     let interface = interface_path(prefix, source.module_name)
     let object = object_path(prefix, source.module_name)
     let arguments =
-      append(
+      append_list(
         ["compile", "-I", interface, "-o", object],
-        append(interface_arguments(state.built, prefix), [source.path])
+        append_list(interface_arguments(state.built, prefix), [source.path])
       )
     let _output = run_lane(arguments)
     CompilationState::{
@@ -239,7 +244,10 @@ pub fn build(project : Project) -> Unit ! { Io, Panic } {
     CompilationState::{ built: [], objects: [] }
   )
   let arguments =
-    append(["link", "-o", project.output], append(export_arguments(project.exports), state.objects))
+    append_list(
+      ["link", "-o", project.output],
+      append_list(export_arguments(project.exports), state.objects)
+    )
   let _output = run_lane(arguments)
   ()
 }

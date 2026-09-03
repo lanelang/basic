@@ -1,18 +1,11 @@
 module Test.Assert
 
-import Basic.Conv.I64.{ i64_impl_debug }
-import Basic.Builtins.{ i64_equal }
-import Basic.Data.Bool.{ bool_impl_not }
-import Basic.Data.List.{ List, length }
-import Basic.Data.I64.{ i64_impl_add }
+import Basic.Prelude.*
+import Basic.Data.List.{ length as list_length }
 import Basic.Data.String.{ concat }
-import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Monoid.{ Monoid, Semigroup }
-import Basic.Trait.Debug.{ debug, Debug }
 import Basic.Io.{ println }
 import Basic.Platform.Wasip1.{ proc_exit }
 import Basic.Eff.Write.{ Write, run_write, WriteResult }
-import Basic.Ops.{ op_not, op_add, op_equal, op_not_equal }
 
 pub effect Assert {
   // assert(condition, source_info, fail_message)
@@ -122,8 +115,8 @@ pub fn[E : Effect] execute_all_tests(
       execute_tests(tests)
     } |> run_write[Unit, TestCounts, { E, Io }]
   let result = result()
-  println(format_test_summary(length(tests), result.log))
-  if i64_equal(result.log.failed, 0) {
+  println(format_test_summary(list_length(tests), result.log))
+  if result.log.failed == 0 {
     ()
   } else {
     proc_exit(1i32)

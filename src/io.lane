@@ -3,24 +3,28 @@ module Basic.Io
 import Basic.Builtins.{ bytes_concat, bytes_length, i64_add, i64_to_i32, string_to_bytes }
 import Basic.Data.Void.{ Void }
 import Basic.Platform.Wasip1.{ fd_write, proc_exit }
-import Basic.Wasm.Abi.{ WasmAddress, address, allocate, write_address, write_bytes, write_i32 }
+import Basic.Wasm.Abi.{
+  WasmAddress,
+  address as buffer_address,
+  allocate as allocate_buffer,
+  write_address as write_buffer_address,
+  write_bytes as write_buffer_bytes,
+  write_i32 as write_buffer_i32
+}
 
 fn write(fd : I32, bytes : Bytes) -> Unit ! Io {
   let length = bytes_length(bytes)
-  let frame = allocate(i64_add(12, length))
-  write_bytes(frame, 12, bytes)
-  write_address(frame, 0, frame, 12i32)
-  write_i32(frame, 4, i64_to_i32(length))
-  write_i32(frame, 8, 0i32)
-  let _errno = fd_write(fd, address(frame, 0i32), 1i32, address(frame, 8i32))
+  let frame = allocate_buffer(i64_add(12, length))
+  write_buffer_bytes(frame, 12, bytes)
+  write_buffer_address(frame, 0, frame, 12i32)
+  write_buffer_i32(frame, 4, i64_to_i32(length))
+  write_buffer_i32(frame, 8, 0i32)
+  let _errno = fd_write(fd, buffer_address(frame, 0i32), 1i32, buffer_address(frame, 8i32))
   ()
 }
 
 pub fn println(value : String) -> Unit ! Io {
-  write(
-    1i32,
-    bytes_concat(string_to_bytes(value), string_to_bytes("\n")),
-  )
+  write(1i32, bytes_concat(string_to_bytes(value), string_to_bytes("\n")))
 }
 
 let abort : () -> Void ! Panic = builtin("%abort")

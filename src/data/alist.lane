@@ -1,8 +1,8 @@
 module Basic.Data.AList
 
-import Basic.Data.List.{ List, push_head, filter, find }
+import Basic.Data.List.{ List, push_head, filter as filter_list, find as find_list }
 import Basic.Data.Tuple.{ Tuple, fst, snd }
-import Basic.Data.Option.{ Option, map }
+import Basic.Data.Option.{ Option, map as map_option }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Ops.{ op_equal, op_not_equal }
 
@@ -13,12 +13,12 @@ pub fn[A, B] empty() -> AList[A, B] {
 }
 
 pub fn[K, V] get(list : AList[K, V], key : K, auto offer equal_impl : Equal[K]) -> Option[V] {
-  find(
+  find_list(
     list,
     fn(e) {
       fst(e) == key
     }
-  ) |> map(
+  ) |> map_option(
       fn(e) {
         snd(e)
       }
@@ -30,7 +30,7 @@ pub fn[K, V] set(list : AList[K, V], key : K, val : V, auto _equal_impl : Equal[
 }
 
 pub fn[K, V] del(list : AList[K, V], key : K, auto offer equal_impl : Equal[K]) -> AList[K, V] {
-  filter(
+  filter_list(
     list,
     fn(e) {
       fst(e) != key

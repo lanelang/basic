@@ -1,6 +1,6 @@
 module Basic.Conv.Char
 
-import Basic.Data.Char.{ to_string }
+import Basic.Data.Char.{ to_string as char_to_string }
 import Basic.Trait.Debug.{ Debug }
 
-pub offer char_impl_debug : Debug[Char] = to_string
+pub offer char_impl_debug : Debug[Char] = char_to_string

@@ -1,51 +1,50 @@
 module Test.Entry
 
-import Basic.Data.List.{ List }
+import Basic.Prelude.*
 import Test.Assert.{ execute_all_tests }
-import Test.Assert.Summary as AssertSummary
-import Test.Data.I32 as I32
-import Test.Data.I64 as I64
-import Test.Data.F64 as F64
-import Test.Data.F32 as F32
-import Test.Data.Char as Char
-import Test.Data.String as String
-import Test.Data.Bytes as Bytes
-import Test.Data.Option as Option
-import Test.Data.List as List
-import Test.Data.AList as AList
-import Test.Eff.Write as Write
-import Test.Derive.Debug as Debug
-import Test.System.Process as Process
-import Test.Platform.Wasip1 as Wasip1
-import Test.Build.Inspection as BuildInspection
-import Test.Prelude as Prelude
+import Test.Assert.Summary.{ test_summary as test_assert_summary }
+import Test.Data.I32.{ test_i32 }
+import Test.Data.I64.{ test_i64 }
+import Test.Data.F64.{ test_f64 }
+import Test.Data.F32.{ test_f32 }
+import Test.Data.Char.{ test_char }
+import Test.Data.String.{ test_string }
+import Test.Data.Bytes.{ test_utf8_and_bytes as test_bytes }
+import Test.Data.Option.{ test_equal as test_option }
+import Test.Data.List.{ test_list }
+import Test.Data.AList.{ test_alist }
+import Test.Eff.Write.{ test_write_log }
+import Test.Derive.Debug.{ test_debug }
+import Test.System.Process.{
+  test_missing_command,
+  test_inspect_source_output,
+  test_nonzero_exit_output
+}
+import Test.Platform.Wasip1.{ test_wasip1 }
+import Test.Build.Inspection.{ test_inspection as test_build_inspection }
+import Test.Prelude.{ test_prelude }
 
 pub fn test_entry() -> Unit ! { Io, Panic } {
   execute_all_tests(
     [
-      AssertSummary.test_summary,
-      I32.test_i32,
-      I64.test_i64,
-      F64.test_f64,
-      F32.test_f32,
-      Char.test_char,
-      String.test_string,
-      Bytes.test_utf8_and_bytes,
-      Option.test_equal,
-      List.test_list,
-      AList.test_alist,
-      Write.test_write_log,
-      Debug.test_debug,
-      BuildInspection.test_inspection,
-      Prelude.test_prelude
+      test_assert_summary,
+      test_i32,
+      test_i64,
+      test_f64,
+      test_f32,
+      test_char,
+      test_string,
+      test_bytes,
+      test_option,
+      test_list,
+      test_alist,
+      test_write_log,
+      test_debug,
+      test_build_inspection,
+      test_prelude
     ]
   )
   execute_all_tests[{ Io }](
-    [
-      Process.test_missing_command,
-      Process.test_inspect_source_output,
-      Process.test_nonzero_exit_output,
-      Wasip1.test_wasip1
-    ]
+    [test_missing_command, test_inspect_source_output, test_nonzero_exit_output, test_wasip1]
   )
 }
