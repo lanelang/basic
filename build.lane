@@ -7,6 +7,7 @@ pub fn build() -> Unit ! { Io, Panic } {
     BasicBuild.Project::{
       sources: [
         "src/build.lane",
+        "src/build_inspection.lane",
         "src/builtins.lane",
         "src/conv/char.lane",
         "src/conv/f32.lane",
@@ -60,7 +61,7 @@ pub fn build() -> Unit ! { Io, Panic } {
         "src/wasm/abi.lane",
         "test/assert.lane",
         "test/assert_summary.lane",
-        "test/build.lane",
+        "test/build_inspection.lane",
         "test/data/alist.lane",
         "test/data/bytes.lane",
         "test/data/char.lane",

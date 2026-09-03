@@ -1,0 +1,226 @@
+module Basic.Build.Inspection
+
+import Basic.Builtins.{
+  byte_to_i64,
+  bytes_get,
+  bytes_length,
+  bytes_slice,
+  bytes_to_string,
+  bytes_equal,
+  string_to_bytes
+}
+import Basic.Data.Bool.{ bool_impl_and, bool_impl_or, bool_impl_not }
+import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_equal, i64_impl_compare }
+import Basic.Data.List.{ List }
+import Basic.Data.Option.{ Option }
+
+pub struct SourceInspection {
+  module_name : String
+  imports : List[String]
+}
+
+struct ParsedField {
+  after_value : I64
+  schema_seen : Bool
+  module_name : Option[String]
+  imports : Option[List[String]]
+}
+
+fn string_equal(left : String, right : String) -> Bool {
+  bytes_equal(string_to_bytes(left), string_to_bytes(right))
+}
+
+fn[T] is_some(value : Option[T]) -> Bool {
+  match value {
+    none() => false
+    some(_) => true
+  }
+}
+
+fn byte_at(input : Bytes, index : I64) -> I64 {
+  byte_to_i64(bytes_get(input, index))
+}
+
+fn has_byte(input : Bytes, index : I64, value : I64) -> Bool {
+  index < bytes_length(input) && byte_at(input, index) == value
+}
+
+fn skip_space(input : Bytes, index : I64) -> I64 {
+  if index < bytes_length(input) {
+    let byte = byte_at(input, index)
+    if byte == 32 || byte == 9 || byte == 10 || byte == 13 {
+      skip_space(input, index + 1)
+    } else {
+      index
+    }
+  } else {
+    index
+  }
+}
+
+fn string_end(input : Bytes, index : I64) -> Option[I64] {
+  if index >= bytes_length(input) {
+    none()
+  } else {
+    let byte = byte_at(input, index)
+    if byte == 34 {
+      some(index)
+    } else if byte == 92 || byte < 32 {
+      none()
+    } else {
+      string_end(input, index + 1)
+    }
+  }
+}
+
+fn parse_string(input : Bytes, index : I64) -> Option[(String, I64)] {
+  let start = skip_space(input, index)
+  if has_byte(input, start, 34) {
+    match string_end(input, start + 1) {
+      none() => none()
+      some(end) => some((bytes_to_string(bytes_slice(input, start + 1, end - start - 1)), end + 1))
+    }
+  } else {
+    none()
+  }
+}
+
+fn reverse_strings(values : List[String], result : List[String]) -> List[String] {
+  match values {
+    empty() => result
+    cons(head, tail) => reverse_strings(tail, cons(head, result))
+  }
+}
+
+fn parse_string_array_items(
+  input : Bytes,
+  index : I64,
+  reversed : List[String]
+) -> Option[(List[String], I64)] {
+  match parse_string(input, index) {
+    none() => none()
+    some((value, after_value)) => {
+      let separator = skip_space(input, after_value)
+      if has_byte(input, separator, 93) {
+        some((reverse_strings(cons(value, reversed), []), separator + 1))
+      } else if has_byte(input, separator, 44) {
+        parse_string_array_items(input, separator + 1, cons(value, reversed))
+      } else {
+        none()
+      }
+    }
+  }
+}
+
+fn parse_string_array(input : Bytes, index : I64) -> Option[(List[String], I64)] {
+  let start = skip_space(input, index)
+  if has_byte(input, start, 91) {
+    let first = skip_space(input, start + 1)
+    if has_byte(input, first, 93) {
+      some(([], first + 1))
+    } else {
+      parse_string_array_items(input, first, [])
+    }
+  } else {
+    none()
+  }
+}
+
+fn finish(
+  input : Bytes,
+  index : I64,
+  schema_seen : Bool,
+  module_name : Option[String],
+  imports : Option[List[String]]
+) -> Option[SourceInspection] {
+  let end = skip_space(input, index)
+  if end == bytes_length(input) && schema_seen {
+    match (module_name, imports) {
+      (some(module_name), some(imports)) => some(SourceInspection::{ module_name, imports })
+      _ => none()
+    }
+  } else {
+    none()
+  }
+}
+
+fn parse_fields(
+  input : Bytes,
+  index : I64,
+  schema_seen : Bool,
+  module_name : Option[String],
+  imports : Option[List[String]]
+) -> Option[SourceInspection] {
+  match parse_string(input, index) {
+    none() => none()
+    some((key, after_key)) => {
+      let colon = skip_space(input, after_key)
+      if !has_byte(input, colon, 58) {
+        none()
+      } else {
+        let value_start = colon + 1
+        let parsed : Option[ParsedField] = if string_equal(key, "schema") {
+          let value = skip_space(input, value_start)
+          if schema_seen || !has_byte(input, value, 49) {
+            none()
+          } else {
+            some(ParsedField::{ after_value: value + 1, schema_seen: true, module_name, imports })
+          }
+        } else if string_equal(key, "module") {
+          if is_some(module_name) {
+            none()
+          } else {
+            match parse_string(input, value_start) {
+              none() => none()
+              some((value, after_value)) => some(
+                ParsedField::{ after_value, schema_seen, module_name: some(value), imports }
+              )
+            }
+          }
+        } else if string_equal(key, "imports") {
+          if is_some(imports) {
+            none()
+          } else {
+            match parse_string_array(input, value_start) {
+              none() => none()
+              some((value, after_value)) => some(
+                ParsedField::{ after_value, schema_seen, module_name, imports: some(value) }
+              )
+            }
+          }
+        } else {
+          none()
+        }
+        match parsed {
+          none() => none()
+          some(field) => {
+            let separator = skip_space(input, field.after_value)
+            if has_byte(input, separator, 125) {
+              finish(input, separator + 1, field.schema_seen, field.module_name, field.imports)
+            } else if has_byte(input, separator, 44) {
+              parse_fields(
+                input,
+                separator + 1,
+                field.schema_seen,
+                field.module_name,
+                field.imports
+              )
+            } else {
+              none()
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+pub fn decode(text : String) -> Option[SourceInspection] {
+  let input = string_to_bytes(text)
+  let start = skip_space(input, 0)
+  if has_byte(input, start, 123) {
+    parse_fields(input, start + 1, false, none(), none())
+  } else {
+    none()
+  }
+}
