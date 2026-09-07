@@ -14,7 +14,7 @@ pub struct WriteResult[A, W] {
 pub fn[A, W, E : Effect] run_write(
   action : () -> A ! { Write[W], E },
   auto monoid_impl : Monoid[W]
-) -> () -> WriteResult[A, W] ! E {
+) -> () -> WriteResult[A, W] ! { E, Panic } {
   fn() {
     handle action() with {
       write(msg, resume) => {

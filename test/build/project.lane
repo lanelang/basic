@@ -81,7 +81,7 @@ fn mock_file_system(path : String) -> Unit ! { Assert, Write[List[String]] } {
   write!(["directory"])
 }
 
-pub fn test_project_build() -> Unit ! Assert {
+pub fn test_project_build() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_project_build"
   let action : () -> Unit ! { Process, FileSystem, Exception } = fn() {
     build(
@@ -101,17 +101,18 @@ pub fn test_project_build() -> Unit ! Assert {
   let mocked =
     run_file_system_with[
       Unit,
-      { Exception, Assert, Write[List[String]] },
+      { Exception, Assert, Write[List[String]], Panic },
       { Assert, Write[List[String]] }
     ](process_mocked, mock_file_system)
-  let checked : () -> Unit ! { Assert, Write[List[String]] } = fn() {
+  let checked : () -> Unit ! { Assert, Write[List[String]], Panic } = fn() {
     handle mocked() with {
       raise[R](_error, _resume) => assert_true(false)
     } final _value {
       ()
     }
   }
-  let report = run_write[Unit, List[String], { Assert }](checked, monoid_impl=list_impl_monoid())()
+  let report =
+    run_write[Unit, List[String], { Assert, Panic }](checked, monoid_impl=list_impl_monoid())()
   assert_true(
     match report.log {
       cons(first, cons(second, cons(third, cons(fourth, empty())))) => string_equal(

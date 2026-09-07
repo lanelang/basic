@@ -18,7 +18,7 @@ fn program() -> Unit ! Write[List[I64]] {
   write!([])
 }
 
-pub fn test_write_log() -> Unit ! Assert {
+pub fn test_write_log() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_write_log"
   let res = run_write(program, monoid_impl=list_impl_monoid())()
   assert_equal(

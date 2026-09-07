@@ -13,7 +13,7 @@ import Basic.System.Process.{
 }
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
-pub fn test_process() -> Unit ! Assert {
+pub fn test_process() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_process"
   let action : () -> CommandOutput ! Process = fn() {
     run_command(

@@ -13,7 +13,7 @@ pub type State[S] = { Read[S], Write[S] }
 pub fn[R, S, E : Effect] run_state(
   action : () -> R ! { E, State[S] },
   init : S
-) -> () -> StateResult[R, S] ! E {
+) -> () -> StateResult[R, S] ! { E, Panic } {
   fn() {
     let transform = handle action() with {
       read(resume) => fn(state) {
@@ -24,7 +24,7 @@ pub fn[R, S, E : Effect] run_state(
         resume(())(next)
       }
     } final value {
-      fn(state : S) -> StateResult[R, S] ! E {
+      fn(state : S) -> StateResult[R, S] ! { E, Panic } {
         StateResult[R, S]::{ value, state }
       }
     }

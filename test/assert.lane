@@ -92,7 +92,7 @@ struct TestReport {
   failures : List[TestFailure]
 }
 
-fn execute_test(f : () -> Unit ! Assert) -> TestOutcome {
+fn execute_test(f : () -> Unit ! { Assert, Panic }) -> TestOutcome ! Panic {
   handle f() with {
     assert(cond, info, msg, resume) => {
       if cond {
@@ -117,7 +117,7 @@ fn print_failures(failures : List[TestFailure]) -> Unit ! Io {
   }
 }
 
-pub fn execute_all_tests(tests : List[() -> Unit ! Assert]) -> Unit ! { Io, Panic } {
+pub fn execute_all_tests(tests : List[() -> Unit ! { Assert, Panic }]) -> Unit ! { Io, Panic } {
   let report = execute_tests(tests)
   print_failures(report.failures)
   println(format_test_summary(list_length(tests), report.counts))
@@ -128,7 +128,7 @@ pub fn execute_all_tests(tests : List[() -> Unit ! Assert]) -> Unit ! { Io, Pani
   }
 }
 
-fn execute_tests(tests : List[() -> Unit ! Assert]) -> TestReport {
+fn execute_tests(tests : List[() -> Unit ! { Assert, Panic }]) -> TestReport ! Panic {
   match tests {
     empty() => TestReport::{ counts: TestCounts::{ passed: 0, failed: 0 }, failures: [] }
     cons(test, rest) => {
