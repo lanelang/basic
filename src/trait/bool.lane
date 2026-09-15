@@ -1,11 +1,11 @@
 module Basic.Trait.Bool
 
 pub struct And {
-  and : (Bool, () -> Bool) -> Bool
+  and : [E : Effect](Bool, () -> Bool ! E) -> Bool ! E
 }
 
 pub struct Or {
-  or : (Bool, () -> Bool) -> Bool
+  or : [E : Effect](Bool, () -> Bool ! E) -> Bool ! E
 }
 
 pub struct Not {

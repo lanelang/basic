@@ -12,7 +12,7 @@ pub offer bool_impl_not : Not = Not::{ not: bool_not }
 
 pub offer bool_impl_equal : Equal[Bool] = Equal::{ equal: bool_equal }
 
-pub fn bool_and(a : Bool, b : () -> Bool) -> Bool {
+pub fn[E : Effect] bool_and(a : Bool, b : () -> Bool ! E) -> Bool ! E {
   if a {
     b()
   } else {
@@ -20,7 +20,7 @@ pub fn bool_and(a : Bool, b : () -> Bool) -> Bool {
   }
 }
 
-pub fn bool_or(a : Bool, b : () -> Bool) -> Bool {
+pub fn[E : Effect] bool_or(a : Bool, b : () -> Bool ! E) -> Bool ! E {
   if a {
     true
   } else {
@@ -44,11 +44,10 @@ pub fn bool_equal(a : Bool, b : Bool) -> Bool {
   }
 }
 
-pub offer bool_impl_debug : Debug[Bool] =
-  fn(b : Bool) -> String {
-    if b {
-      "true"
-    } else {
-      "false"
-    }
+pub offer bool_impl_debug : Debug[Bool] = fn(b : Bool) -> String {
+  if b {
+    "true"
+  } else {
+    "false"
   }
+}

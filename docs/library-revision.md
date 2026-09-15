@@ -1,0 +1,37 @@
+# Standard library revision
+
+This plan tracks the complete design audit accepted on 2026-09-15. Each verified
+implementation milestone is committed independently in Basic and pinned by Lane.
+The independent sibling checkout is not overwritten.
+
+## Milestones
+
+- [x] Effectful short-circuit operators and exception conversion preserving residual effects.
+- [ ] Nominal Debug identity, quoted/escaped rendering, and structural empty-payload handling.
+- [ ] Reliable output and directory creation with truthful failure reporting.
+- [ ] Defined numeric conversions and arithmetic failure contracts.
+- [ ] Independent Reader, State and Writer semantics, with immediate runner functions.
+- [ ] Structured process and filesystem errors with explicit host adapters.
+- [ ] Coherent Option and Result operations and capability providers.
+- [ ] Explicit partial and total comparison contracts.
+- [ ] AList replacement semantics and separately named shadowing bindings.
+- [ ] Consistent effectful collection operations and predictable construction costs.
+- [ ] Direct capabilities for foundational data types and efficient text construction.
+- [ ] Consistent module naming, public exports and documented compiler ABI seams.
+- [ ] Explicit build configuration, planning and required interface closures.
+- [ ] Boundary, order, composition, large-input and compatibility regression gates.
+
+## Validation
+
+Basic is Lane source, not a MoonBit module. Use a pinned Lane compiler to format,
+check and execute the Basic suite. Compiler changes use `moon test --target native`,
+`moon info` and `moon fmt`. Validate actual emitted Wasm and example fixtures when
+changing contracts consumed by compiled programs. Never overwrite the independent
+Basic checkout's existing changes.
+
+### Effect composition
+
+`And` and `Or` preserve the deferred operand effect. `to_option` preserves
+residual effects; `to_result` also retains the exception value. The Basic suite
+passes 19 test groups, including effectful and skipped Boolean operands and
+exception conversion with an independent assertion effect.

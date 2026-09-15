@@ -1,6 +1,7 @@
 module Basic.Eff.Exn
 
 import Basic.Data.Option.{ Option }
+import Basic.Data.Result.{ Result }
 
 pub enum ExceptionInfo {
   error()
@@ -28,10 +29,21 @@ pub fn message(exception : ExceptionValue) -> String {
   exception.message
 }
 
-pub fn[T] to_option(e : () -> T ! Exception) -> Option[T] {
+pub fn[T, E : Effect] to_option(e : () -> T ! { Exception, E }) -> Option[T] ! E {
   handle e() with {
     raise[R](_error, _resume) => none()
   } final v {
     some(v)
+  }
+}
+
+// Capture only Exception; all other effects remain visible to the caller.
+pub fn[T, E : Effect] to_result(
+  action : () -> T ! { Exception, E }
+) -> Result[T, ExceptionValue] ! E {
+  handle action() with {
+    raise[R](error, _resume) => Result[T, ExceptionValue]::err(error)
+  } final value {
+    Result[T, ExceptionValue]::ok(value)
   }
 }

@@ -39,11 +39,11 @@ pub fn[T] op_not_equal(a : T, b : T, auto op : Equal[T]) -> Bool {
   !op.equal(a, b)
 }
 
-pub fn op_and(a : Bool, b : () -> Bool, auto op : And) -> Bool {
+pub fn[E : Effect] op_and(a : Bool, b : () -> Bool ! E, auto op : And) -> Bool ! E {
   op.and(a, b)
 }
 
-pub fn op_or(a : Bool, b : () -> Bool, auto op : Or) -> Bool {
+pub fn[E : Effect] op_or(a : Bool, b : () -> Bool ! E, auto op : Or) -> Bool ! E {
   op.or(a, b)
 }
 

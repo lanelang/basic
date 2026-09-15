@@ -1,0 +1,42 @@
+module Test.Eff.Composition
+
+import Basic.Prelude.*
+import Basic.Eff.Exn.{ Exception, throw, to_option, to_result }
+import Test.Assert.{ Assert, assert_true, assert_false }
+
+offer source_info : String = "effect composition"
+
+fn forbidden() -> Bool ! Assert {
+  assert_true(false)
+  true
+}
+
+fn checked() -> Bool ! Assert {
+  assert_true(true)
+  true
+}
+
+fn failing() -> I64 ! { Assert, Exception } {
+  assert_true(true)
+  throw[I64]("expected failure")
+}
+
+pub fn test_composition() -> Unit ! Assert {
+  offer source_info : String = "effect composition"
+  assert_false(false && forbidden())
+  assert_true(true || forbidden())
+  assert_true(true && checked())
+  assert_true(false || checked())
+  assert_true(
+    match to_option(failing) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match to_result(failing) {
+      err(error) => error.message == "expected failure"
+      _ => false
+    }
+  )
+}
