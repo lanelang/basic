@@ -80,6 +80,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             "test/data/i64.lane",
             "test/data/list.lane",
             "test/data/option.lane",
+            "test/data/result.lane",
             "test/data/string.lane",
             "test/derive/debug.lane",
             "test/eff/bound.lane",

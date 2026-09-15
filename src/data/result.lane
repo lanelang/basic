@@ -2,8 +2,8 @@ module Basic.Data.Result
 
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Map.{ Mappable }
-// import Basic.Trait.App.{ Applicative }
-// import Basic.Trait.Flat.{ FlatMappable }
+import Basic.Trait.App.{ Applicative }
+import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Derive.Equal.{ derive_equal }
 import Basic.Derive.*
 
@@ -12,7 +12,10 @@ pub enum Result[T, E] {
   err(E)
 }
 
-pub offer fn[T, E] result_impl_equal(offer t : Equal[T], offer e : Equal[E]) -> Equal[Result[T, E]] {
+pub offer fn[T, E] result_impl_equal(
+  auto offer t : Equal[T],
+  auto offer e : Equal[E]
+) -> Equal[Result[T, E]] {
   derive[Equal, Result[T, E]]()
 }
 
@@ -46,10 +49,90 @@ pub fn[L, Err, T, Eff : Effect] apply(
 
 pub type PartialResult[E] = type[T] => Result[T, E]
 
-pub fn[E] partial_result_impl_map() -> Mappable[PartialResult[E]] {
+pub offer fn[E] result_impl_mappable() -> Mappable[PartialResult[E]] {
   Mappable::{
     map: fn[T, R, Eff : Effect](res : PartialResult[E][T], f : (T) -> R ! Eff) {
       map[T, E, R, Eff](res, f)
+    }
+  }
+}
+
+// A failed value bypasses the callback. This Result uses fail-fast sequencing.
+pub fn[T, R, Err, E : Effect] flat_map(
+  value : Result[T, Err],
+  f : (T) -> Result[R, Err] ! E
+) -> Result[R, Err] ! E {
+  match value {
+    ok(value) => f(value)
+    err(error) => Result[R, Err]::err(error)
+  }
+}
+
+pub fn[T, Err, Other, E : Effect] map_err(
+  value : Result[T, Err],
+  f : (Err) -> Other ! E
+) -> Result[T, Other] ! E {
+  match value {
+    ok(value) => Result[T, Other]::ok(value)
+    err(error) => Result[T, Other]::err(f(error))
+  }
+}
+
+pub fn[T, Err] get_or(value : Result[T, Err], fallback : T) -> T {
+  match value {
+    ok(value) => value
+    err(_) => fallback
+  }
+}
+
+pub fn[T, Err, E : Effect] get_or_else(value : Result[T, Err], fallback : (Err) -> T ! E) -> T ! E {
+  match value {
+    ok(value) => value
+    err(error) => fallback(error)
+  }
+}
+
+pub fn[T, Err, Other, E : Effect] or_else(
+  value : Result[T, Err],
+  fallback : (Err) -> Result[T, Other] ! E
+) -> Result[T, Other] ! E {
+  match value {
+    ok(value) => Result[T, Other]::ok(value)
+    err(error) => fallback(error)
+  }
+}
+
+pub fn[T, Err] is_ok(value : Result[T, Err]) -> Bool {
+  match value {
+    ok(_) => true
+    err(_) => false
+  }
+}
+
+pub fn[T, Err] is_err(value : Result[T, Err]) -> Bool {
+  match value {
+    ok(_) => false
+    err(_) => true
+  }
+}
+
+pub offer fn[Err] result_impl_applicative() -> Applicative[PartialResult[Err]] {
+  Applicative::{
+    mappable_impl: result_impl_mappable[Err](),
+    pure: fn[T](value) {
+      Result[T, Err]::ok(value)
+    },
+    apply: fn[T, R, E : Effect](value, function) {
+      apply[T, Err, R, E](value, function)
+    }
+  }
+}
+
+pub offer fn[Err] result_impl_flat_mappable() -> FlatMappable[PartialResult[Err]] {
+  FlatMappable::{
+    applicative_impl: result_impl_applicative[Err](),
+    flat_map: fn[T, R, E : Effect](value, f) {
+      flat_map[T, R, Err, E](value, f)
     }
   }
 }

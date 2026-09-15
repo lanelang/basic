@@ -38,7 +38,7 @@ pub fn[T] pure(a : T) -> Option[T] {
   some(a)
 }
 
-pub fn[T] or(o : Option[T], default : T) -> T {
+pub fn[T] get_or(o : Option[T], default : T) -> T {
   match o {
     none() => default
     some(v) => v
@@ -48,11 +48,7 @@ pub fn[T] or(o : Option[T], default : T) -> T {
 pub fn[T, R, E : Effect] flat_map(o : Option[T], f : (T) -> Option[R] ! E) -> Option[R] ! E {
   match o {
     none() => none()
-    some(v) =>
-      match f(v) {
-        none() => none()
-        some(v) => some(v)
-      }
+    some(v) => f(v)
   }
 }
 
@@ -67,4 +63,33 @@ pub offer option_impl_applicative : Applicative[Option] = Applicative::{
 pub offer option_impl_flat_mappable : FlatMappable[Option] = FlatMappable::{
   applicative_impl: option_impl_applicative,
   flat_map
+}
+
+// Evaluate the fallback only when the value is absent.
+pub fn[T, E : Effect] get_or_else(value : Option[T], fallback : () -> T ! E) -> T ! E {
+  match value {
+    some(value) => value
+    none() => fallback()
+  }
+}
+
+pub fn[T, E : Effect] or_else(value : Option[T], fallback : () -> Option[T] ! E) -> Option[T] ! E {
+  match value {
+    some(_) => value
+    none() => fallback()
+  }
+}
+
+pub fn[T] is_some(value : Option[T]) -> Bool {
+  match value {
+    some(_) => true
+    none() => false
+  }
+}
+
+pub fn[T] is_none(value : Option[T]) -> Bool {
+  match value {
+    some(_) => false
+    none() => true
+  }
 }

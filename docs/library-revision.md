@@ -12,7 +12,7 @@ The independent sibling checkout is not overwritten.
 - [ ] Defined numeric conversions and arithmetic failure contracts.
 - [x] Independent Reader, State and Writer semantics, with immediate runner functions.
 - [ ] Structured process and filesystem errors with explicit host adapters.
-- [ ] Coherent Option and Result operations and capability providers.
+- [x] Coherent Option and Result operations and capability providers.
 - [ ] Explicit partial and total comparison contracts.
 - [ ] AList replacement semantics and separately named shadowing bindings.
 - [ ] Consistent effectful collection operations and predictable construction costs.
@@ -59,3 +59,9 @@ All run_* handlers execute immediately; composition uses ordinary explicit
 closures. WriterResult uses `value` consistently with StateResult. All 21 Basic
 groups pass, including same-type environment, state and log composition and
 fresh state on a subsequent run. The isolated filesystem host test also passes.
+
+### Option and Result
+
+Both types provide lazy recovery and effect-preserving sequencing. Result now
+provides Mappable, Applicative and FlatMappable dictionaries. Application is
+fail-fast with the value error taking priority. All 22 Basic groups pass.

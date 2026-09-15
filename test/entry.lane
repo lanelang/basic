@@ -10,6 +10,7 @@ import Test.Data.F32.{ test_f32 }
 import Test.Data.Char.{ test_char }
 import Test.Data.String.{ test_string }
 import Test.Data.Bytes.{ test_utf8_and_bytes as test_bytes }
+import Test.Data.Result.{ test_result }
 import Test.Data.Option.{ test_equal as test_option }
 import Test.Data.List.{ test_list }
 import Test.Data.AList.{ test_alist }
@@ -36,6 +37,7 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       test_string,
       test_bytes,
       test_option,
+      test_result,
       test_list,
       test_alist,
       test_write_log,

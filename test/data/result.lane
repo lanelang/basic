@@ -1,0 +1,111 @@
+module Test.Data.Result
+
+import Basic.Prelude.*
+import Basic.Data.Result as R
+import Basic.Data.Option as O
+import Test.Assert.{ Assert, assert_equal, assert_true }
+
+pub fn test_result() -> Unit ! Assert {
+  offer source_info : String = "result and option contracts"
+  let success : Result[I64, String] = ok(7)
+  let failure : Result[I64, String] = err("first")
+  assert_equal(
+    R.get_or_else(
+      success,
+      fn(_error) {
+        assert_true(false)
+        0
+      }
+    ),
+    7
+  )
+  assert_equal(
+    R.get_or_else(
+      failure,
+      fn(error) {
+        assert_equal(error, "first")
+        42
+      }
+    ),
+    42
+  )
+  assert_true(
+    match
+      R.flat_map[I64, I64, String, Assert](
+        failure,
+        fn(_value) {
+          assert_true(false)
+          Result[I64, String]::ok(0)
+        }
+      ) {
+      err("first") => true
+      _ => false
+    }
+  )
+  assert_true(
+    match
+      R.map_err[I64, String, I64, Assert](
+        failure,
+        fn(error) {
+          assert_equal(error, "first")
+          9
+        }
+      ) {
+      err(9) => true
+      _ => false
+    }
+  )
+  let function : Result[(I64) -> I64, String] = err("second")
+  assert_true(
+    match R.apply(failure, function) {
+      err("first") => true
+      _ => false
+    }
+  )
+  let provider = R.result_impl_flat_mappable[String]()
+  assert_true(
+    match
+      provider.flat_map[I64, I64, Assert](
+        success,
+        fn(value) {
+          assert_equal(value, 7)
+          Result[I64, String]::ok(8)
+        }
+      ) {
+      ok(8) => true
+      _ => false
+    }
+  )
+  assert_equal(
+    O.get_or_else(
+      Option::some(3),
+      fn() {
+        assert_true(false)
+        0
+      }
+    ),
+    3
+  )
+  assert_equal(
+    O.get_or_else(
+      Option[I64]::none(),
+      fn() {
+        assert_true(true)
+        4
+      }
+    ),
+    4
+  )
+  assert_true(
+    O.is_some(
+      O.or_else(
+        Option[I64]::none(),
+        fn() {
+          Option::some(5)
+        }
+      )
+    )
+  )
+  assert_true(R.is_ok(success))
+  assert_true(R.is_err(failure))
+}
