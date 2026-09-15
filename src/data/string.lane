@@ -23,7 +23,7 @@ import Basic.Data.Option.{ Option }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug, Document, render, from_formatter }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 
 fn byte_value(bytes : Bytes, index : I64) -> I64 {
@@ -136,7 +136,7 @@ fn string_less(left : String, right : String) -> Bool {
 
 pub offer string_impl_equal : Equal[String] = Equal::{ equal: string_equal }
 
-pub offer string_impl_compare : Compare[String] = Compare::{
+pub offer string_impl_compare : PartialCompare[String] = PartialCompare::{
   equal_impl: string_impl_equal,
   less: string_less
 }
@@ -279,3 +279,15 @@ pub offer string_impl_debug : Debug[String] = from_formatter(
     quote(value, '"')
   }
 )
+
+pub offer string_impl_total_compare : TotalCompare[String] = TotalCompare::{
+  compare: fn(a, b) {
+    if string_equal(a, b) {
+      Ordering::equal()
+    } else if string_less(a, b) {
+      Ordering::less()
+    } else {
+      Ordering::greater()
+    }
+  }
+}

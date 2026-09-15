@@ -13,7 +13,7 @@ The independent sibling checkout is not overwritten.
 - [x] Independent Reader, State and Writer semantics, with immediate runner functions.
 - [ ] Structured process and filesystem errors with explicit host adapters.
 - [x] Coherent Option and Result operations and capability providers.
-- [ ] Explicit partial and total comparison contracts.
+- [x] Explicit partial and total comparison contracts.
 - [x] AList replacement semantics and separately named shadowing bindings.
 - [x] Consistent effectful collection operations and predictable construction costs.
 - [x] Direct capabilities for foundational data types and efficient text construction.
@@ -86,3 +86,10 @@ direct Debug provider; List renders bracketed elements. Document rendering uses
 tail-recursive traversal and balanced fragment merging, with O(bytes * log
 fragments) copying rather than quadratic prefix copying. String quoting uses
 the same path. Skewed 10,000-fragment documents and quotes pass.
+
+### Partial and total comparison
+
+PartialCompare retains IEEE relational behavior; partial_compare returns None
+for unordered pairs. TotalCompare returns a three-way Ordering. Numeric total
+providers place all NaNs in one final equivalence class and identify signed
+zeros. Both floating widths have NaN, infinity and signed-zero regressions.

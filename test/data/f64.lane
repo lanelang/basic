@@ -6,12 +6,42 @@ import Basic.Data.F64.*
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare, partial_compare, compare }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_neg, op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true, assert_not_equal }
 
 pub fn test_f64() -> Unit ! Assert {
   offer source_info : String = "test_f64"
+  assert_true(
+    match partial_compare(nan, nan) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(nan, nan) {
+      equal() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(inf, nan) {
+      less() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(nan, ninf) {
+      greater() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(0.0, -0.0) {
+      equal() => true
+      _ => false
+    }
+  )
   assert_equal(1.5 + 2.25, 3.75)
   assert_equal(4.0 - 1.5, 2.5)
   assert_equal(1.5 * 2.0, 3.0)

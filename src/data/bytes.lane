@@ -41,7 +41,7 @@ pub fn bytes_set(bytes : Bytes, index : I64, byte : Byte) -> Bytes ! OutOfBound 
   }
 }
 
-// Compare two sequences by exact byte contents.
+// PartialCompare two sequences by exact byte contents.
 pub fn bytes_equal(left : Bytes, right : Bytes) -> Bool {
   Builtins.bytes_equal(left, right)
 }

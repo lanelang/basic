@@ -1,7 +1,7 @@
 module Basic.Ops
 
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare }
 import Basic.Data.Bool.{ bool_impl_not }
 import Basic.Data.Bool.{ bool_impl_or }
 import Basic.Trait.Bool.{ And, Or, Not }
@@ -51,18 +51,18 @@ pub fn op_not(value : Bool, auto op : Not) -> Bool {
   op.not(value)
 }
 
-pub fn[T] op_less(a : T, b : T, auto op : Compare[T]) -> Bool {
+pub fn[T] op_less(a : T, b : T, auto op : PartialCompare[T]) -> Bool {
   op.less(a, b)
 }
 
-pub fn[T] op_less_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
+pub fn[T] op_less_eq(a : T, b : T, auto op : PartialCompare[T]) -> Bool {
   op.less(a, b) || op.equal_impl.equal(a, b)
 }
 
-pub fn[T] op_greater(a : T, b : T, auto op : Compare[T]) -> Bool {
+pub fn[T] op_greater(a : T, b : T, auto op : PartialCompare[T]) -> Bool {
   op.less(b, a)
 }
 
-pub fn[T] op_greater_eq(a : T, b : T, auto op : Compare[T]) -> Bool {
+pub fn[T] op_greater_eq(a : T, b : T, auto op : PartialCompare[T]) -> Bool {
   op.less(b, a) || op.equal_impl.equal(a, b)
 }

@@ -3,7 +3,7 @@ module Basic.Data.Char
 import Basic.Builtins as Builtins
 import Basic.Data.Option.{ Option }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 
 fn char_equal(left : Char, right : Char) -> Bool {
   Builtins.i32_equal(Builtins.char_to_i32(left), Builtins.char_to_i32(right))
@@ -15,7 +15,7 @@ fn char_less(left : Char, right : Char) -> Bool {
 
 pub offer char_impl_equal : Equal[Char] = Equal::{ equal: char_equal }
 
-pub offer char_impl_compare : Compare[Char] = Compare::{
+pub offer char_impl_compare : PartialCompare[Char] = PartialCompare::{
   equal_impl: char_impl_equal,
   less: char_less
 }
@@ -85,5 +85,17 @@ pub fn to_string(value : Char) -> String {
       Builtins.i64_add(128, Builtins.i64_rem(Builtins.i64_div(scalar, 64), 64)),
       Builtins.i64_add(128, Builtins.i64_rem(scalar, 64))
     )
+  }
+}
+
+pub offer char_impl_total_compare : TotalCompare[Char] = TotalCompare::{
+  compare: fn(a, b) {
+    if char_equal(a, b) {
+      Ordering::equal()
+    } else if char_less(a, b) {
+      Ordering::less()
+    } else {
+      Ordering::greater()
+    }
   }
 }

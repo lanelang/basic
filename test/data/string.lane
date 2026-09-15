@@ -6,7 +6,7 @@ import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.Char.{ char_impl_equal, to_string }
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare }
 import Basic.Ops.{ op_less }
 import Test.Eff.Bound.{ expect_in_bounds, is_out_of_bounds }
 import Test.Assert.{ Assert, assert_equal, assert_true, assert_false }

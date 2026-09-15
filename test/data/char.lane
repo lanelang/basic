@@ -9,7 +9,7 @@ import Basic.Data.String.{ string_impl_equal, string_impl_debug }
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare }
 import Basic.Summon.{ summon_via }
 import Basic.Ops.{ op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true }

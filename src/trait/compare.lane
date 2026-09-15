@@ -1,8 +1,38 @@
 module Basic.Trait.Compare
 
+import Basic.Data.Option.{ Option }
 import Basic.Trait.Equal.{ Equal }
 
-pub struct Compare[T] {
+pub struct PartialCompare[T] {
   equal_impl : Equal[T]
   less : (T, T) -> Bool
+}
+
+// None means unordered, including IEEE NaN comparisons.
+pub fn[T] partial_compare(a : T, b : T, auto order : PartialCompare[T]) -> Option[Ordering] {
+  if order.equal_impl.equal(a, b) {
+    some(Ordering::equal())
+  } else if order.less(a, b) {
+    some(Ordering::less())
+  } else if order.less(b, a) {
+    some(Ordering::greater())
+  } else {
+    none()
+  }
+}
+
+// A total ordering must be transitive and compare every pair. Its equality is
+// comparator equality, which need not be the language's == (notably for NaN).
+pub enum Ordering {
+  less()
+  equal()
+  greater()
+}
+
+pub struct TotalCompare[T] {
+  compare : (T, T) -> Ordering
+}
+
+pub fn[T] compare(a : T, b : T, auto order : TotalCompare[T]) -> Ordering {
+  order.compare(a, b)
 }

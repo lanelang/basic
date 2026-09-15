@@ -6,12 +6,42 @@ import Basic.Data.F32.*
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare, partial_compare, compare }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_neg, op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true, assert_not_equal }
 
 pub fn test_f32() -> Unit ! Assert {
   offer source_info : String = "test_f32"
+  assert_true(
+    match partial_compare(nan, nan) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(nan, nan) {
+      equal() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(inf, nan) {
+      less() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(nan, ninf) {
+      greater() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match compare(0.0f32, -0.0f32) {
+      equal() => true
+      _ => false
+    }
+  )
   let one = from_i64(1)
   let two = from_i64(2)
   let three = from_i64(3)

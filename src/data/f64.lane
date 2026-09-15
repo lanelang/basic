@@ -1,7 +1,7 @@
 module Basic.Data.F64
 
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
 import Basic.Builtins.{
   f64_add,
@@ -30,7 +30,10 @@ pub offer f64_impl_neg : Neg[F64] = Neg::{ neg: f64_neg }
 
 pub offer f64_impl_equal : Equal[F64] = Equal::{ equal: f64_equal }
 
-pub offer f64_impl_compare : Compare[F64] = Compare::{ equal_impl: f64_impl_equal, less: f64_less }
+pub offer f64_impl_compare : PartialCompare[F64] = PartialCompare::{
+  equal_impl: f64_impl_equal,
+  less: f64_less
+}
 
 pub let inf : F64 = f64_inf
 
@@ -45,4 +48,29 @@ pub fn from_i64(value : I64) -> F64 {
 // UB if the argument is NaN, infinite, or outside the I64 range.
 pub fn to_i64(value : F64) -> I64 {
   f64_to_i64(value)
+}
+
+// Total numeric order: all NaNs form one greatest class; signed zeros compare equal.
+pub offer f64_impl_total_compare : TotalCompare[F64] = TotalCompare::{
+  compare: fn(a, b) {
+    if f64_equal(a, a) {
+      if f64_equal(b, b) {
+        if f64_equal(a, b) {
+          Ordering::equal()
+        } else if f64_less(a, b) {
+          Ordering::less()
+        } else {
+          Ordering::greater()
+        }
+      } else {
+        Ordering::less()
+      }
+    } else {
+      if f64_equal(b, b) {
+        Ordering::greater()
+      } else {
+        Ordering::equal()
+      }
+    }
+  }
 }

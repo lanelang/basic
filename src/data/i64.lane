@@ -2,17 +2,8 @@ module Basic.Data.I64
 
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
-import Basic.Builtins.{
-  i64_add,
-  i64_sub,
-  i64_mul,
-  i64_div,
-  i64_rem,
-  i64_neg,
-  i64_equal,
-  i64_less
-}
+import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
+import Basic.Builtins.{ i64_add, i64_sub, i64_mul, i64_div, i64_rem, i64_neg, i64_equal, i64_less }
 
 pub let maximum : I64 = 9223372036854775807
 
@@ -32,4 +23,19 @@ pub offer i64_impl_neg : Neg[I64] = Neg::{ neg: i64_neg }
 
 pub offer i64_impl_equal : Equal[I64] = Equal::{ equal: i64_equal }
 
-pub offer i64_impl_compare : Compare[I64] = Compare::{ equal_impl: i64_impl_equal, less: i64_less }
+pub offer i64_impl_compare : PartialCompare[I64] = PartialCompare::{
+  equal_impl: i64_impl_equal,
+  less: i64_less
+}
+
+pub offer i64_impl_total_compare : TotalCompare[I64] = TotalCompare::{
+  compare: fn(a, b) {
+    if i64_equal(a, b) {
+      Ordering::equal()
+    } else if i64_less(a, b) {
+      Ordering::less()
+    } else {
+      Ordering::greater()
+    }
+  }
+}

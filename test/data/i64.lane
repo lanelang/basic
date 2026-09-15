@@ -4,7 +4,7 @@ import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.I64.*
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_rem, op_neg, op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true }
 

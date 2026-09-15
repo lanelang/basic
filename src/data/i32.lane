@@ -2,7 +2,7 @@ module Basic.Data.I32
 
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Compare.{ Compare }
+import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 import Basic.Builtins.{ i32_add, i32_sub, i32_mul, i32_div, i32_rem, i32_neg, i32_equal, i32_less }
 
 pub let maximum : I32 = 2147483647i32
@@ -23,4 +23,19 @@ pub offer i32_impl_neg : Neg[I32] = Neg::{ neg: i32_neg }
 
 pub offer i32_impl_equal : Equal[I32] = Equal::{ equal: i32_equal }
 
-pub offer i32_impl_compare : Compare[I32] = Compare::{ equal_impl: i32_impl_equal, less: i32_less }
+pub offer i32_impl_compare : PartialCompare[I32] = PartialCompare::{
+  equal_impl: i32_impl_equal,
+  less: i32_less
+}
+
+pub offer i32_impl_total_compare : TotalCompare[I32] = TotalCompare::{
+  compare: fn(a, b) {
+    if i32_equal(a, b) {
+      Ordering::equal()
+    } else if i32_less(a, b) {
+      Ordering::less()
+    } else {
+      Ordering::greater()
+    }
+  }
+}

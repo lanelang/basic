@@ -19,7 +19,7 @@ pub import Basic.Ops.{
 }
 pub import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 pub import Basic.Trait.Equal.{ Equal }
-pub import Basic.Trait.Compare.{ Compare }
+pub import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering, partial_compare, compare }
 pub import Basic.Trait.Bool.{ And, Or, Not }
 pub import Basic.Trait.Debug.{ Debug, debug }
 pub import Basic.Trait.Iso.{ Iso, Into, From }
@@ -35,7 +35,8 @@ pub import Basic.Data.I64.{
   i64_impl_rem,
   i64_impl_neg,
   i64_impl_equal,
-  i64_impl_compare
+  i64_impl_compare,
+  i64_impl_total_compare
 }
 pub import Basic.Data.I32.{
   i32_impl_add,
@@ -45,7 +46,8 @@ pub import Basic.Data.I32.{
   i32_impl_rem,
   i32_impl_neg,
   i32_impl_equal,
-  i32_impl_compare
+  i32_impl_compare,
+  i32_impl_total_compare
 }
 pub import Basic.Data.F64.{
   f64_impl_add,
@@ -54,7 +56,8 @@ pub import Basic.Data.F64.{
   f64_impl_div,
   f64_impl_neg,
   f64_impl_equal,
-  f64_impl_compare
+  f64_impl_compare,
+  f64_impl_total_compare
 }
 pub import Basic.Data.F32.{
   f32_impl_add,
@@ -63,7 +66,8 @@ pub import Basic.Data.F32.{
   f32_impl_div,
   f32_impl_neg,
   f32_impl_equal,
-  f32_impl_compare
+  f32_impl_compare,
+  f32_impl_total_compare
 }
 pub import Basic.Data.Bool.{
   bool_impl_and,
@@ -72,10 +76,11 @@ pub import Basic.Data.Bool.{
   bool_impl_equal,
   bool_impl_debug
 }
-pub import Basic.Data.Char.{ char_impl_equal, char_impl_compare }
+pub import Basic.Data.Char.{ char_impl_equal, char_impl_compare, char_impl_total_compare }
 pub import Basic.Data.String.{
   string_impl_equal,
   string_impl_compare,
+  string_impl_total_compare,
   string_impl_semigroup,
   string_impl_monoid,
   string_impl_debug
