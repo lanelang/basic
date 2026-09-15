@@ -1,6 +1,7 @@
 module Basic.Data.Byte
 
-import Basic.Builtins.{ byte_to_i64, i64_to_byte }
+import Basic.Builtins.{ byte_to_i64, i64_to_byte, i64_less }
+import Basic.Data.Option.{ Option }
 
 // Zero-extend a Byte value to I64.
 pub fn to_i64(value : Byte) -> I64 {
@@ -8,6 +9,16 @@ pub fn to_i64(value : Byte) -> I64 {
 }
 
 // Keep the low eight bits of an I64 and return the corresponding Byte.
-pub fn from_i64(value : I64) -> Byte {
+pub fn wrapping_from_i64(value : I64) -> Byte {
   i64_to_byte(value)
+}
+
+pub fn from_i64(value : I64) -> Option[Byte] {
+  if i64_less(value, 0) {
+    none()
+  } else if i64_less(255, value) {
+    none()
+  } else {
+    some(i64_to_byte(value))
+  }
 }

@@ -13,13 +13,19 @@ pub struct Mul[T] {
 }
 
 pub struct Div[T] {
-  div : (T, T) -> T
+  div : (T, T) -> T ! Panic
 }
 
 pub struct Rem[T] {
-  rem : (T, T) -> T
+  rem : (T, T) -> T ! Panic
 }
 
 pub struct Neg[T] {
   neg : (T) -> T
+}
+
+// Integer division/remainder failures, recoverable through checked operations.
+pub enum ArithmeticError {
+  zero_divisor()
+  overflow()
 }

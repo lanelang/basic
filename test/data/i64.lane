@@ -8,8 +8,27 @@ import Basic.Trait.Compare.{ PartialCompare }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_rem, op_neg, op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
-pub fn test_i64() -> Unit ! Assert {
+pub fn test_i64() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_i64"
+  assert_true(
+    match checked_div(1, 0) {
+      err(_) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match checked_div(minimum, -1) {
+      err(_) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match checked_rem(minimum, -1) {
+      ok(0) => true
+      _ => false
+    }
+  )
+  assert_equal(-minimum, minimum)
   assert_equal(40 + 2, 42)
   assert_equal(44 - 2, 42)
   assert_equal(6 * 7, 42)

@@ -9,13 +9,13 @@ pub let i64_sub : (I64, I64) -> I64 = builtin("%i64_sub")
 // if overflow, return the overflowed value
 pub let i64_mul : (I64, I64) -> I64 = builtin("%i64_mul")
 
-// UB if divisor is zero
+// Requires a nonzero divisor and a representable quotient.
 pub let i64_div : (I64, I64) -> I64 = builtin("%i64_div")
 
 // UB if divisor is zero
 pub let i64_rem : (I64, I64) -> I64 = builtin("%i64_rem")
 
-// UB if argument is -2^63
+// Two's-complement wrapping negation, including -2^63.
 pub let i64_neg : (I64) -> I64 = builtin("%i64_neg")
 
 pub let i64_equal : (I64, I64) -> Bool = builtin("%i64_equal")

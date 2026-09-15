@@ -4,7 +4,8 @@ import Basic.Derive.Debug.*
 import Basic.Derive.*
 import Basic.Trait.Debug.{ Debug, Document, render, debug }
 import Basic.Conv.Unit.{ unit_impl_debug }
-import Basic.Conv.I64.{ i64_to_i32, i64_impl_debug }
+import Basic.Data.I32.{ wrapping_from_i64 as i64_to_i32 }
+import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.String.{ string_impl_equal, string_impl_debug }
 import Test.Assert.{ Assert, assert_equal }

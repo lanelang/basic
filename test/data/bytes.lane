@@ -17,9 +17,27 @@ import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_utf8_and_bytes() -> Unit ! Assert {
   offer source_info : String = "test_string"
+  assert_true(
+    match Byte.from_i64(-1) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match Byte.from_i64(256) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match Byte.from_i64(255) {
+      some(_) => true
+      _ => false
+    }
+  )
   offer option_string_impl_debug : Debug[Option[String]] = summon_via[Debug, Option, String]()
   offer option_string_impl_equal : Equal[Option[String]] = summon_via()
-  let empty = Builtins.bytes_make(0, Byte.from_i64(0))
+  let empty = Builtins.bytes_make(0, Byte.wrapping_from_i64(0))
   let text = "Aé中😀\0"
   let encoded = encode_utf8(text)
   assert_equal(bytes_length(encoded), 11)
@@ -28,7 +46,7 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
   // A lone 0xFF byte is not valid UTF-8.
   let malformed = expect_in_bounds(
     fn() {
-      bytes_make(1, Byte.from_i64(255))
+      bytes_make(1, Byte.wrapping_from_i64(255))
     },
     empty
   )
@@ -38,7 +56,7 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
   let original_bytes = encode_utf8(original)
   let changed = expect_in_bounds(
     fn() {
-      bytes_set(original_bytes, 0, Byte.from_i64(122))
+      bytes_set(original_bytes, 0, Byte.wrapping_from_i64(122))
     },
     empty
   )

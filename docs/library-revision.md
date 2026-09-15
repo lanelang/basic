@@ -9,7 +9,7 @@ The independent sibling checkout is not overwritten.
 - [x] Effectful short-circuit operators and exception conversion preserving residual effects.
 - [x] Nominal Debug identity, quoted/escaped rendering, and structural empty-payload handling.
 - [x] Reliable output and directory creation with truthful failure reporting.
-- [ ] Defined numeric conversions and arithmetic failure contracts.
+- [x] Defined numeric conversions and arithmetic failure contracts.
 - [x] Independent Reader, State and Writer semantics, with immediate runner functions.
 - [ ] Structured process and filesystem errors with explicit host adapters.
 - [x] Coherent Option and Result operations and capability providers.
@@ -93,3 +93,11 @@ PartialCompare retains IEEE relational behavior; partial_compare returns None
 for unordered pairs. TotalCompare returns a three-way Ordering. Numeric total
 providers place all NaNs in one final equivalence class and identify signed
 zeros. Both floating widths have NaN, infinity and signed-zero regressions.
+
+### Numeric boundaries
+
+Integer checked_div/rem return ArithmeticError; generic operators terminate
+with Panic for invalid integer inputs. Floating divide remains available as a
+pure named operation (generic / conservatively carries Panic). Float-to-I64,
+Byte and I32 narrowing are checked; intentional truncation uses wrapping_from_i64.
+Wrapping negation includes the minimum integer. Boundary and nonfinite tests pass.

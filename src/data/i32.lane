@@ -1,6 +1,10 @@
 module Basic.Data.I32
 
-import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
+import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg, ArithmeticError }
+import Basic.Data.Option.{ Option }
+import Basic.Builtins as Builtins
+import Basic.Data.Result.{ Result }
+import Basic.Data.Void.{ Void, absurd }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 import Basic.Builtins.{ i32_add, i32_sub, i32_mul, i32_div, i32_rem, i32_neg, i32_equal, i32_less }
@@ -15,9 +19,9 @@ pub offer i32_impl_sub : Sub[I32] = Sub::{ sub: i32_sub }
 
 pub offer i32_impl_mul : Mul[I32] = Mul::{ mul: i32_mul }
 
-pub offer i32_impl_div : Div[I32] = Div::{ div: i32_div }
+pub offer i32_impl_div : Div[I32] = Div::{ div: divide }
 
-pub offer i32_impl_rem : Rem[I32] = Rem::{ rem: i32_rem }
+pub offer i32_impl_rem : Rem[I32] = Rem::{ rem: remainder }
 
 pub offer i32_impl_neg : Neg[I32] = Neg::{ neg: i32_neg }
 
@@ -38,4 +42,58 @@ pub offer i32_impl_total_compare : TotalCompare[I32] = TotalCompare::{
       Ordering::greater()
     }
   }
+}
+
+let abort : () -> Void ! Panic = builtin("%abort")
+
+pub fn checked_div(a : I32, b : I32) -> Result[I32, ArithmeticError] {
+  if i32_equal(b, 0i32) {
+    err(zero_divisor())
+  } else if i32_equal(a, minimum) {
+    if i32_equal(b, -1i32) {
+      err(overflow())
+    } else {
+      ok(i32_div(a, b))
+    }
+  } else {
+    ok(i32_div(a, b))
+  }
+}
+
+pub fn checked_rem(a : I32, b : I32) -> Result[I32, ArithmeticError] {
+  if i32_equal(b, 0i32) {
+    err(zero_divisor())
+  } else {
+    ok(i32_rem(a, b))
+  }
+}
+
+// Invalid integer arithmetic terminates explicitly; use checked_* to recover.
+pub fn divide(a : I32, b : I32) -> I32 ! Panic {
+  match checked_div(a, b) {
+    ok(value) => value
+    err(_) => absurd(abort())
+  }
+}
+
+pub fn remainder(a : I32, b : I32) -> I32 ! Panic {
+  match checked_rem(a, b) {
+    ok(value) => value
+    err(_) => absurd(abort())
+  }
+}
+
+// Checked narrowing; wrapping is available only through its explicit name.
+pub fn from_i64(value : I64) -> Option[I32] {
+  if Builtins.i64_less(value, -2147483648) {
+    none()
+  } else if Builtins.i64_less(2147483647, value) {
+    none()
+  } else {
+    some(Builtins.i64_to_i32(value))
+  }
+}
+
+pub fn wrapping_from_i64(value : I64) -> I32 {
+  Builtins.i64_to_i32(value)
 }

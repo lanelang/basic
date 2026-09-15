@@ -19,11 +19,11 @@ pub fn[T] op_mul(a : T, b : T, auto op : Mul[T]) -> T {
   op.mul(a, b)
 }
 
-pub fn[T] op_div(a : T, b : T, auto op : Div[T]) -> T {
+pub fn[T] op_div(a : T, b : T, auto op : Div[T]) -> T ! Panic {
   op.div(a, b)
 }
 
-pub fn[T] op_rem(a : T, b : T, auto op : Rem[T]) -> T {
+pub fn[T] op_rem(a : T, b : T, auto op : Rem[T]) -> T ! Panic {
   op.rem(a, b)
 }
 

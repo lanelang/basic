@@ -1,17 +1,45 @@
 module Test.Data.F64
 
 import Basic.Conv.F64.{ f64_impl_debug }
-import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Data.F64.*
-import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ PartialCompare, partial_compare, compare }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_neg, op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true, assert_not_equal }
 
-pub fn test_f64() -> Unit ! Assert {
+pub fn test_f64() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_f64"
+  assert_true(
+    match to_i64(nan) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match to_i64(inf) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match to_i64(ninf) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match to_i64(from_i64(9223372036854775807)) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match to_i64(from_i64(-9223372036854775808)) {
+      some(-9223372036854775808) => true
+      _ => false
+    }
+  )
   assert_true(
     match partial_compare(nan, nan) {
       none() => true
@@ -53,5 +81,10 @@ pub fn test_f64() -> Unit ! Assert {
   assert_not_equal(nan, nan)
   assert_equal(from_i64(42), 42.0)
   // Conversion to I64 truncates toward zero.
-  assert_equal(to_i64(42.75), 42)
+  assert_true(
+    match to_i64(42.75) {
+      some(42) => true
+      _ => false
+    }
+  )
 }

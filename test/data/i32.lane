@@ -3,14 +3,33 @@ module Test.Data.I32
 import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.I32.*
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
-import Basic.Conv.I64.{ i64_to_i32 }
+import Basic.Data.I32.{ wrapping_from_i64 as i64_to_i32 }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ PartialCompare }
 import Basic.Ops.{ op_add, op_sub, op_mul, op_div, op_rem, op_neg, op_less }
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
-pub fn test_i32() -> Unit ! Assert {
+pub fn test_i32() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_i32"
+  assert_true(
+    match checked_div(1i32, 0i32) {
+      err(_) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match checked_div(minimum, -1i32) {
+      err(_) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match checked_rem(minimum, -1i32) {
+      ok(0i32) => true
+      _ => false
+    }
+  )
+  assert_equal(-minimum, minimum)
   assert_equal(maximum + i64_to_i32(1), minimum)
   assert_equal(minimum - i64_to_i32(1), maximum)
   assert_equal(i64_to_i32(65536) * i64_to_i32(65536), i64_to_i32(0))

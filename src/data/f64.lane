@@ -1,5 +1,6 @@
 module Basic.Data.F64
 
+import Basic.Data.Option.{ Option }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
@@ -45,9 +46,25 @@ pub fn from_i64(value : I64) -> F64 {
   i64_to_f64(value)
 }
 
-// UB if the argument is NaN, infinite, or outside the I64 range.
-pub fn to_i64(value : F64) -> I64 {
-  f64_to_i64(value)
+// Truncate toward zero only for finite values in [-2^63, 2^63).
+pub fn to_i64(value : F64) -> Option[I64] {
+  if f64_equal(value, value) {
+    if f64_less(value, -9223372036854775808.0) {
+      none()
+    } else if f64_less(value, 9223372036854775808.0) {
+      some(f64_to_i64(value))
+    } else {
+      none()
+    }
+  } else {
+    none()
+  }
+}
+
+// IEEE division is pure, including infinity and NaN. The generic / capability
+// conservatively carries Panic because integer division can fail.
+pub fn divide(a : F64, b : F64) -> F64 {
+  f64_div(a, b)
 }
 
 // Total numeric order: all NaNs form one greatest class; signed zeros compare equal.
