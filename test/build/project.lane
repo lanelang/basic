@@ -1,6 +1,6 @@
 module Test.Build.Project
 
-import Basic.Build.{ Export, Project, build }
+import Basic.Build.{ Export, Project, Configuration, build }
 import Basic.Data.Result.{ Result }
 import Basic.System.Process.{ ProcessError }
 import Basic.Builtins.{ bytes_equal, string_to_bytes }
@@ -42,6 +42,14 @@ fn successful_command(stdout : String) -> Result[CommandOutput, ProcessError] {
 fn mock_command(
   command : Command
 ) -> Result[CommandOutput, ProcessError] ! { Assert, Writer[List[String]] } {
+  assert_true(string_equal(command.executable, "custom-lane"), info="configured compiler")
+  assert_true(
+    match command.working_directory {
+      some("/project") => true
+      _ => false
+    },
+    info="configured root"
+  )
   match command.arguments {
     empty() => {
       assert_true(false, info="mock process received an empty command")
@@ -85,7 +93,7 @@ fn mock_command(
 fn mock_file_system(
   path : String
 ) -> Result[Unit, FileSystemError] ! { Assert, Writer[List[String]] } {
-  assert_true(string_equal(path, ".lanebuild"), info="artifact directory")
+  assert_true(string_equal(path, "/project/.lanebuild"), info="artifact directory")
   tell!(["directory"])
   ok(())
 }
@@ -99,7 +107,8 @@ pub fn test_project_build() -> Unit ! { Assert, Panic } {
         exports: [Export::{ module_name: "Main", value_name: "test", wasm_name: "test" }],
         output: "main.wasm",
         artifact_directory: ".lanebuild"
-      }
+      },
+      Configuration::{ compiler: "custom-lane", project_root: "/project" }
     )
   }
   let process_mocked : () -> Unit ! { FileSystem, Exception, Assert, Writer[List[String]], Panic } =
@@ -129,9 +138,9 @@ pub fn test_project_build() -> Unit ! { Assert, Panic } {
     match report.log {
       cons(first, cons(second, cons(third, cons(fourth, empty())))) => string_equal(
         first,
-        "directory"
+        "inspect"
       )
-        && string_equal(second, "inspect")
+        && string_equal(second, "directory")
         && string_equal(third, "compile")
         && string_equal(fourth, "link")
       _ => false

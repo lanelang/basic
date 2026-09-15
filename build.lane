@@ -1,7 +1,7 @@
 module Build
 
 import Basic.Prelude.*
-import Basic.Build.{ Export, Project, build as build_project }
+import Basic.Build.{ Export, Project, default_configuration, build as build_project }
 import Basic.Build.Host.{ run as run_build }
 
 pub fn build() -> Unit ! { Io, Panic } {
@@ -13,6 +13,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             "src/build.lane",
             "src/build/host.lane",
             "src/build/inspection.lane",
+            "src/build/plan.lane",
             "src/builtins.lane",
             "src/conv/char.lane",
             "src/conv/f32.lane",
@@ -73,6 +74,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             "test/assert_summary.lane",
             "test/build/inspection.lane",
             "test/build/project.lane",
+            "test/build/plan.lane",
             "test/data/alist.lane",
             "test/data/bytes.lane",
             "test/data/char.lane",
@@ -102,7 +104,8 @@ pub fn build() -> Unit ! { Io, Panic } {
           ],
           output: "basic.wasm",
           artifact_directory: ".lanebuild"
-        }
+        },
+        default_configuration()
       )
     }
   )

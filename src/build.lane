@@ -1,70 +1,45 @@
 module Basic.Build
 
-import Basic.Build.Inspection.{ SourceInspection, decode as decode_inspection }
-import Basic.Builtins.{ bytes_length, bytes_equal, string_to_bytes }
-import Basic.Data.I64.{ i64_impl_compare }
-import Basic.Data.List.{ List, append as append_list }
-import Basic.Data.Result.{ Result }
+pub import Basic.Build.Plan.{
+  Export,
+  Project,
+  Configuration,
+  default_configuration,
+  SourceModule,
+  CompileStep,
+  BuildPlan,
+  PlanError,
+  plan
+}
+import Basic.Build.Inspection.{ decode as decode_inspection }
+import Basic.Builtins.{ bytes_length, bytes_get, byte_to_i64, i64_equal, i64_less, string_to_bytes }
+import Basic.Data.List.{ List, append as append_list, map }
 import Basic.Data.Option.{ Option }
+import Basic.Data.Result.{ Result }
 import Basic.Data.String.{ concat, decode_utf8 }
 import Basic.Eff.Exn.{ Exception, throw }
 import Basic.System.Process.{
   Command,
   CommandOutput,
   ExitStatus,
-  ProcessError,
-  error_message as process_error_message,
   Process,
-  run_command as execute_command
+  run_command,
+  error_message as process_error_message
 }
 import Basic.System.FileSystem.{
   FileSystem,
   ensure_directory_exists,
   error_message as file_system_error_message
 }
-import Basic.Ops.{ op_greater }
 
-pub struct Export {
-  module_name : String
-  value_name : String
-  wasm_name : String
-}
-
-pub struct Project {
-  sources : List[String]
-  exports : List[Export]
-  output : String
-  artifact_directory : String
-}
-
-struct SourceModule {
-  path : String
-  module_name : String
-  imports : List[String]
-}
-
-struct CompilationState {
-  built : List[String]
-  objects : List[String]
-}
-
-fn[T] fail(message : String) -> T ! Exception {
-  throw[T](message)
-}
-
-fn string_equal(left : String, right : String) -> Bool {
-  bytes_equal(string_to_bytes(left), string_to_bytes(right))
-}
-
-fn contains_string(values : List[String], value : String) -> Bool {
-  match values {
-    empty() => false
-    cons(head, tail) =>
-      if string_equal(head, value) {
-        true
-      } else {
-        contains_string(tail, value)
-      }
+fn command(configuration : Configuration, arguments : List[String]) -> Command {
+  Command::{
+    executable: configuration.compiler,
+    arguments,
+    working_directory: some(configuration.project_root),
+    environment: [],
+    inherit_environment: true,
+    stdin: string_to_bytes("")
   }
 }
 
@@ -76,165 +51,83 @@ fn diagnostic_text(bytes : Bytes) -> String {
 }
 
 fn command_failure(output : CommandOutput) -> String {
-  let stderr = diagnostic_text(output.stderr)
-  if bytes_length(output.stderr) > 0 {
-    stderr
-  } else if bytes_length(output.stdout) > 0 {
+  if i64_less(0, bytes_length(output.stderr)) {
+    diagnostic_text(output.stderr)
+  } else if i64_less(0, bytes_length(output.stdout)) {
     diagnostic_text(output.stdout)
   } else {
     "Lane command failed"
   }
 }
 
-fn run_lane(arguments : List[String]) -> CommandOutput ! { Process, Exception } {
-  let command = Command::{
-    executable: "lane",
-    arguments,
-    working_directory: none(),
-    environment: [],
-    inherit_environment: true,
-    stdin: string_to_bytes("")
-  }
-  let output = match execute_command(command) {
-    ok(output) => output
-    err(error) => fail[CommandOutput](process_error_message(error))
-  }
-  match output.status {
-    exited(0i32) => output
-    _ => fail[CommandOutput](command_failure(output))
-  }
-}
-
-fn inspect_source(path : String) -> SourceModule ! { Process, Exception } {
-  let output = run_lane(["inspect", path])
-  match decode_inspection(diagnostic_text(output.stdout)) {
-    none() => fail[SourceModule](
-      concat(concat("lane inspect returned an invalid source inspection for `", path), "`")
-    )
-    some(inspection) => SourceModule::{
-      path,
-      module_name: inspection.module_name,
-      imports: inspection.imports
-    }
-  }
-}
-
-fn inspect_sources(paths : List[String]) -> List[SourceModule] ! { Process, Exception } {
-  match paths {
-    empty() => []
-    cons(path, rest) => cons(inspect_source(path), inspect_sources(rest))
-  }
-}
-
-fn find_source(sources : List[SourceModule], module_name : String) -> Option[SourceModule] {
-  match sources {
-    empty() => none()
-    cons(source, rest) =>
-      if string_equal(source.module_name, module_name) {
-        some(source)
-      } else {
-        find_source(rest, module_name)
+fn run_checked(value : Command) -> CommandOutput ! { Process, Exception } {
+  match run_command(value) {
+    err(error) => throw[CommandOutput](process_error_message(error))
+    ok(output) =>
+      match output.status {
+        exited(0i32) => output
+        _ => throw[CommandOutput](command_failure(output))
       }
   }
 }
 
-fn ensure_unique_modules(sources : List[SourceModule], seen : List[String]) -> Unit ! Exception {
-  match sources {
-    empty() => ()
-    cons(source, rest) => {
-      if contains_string(seen, source.module_name) {
-        fail[Unit](concat(concat("duplicate source module `", source.module_name), "`"))
-      } else {
-        ensure_unique_modules(rest, cons(source.module_name, seen))
+fn inspect_source(
+  path : String,
+  configuration : Configuration
+) -> SourceModule ! { Process, Exception } {
+  let output = run_checked(command(configuration, ["inspect", path]))
+  match decode_utf8(output.stdout) {
+    none() => throw[SourceModule](concat("lane inspect emitted non-UTF-8 output for ", path))
+    some(text) =>
+      match decode_inspection(text) {
+        none() => throw[SourceModule](
+          concat("lane inspect returned an invalid source inspection for ", path)
+        )
+        some(inspection) => SourceModule::{
+          path,
+          module_name: inspection.module_name,
+          imports: inspection.imports
+        }
       }
-    }
   }
 }
 
-fn artifact_path(directory : String, module_name : String, extension : String) -> String {
+fn artifact(directory : String, module_name : String, extension : String) -> String {
   concat(concat(concat(concat(directory, "/"), module_name), "."), extension)
 }
 
-fn interface_path(directory : String, module_name : String) -> String {
-  artifact_path(directory, module_name, "lmi")
-}
-
-fn object_path(directory : String, module_name : String) -> String {
-  artifact_path(directory, module_name, "lmo")
-}
-
-fn interface_arguments(imports : List[String], prefix : String) -> List[String] {
+fn interface_arguments(imports : List[String], directory : String) -> List[String] {
   match imports {
     empty() => []
-    cons(import_, rest) => cons(
+    cons(name, rest) => cons(
       "-i",
-      cons(interface_path(prefix, import_), interface_arguments(rest, prefix))
+      cons(artifact(directory, name, "lmi"), interface_arguments(rest, directory))
     )
   }
 }
 
-fn compile_imports(
-  imports : List[String],
-  sources : List[SourceModule],
-  prefix : String,
-  visiting : List[String],
-  state : CompilationState
-) -> CompilationState ! { Process, Exception } {
-  match imports {
-    empty() => state
-    cons(import_, rest) => {
-      let dependency = match find_source(sources, import_) {
-        none() => fail[SourceModule](concat(concat("missing source module `", import_), "`"))
-        some(source) => source
-      }
-      let state = compile_source(dependency, sources, prefix, visiting, state)
-      compile_imports(rest, sources, prefix, visiting, state)
-    }
-  }
-}
-
-fn compile_source(
-  source : SourceModule,
-  sources : List[SourceModule],
-  prefix : String,
-  visiting : List[String],
-  state : CompilationState
-) -> CompilationState ! { Process, Exception } {
-  if contains_string(state.built, source.module_name) {
-    state
-  } else if contains_string(visiting, source.module_name) {
-    fail[CompilationState](
-      concat(concat("cyclic source dependency through `", source.module_name), "`")
-    )
-  } else {
-    let state =
-      compile_imports(source.imports, sources, prefix, cons(source.module_name, visiting), state)
-    let interface = interface_path(prefix, source.module_name)
-    let object = object_path(prefix, source.module_name)
-    let arguments =
-      append_list(
-        ["compile", "-I", interface, "-o", object],
-        append_list(interface_arguments(state.built, prefix), [source.path])
-      )
-    let _output = run_lane(arguments)
-    CompilationState::{
-      built: cons(source.module_name, state.built),
-      objects: cons(object, state.objects)
-    }
-  }
-}
-
-fn compile_sources(
-  remaining : List[SourceModule],
-  sources : List[SourceModule],
-  prefix : String,
-  state : CompilationState
-) -> CompilationState ! { Process, Exception } {
-  match remaining {
-    empty() => state
-    cons(source, rest) => {
-      let state = compile_source(source, sources, prefix, [], state)
-      compile_sources(rest, sources, prefix, state)
+fn compile_steps(
+  steps : List[CompileStep],
+  configuration : Configuration,
+  directory : String
+) -> Unit ! { Process, Exception } {
+  match steps {
+    empty() => ()
+    cons(step, rest) => {
+      let name = step.source.module_name
+      let arguments =
+        append_list(
+          [
+            "compile",
+            "-I",
+            artifact(directory, name, "lmi"),
+            "-o",
+            artifact(directory, name, "lmo")
+          ],
+          append_list(interface_arguments(step.interfaces, directory), [step.source.path])
+        )
+      let _output = run_checked(command(configuration, arguments))
+      compile_steps(rest, configuration, directory)
     }
   }
 }
@@ -242,12 +135,12 @@ fn compile_sources(
 fn export_arguments(exports : List[Export]) -> List[String] {
   match exports {
     empty() => []
-    cons(export_, rest) => cons(
+    cons(value, rest) => cons(
       "--export",
       cons(
         concat(
-          concat(concat(concat(export_.module_name, "."), export_.value_name), ":"),
-          export_.wasm_name
+          concat(concat(concat(value.module_name, "."), value.value_name), ":"),
+          value.wasm_name
         ),
         export_arguments(rest)
       )
@@ -255,24 +148,60 @@ fn export_arguments(exports : List[Export]) -> List[String] {
   }
 }
 
-pub fn build(project : Project) -> Unit ! { Process, FileSystem, Exception } {
-  match ensure_directory_exists(project.artifact_directory) {
-    ok(_) => ()
-    err(error) => fail[Unit](file_system_error_message(error))
+fn rooted(root : String, path : String) -> String {
+  let bytes = string_to_bytes(path)
+  if i64_equal(bytes_length(bytes), 0) {
+    root
+  } else if i64_equal(byte_to_i64(bytes_get(bytes, 0)), 47) {
+    path
+  } else {
+    concat(concat(root, "/"), path)
   }
-  let sources = inspect_sources(project.sources)
-  ensure_unique_modules(sources, [])
-  let state = compile_sources(
-    sources,
-    sources,
-    project.artifact_directory,
-    CompilationState::{ built: [], objects: [] }
+}
+
+pub fn plan_error_message(error : PlanError) -> String {
+  match error {
+    duplicate_module(name) => concat("duplicate source module: ", name)
+    missing_module(name) => concat("missing source module: ", name)
+    dependency_cycle(name) => concat("cyclic source dependency through: ", name)
+  }
+}
+
+// Execute only after the entire graph has passed pure planning.
+pub fn execute(plan : BuildPlan) -> Unit ! { Process, FileSystem, Exception } {
+  let project = plan.project
+  match ensure_directory_exists(rooted(plan.configuration.project_root, project.artifact_directory)) {
+    ok(_) => ()
+    err(error) => throw[Unit](file_system_error_message(error))
+  }
+  compile_steps(plan.steps, plan.configuration, project.artifact_directory)
+  let objects = map[CompileStep, String, {}](
+    plan.steps,
+    fn(step) {
+      artifact(project.artifact_directory, step.source.module_name, "lmo")
+    }
   )
   let arguments =
     append_list(
       ["link", "-o", project.output],
-      append_list(export_arguments(project.exports), state.objects)
+      append_list(export_arguments(project.exports), objects)
     )
-  let _output = run_lane(arguments)
+  let _output = run_checked(command(plan.configuration, arguments))
   ()
+}
+
+pub fn build(
+  project : Project,
+  configuration : Configuration
+) -> Unit ! { Process, FileSystem, Exception } {
+  let sources = map[String, SourceModule, { Process, Exception }](
+    project.sources,
+    fn(path) {
+      inspect_source(path, configuration)
+    }
+  )
+  match plan(project, configuration, sources) {
+    err(error) => throw[Unit](plan_error_message(error))
+    ok(plan) => execute(plan)
+  }
 }

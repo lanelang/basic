@@ -22,6 +22,7 @@ import Test.Eff.Exn.{ test_exception_info }
 import Test.Derive.Debug.{ test_debug }
 import Test.System.Process.{ test_process }
 import Test.Build.Inspection.{ test_inspection as test_build_inspection }
+import Test.Build.Plan.{ test_plan }
 import Test.Build.Project.{ test_project_build }
 import Test.Prelude.{ test_prelude }
 
@@ -49,6 +50,7 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       test_process,
       test_build_inspection,
       test_project_build,
+      test_plan,
       test_prelude
     ]
   )

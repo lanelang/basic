@@ -18,7 +18,7 @@ The independent sibling checkout is not overwritten.
 - [x] Consistent effectful collection operations and predictable construction costs.
 - [x] Direct capabilities for foundational data types and efficient text construction.
 - [ ] Consistent module naming, public exports and documented compiler ABI seams.
-- [ ] Explicit build configuration, planning and required interface closures.
+- [x] Explicit build configuration, planning and required interface closures.
 - [ ] Boundary, order, composition, large-input and compatibility regression gates.
 
 ## Validation
@@ -110,3 +110,12 @@ retain operation, path and WASIp1 code. Adapters preserve these types. Build
 validates UTF-8 before treating process output as text. Mock regressions and
 real regular-file, directory, nonzero-exit, binary-output and missing-executable
 checks all pass. Host protocol status is not mislabeled as native errno.
+
+### Build planning and execution
+
+Configuration explicitly selects the compiler and project root. Pure planning
+rejects missing, duplicate and cyclic dependencies before creating directories
+or compiling. Each step records only its transitive interface closure. Tests
+cover an unrelated module, dependency order and configuration forwarding. The
+real manifest compiled, linked and executed all 23 Basic groups. This exposed
+and fixed a compiler slot-allocation bug on fatal paths; 1936 native tests pass.

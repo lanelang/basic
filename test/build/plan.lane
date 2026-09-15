@@ -1,0 +1,72 @@
+module Test.Build.Plan
+
+import Basic.Prelude.*
+import Basic.Build.Plan.*
+import Basic.Data.List.{ map, list_impl_equal }
+import Basic.Conv.List.{ list_impl_debug }
+import Test.Assert.{ Assert, assert_true, assert_equal }
+
+fn project() -> Project {
+  Project::{ sources: [], exports: [], output: "test.wasm", artifact_directory: "out" }
+}
+
+fn source(name : String, imports : List[String]) -> SourceModule {
+  SourceModule::{ path: name, module_name: name, imports }
+}
+
+pub fn test_plan() -> Unit ! Assert {
+  offer list_equal : Equal[List[String]] = list_impl_equal[String]()
+  offer list_debug : Debug[List[String]] = list_impl_debug[String]()
+  offer source_info : String = "pure build planning"
+  assert_true(
+    match plan(project(), default_configuration(), [source("A", []), source("A", [])]) {
+      err(duplicate_module("A")) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match plan(project(), default_configuration(), [source("A", ["B"])]) {
+      err(missing_module("B")) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match plan(project(), default_configuration(), [source("A", ["B"]), source("B", ["A"])]) {
+      err(dependency_cycle(_)) => true
+      _ => false
+    }
+  )
+  match
+    plan(
+      project(),
+      default_configuration(),
+      [
+        source("Unrelated", []),
+        source("Main", ["Middle"]),
+        source("Middle", ["Base"]),
+        source("Base", [])
+      ]
+    ) {
+    err(_) => assert_true(false)
+    ok(result) => {
+      assert_equal(
+        map[CompileStep, String, {}](
+          result.steps,
+          fn(step) {
+            step.source.module_name
+          }
+        ),
+        ["Unrelated", "Base", "Middle", "Main"]
+      )
+      match result.steps {
+        cons(unrelated, cons(base, cons(middle, cons(main, empty())))) => {
+          assert_equal(unrelated.interfaces, [])
+          assert_equal(base.interfaces, [])
+          assert_equal(middle.interfaces, ["Base"])
+          assert_equal(main.interfaces, ["Base", "Middle"])
+        }
+        _ => assert_true(false)
+      }
+    }
+  }
+}

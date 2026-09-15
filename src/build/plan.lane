@@ -1,0 +1,209 @@
+module Basic.Build.Plan
+
+import Basic.Builtins.{ bytes_equal, string_to_bytes }
+import Basic.Data.List.{ List, reverse }
+import Basic.Data.Option.{ Option }
+import Basic.Data.Result.{ Result }
+
+pub struct Export {
+  module_name : String
+  value_name : String
+  wasm_name : String
+}
+
+pub struct Project {
+  sources : List[String]
+  exports : List[Export]
+  output : String
+  artifact_directory : String
+}
+
+pub struct Configuration {
+  compiler : String
+  project_root : String
+}
+
+pub fn default_configuration() -> Configuration {
+  Configuration::{ compiler: "lane", project_root: "." }
+}
+
+pub struct SourceModule {
+  path : String
+  module_name : String
+  imports : List[String]
+}
+
+pub struct CompileStep {
+  source : SourceModule
+  // Complete transitive interface closure; unrelated modules are excluded.
+  interfaces : List[String]
+}
+
+pub struct BuildPlan {
+  project : Project
+  configuration : Configuration
+  steps : List[CompileStep]
+}
+
+pub enum PlanError {
+  duplicate_module(String)
+  missing_module(String)
+  dependency_cycle(String)
+}
+
+struct State {
+  built : List[String]
+  steps : List[CompileStep]
+}
+
+fn same(a : String, b : String) -> Bool {
+  bytes_equal(string_to_bytes(a), string_to_bytes(b))
+}
+
+fn contains(values : List[String], value : String) -> Bool {
+  match values {
+    empty() => false
+    cons(x, xs) =>
+      if same(x, value) {
+        true
+      } else {
+        contains(xs, value)
+      }
+  }
+}
+
+fn lookup(sources : List[SourceModule], name : String) -> Option[SourceModule] {
+  match sources {
+    empty() => none()
+    cons(x, xs) =>
+      if same(x.module_name, name) {
+        some(x)
+      } else {
+        lookup(xs, name)
+      }
+  }
+}
+
+fn validate_unique(sources : List[SourceModule], seen : List[String]) -> Result[Unit, PlanError] {
+  match sources {
+    empty() => ok(())
+    cons(x, xs) =>
+      if contains(seen, x.module_name) {
+        err(duplicate_module(x.module_name))
+      } else {
+        validate_unique(xs, cons(x.module_name, seen))
+      }
+  }
+}
+
+// Called only after visit_imports has proven that this closure exists and is acyclic.
+fn closure(
+  imports : List[String],
+  sources : List[SourceModule],
+  seen : List[String]
+) -> List[String] {
+  match imports {
+    empty() => seen
+    cons(name, rest) =>
+      if contains(seen, name) {
+        closure(rest, sources, seen)
+      } else {
+        match lookup(sources, name) {
+          none() => closure(rest, sources, seen)
+          some(source) => closure(rest, sources, closure(source.imports, sources, cons(name, seen)))
+        }
+      }
+  }
+}
+
+fn visit_imports(
+  imports : List[String],
+  sources : List[SourceModule],
+  visiting : List[String],
+  state : State
+) -> Result[State, PlanError] {
+  match imports {
+    empty() => ok(state)
+    cons(name, rest) =>
+      match lookup(sources, name) {
+        none() => err(missing_module(name))
+        some(source) =>
+          match visit(source, sources, visiting, state) {
+            err(error) => err(error)
+            ok(state) => visit_imports(rest, sources, visiting, state)
+          }
+      }
+  }
+}
+
+fn visit(
+  source : SourceModule,
+  sources : List[SourceModule],
+  visiting : List[String],
+  state : State
+) -> Result[State, PlanError] {
+  if contains(state.built, source.module_name) {
+    ok(state)
+  } else if contains(visiting, source.module_name) {
+    err(dependency_cycle(source.module_name))
+  } else {
+    match visit_imports(source.imports, sources, cons(source.module_name, visiting), state) {
+      err(error) => err(error)
+      ok(state) => ok(
+        State::{
+          built: cons(source.module_name, state.built),
+          steps: cons(
+            CompileStep::{ source, interfaces: closure(source.imports, sources, []) },
+            state.steps
+          )
+        }
+      )
+    }
+  }
+}
+
+fn visit_all(
+  remaining : List[SourceModule],
+  sources : List[SourceModule],
+  state : State
+) -> Result[State, PlanError] {
+  match remaining {
+    empty() => ok(state)
+    cons(source, rest) =>
+      match visit(source, sources, [], state) {
+        err(error) => err(error)
+        ok(state) => visit_all(rest, sources, state)
+      }
+  }
+}
+
+fn validate_exports(exports : List[Export], sources : List[SourceModule]) -> Result[Unit, PlanError] {
+  match exports {
+    empty() => ok(())
+    cons(value, rest) =>
+      match lookup(sources, value.module_name) {
+        none() => err(missing_module(value.module_name))
+        some(_) => validate_exports(rest, sources)
+      }
+  }
+}
+
+// Pure planning over compiler inspections. No directory or process side effects.
+pub fn plan(
+  project : Project,
+  configuration : Configuration,
+  sources : List[SourceModule]
+) -> Result[BuildPlan, PlanError] {
+  match validate_unique(sources, []) {
+    err(error) => err(error)
+    ok(_) =>
+      match validate_exports(project.exports, sources) {
+        err(error) => err(error)
+        ok(_) =>
+          match visit_all(sources, sources, State::{ built: [], steps: [] }) {
+            err(error) => err(error)
+            ok(state) => ok(BuildPlan::{ project, configuration, steps: reverse(state.steps) })
+          }
+      }
+  }
+}
