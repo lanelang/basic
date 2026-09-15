@@ -1,0 +1,16 @@
+module Basic.Eff.Reader
+
+pub effect Reader[T] {
+  ask() -> T
+}
+
+pub fn[T, R, E : Effect] run_reader(
+  action : () -> T ! { E, Reader[R] },
+  environment : R
+) -> T ! { E, Panic } {
+  handle action() with {
+    ask(resume) => resume(environment)
+  } final value {
+    value
+  }
+}

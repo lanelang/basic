@@ -1,33 +1,30 @@
 module Basic.Eff.State
 
-import Basic.Eff.Read.{ Read }
-import Basic.Eff.Write.{ Write }
-
 pub struct StateResult[R, S] {
   value : R
   state : S
 }
 
-pub type State[S] = { Read[S], Write[S] }
+pub effect State[S] {
+  get() -> S
+  put(S) -> Unit
+}
 
 pub fn[R, S, E : Effect] run_state(
   action : () -> R ! { E, State[S] },
   init : S
-) -> () -> StateResult[R, S] ! { E, Panic } {
-  fn() {
-    let transform = handle action() with {
-      read(resume) => fn(state) {
-        resume(state)(state)
-      }
-    } with {
-      write(next, resume) => fn(_state) {
-        resume(())(next)
-      }
-    } final value {
-      fn(state : S) -> StateResult[R, S] ! { E, Panic } {
-        StateResult[R, S]::{ value, state }
-      }
+) -> StateResult[R, S] ! { E, Panic } {
+  let transform = handle action() with {
+    get(resume) => fn(state) {
+      resume(state)(state)
     }
-    transform(init)
+    put(next, resume) => fn(_state) {
+      resume(())(next)
+    }
+  } final value {
+    fn(state : S) -> StateResult[R, S] ! { E, Panic } {
+      StateResult::{ value, state }
+    }
   }
+  transform(init)
 }

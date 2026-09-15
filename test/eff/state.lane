@@ -1,0 +1,41 @@
+module Test.Eff.State
+
+import Basic.Prelude.*
+import Basic.Eff.Reader.{ Reader, run_reader }
+import Basic.Eff.Writer.{ Writer, run_writer }
+import Basic.Eff.State.{ State, StateResult, run_state }
+import Test.Assert.{ Assert, assert_equal }
+
+fn action() -> String ! { State[String], Reader[String], Writer[String] } {
+  let original = get!()
+  let environment = ask!()
+  tell!(environment)
+  put!("updated")
+  tell!(original)
+  get!()
+}
+
+pub fn test_state() -> Unit ! { Assert, Panic } {
+  offer source_info : String = "independent same-type effects"
+  let report = run_writer[StateResult[String, String], String, { Panic }](
+    fn() {
+      run_reader[StateResult[String, String], String, { Writer[String], Panic }](
+        fn() {
+          run_state[String, String, { Reader[String], Writer[String] }](action, "initial")
+        },
+        "environment"
+      )
+    }
+  )
+  assert_equal(report.value.value, "updated")
+  assert_equal(report.value.state, "updated")
+  assert_equal(report.log, "environmentinitial")
+  let fresh = run_state[String, String, {}](
+    fn() {
+      get!()
+    },
+    "fresh"
+  )
+  assert_equal(fresh.value, "fresh")
+  assert_equal(fresh.state, "fresh")
+}

@@ -3,27 +3,27 @@ module Test.Io
 import Basic.Prelude.*
 import Basic.Builtins.{ string_to_bytes, bytes_to_string }
 import Basic.Io.{ IoError, write_all_with }
-import Basic.Eff.Write.{ Write, run_write }
+import Basic.Eff.Writer.{ Writer, run_writer }
 import Basic.Data.List.{ list_impl_monoid }
 import Test.Assert.{ Assert, assert_true }
 
 pub fn test_io() -> Unit ! { Assert, Panic } {
   offer source_info : String = "complete output"
   let observed =
-    run_write[Result[Unit, IoError], List[String], {}](
+    run_writer[Result[Unit, IoError], List[String], {}](
       fn() {
-        write_all_with[Write[List[String]]](
+        write_all_with[Writer[List[String]]](
           string_to_bytes("abc"),
           fn(bytes) {
-            write!([bytes_to_string(bytes)])
+            tell!([bytes_to_string(bytes)])
             Result[I64, IoError]::ok(1)
           }
         )
       },
       monoid_impl=list_impl_monoid()
-    )()
+    )
   assert_true(
-    match observed.result {
+    match observed.value {
       ok(_) => true
       _ => false
     }

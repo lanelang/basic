@@ -1,0 +1,26 @@
+module Basic.Eff.Writer
+
+import Basic.Trait.Monoid.{ Monoid }
+
+pub effect Writer[T] {
+  tell(T) -> Unit
+}
+
+pub struct WriterResult[A, W] {
+  value : A
+  log : W
+}
+
+pub fn[A, W, E : Effect] run_writer(
+  action : () -> A ! { Writer[W], E },
+  auto monoid_impl : Monoid[W]
+) -> WriterResult[A, W] ! { E, Panic } {
+  handle action() with {
+    tell(message, resume) => {
+      let rest = resume(())
+      WriterResult::{ value: rest.value, log: monoid_impl.semigroup_impl.append(message, rest.log) }
+    }
+  } final value {
+    WriterResult[A, W]::{ value, log: monoid_impl.empty }
+  }
+}

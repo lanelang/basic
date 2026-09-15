@@ -35,19 +35,17 @@ pub fn ensure_directory_exists(path : String) -> Unit ! FileSystem {
 pub fn[T, E : Effect, AdapterEffect : Effect] run_file_system_with(
   action : () -> T ! { E, FileSystem },
   adapter : (String) -> Unit ! AdapterEffect
-) -> () -> T ! { E, AdapterEffect, Panic } {
-  fn() {
-    handle action() with {
-      ensure_directory(path, resume) => resume(adapter(path))
-    } final value {
-      value
-    }
+) -> T ! { E, AdapterEffect, Panic } {
+  handle action() with {
+    ensure_directory(path, resume) => resume(adapter(path))
+  } final value {
+    value
   }
 }
 
 pub fn[T, E : Effect] run_file_system(
   action : () -> T ! { E, FileSystem }
-) -> () -> T ! { E, Io, Exception, Panic } {
+) -> T ! { E, Io, Exception, Panic } {
   run_file_system_with[T, E, { Io, Exception }](action, ensure_directory_on_host)
 }
 

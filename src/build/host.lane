@@ -7,8 +7,11 @@ import Basic.System.FileSystem.{ FileSystem, run_file_system }
 import Basic.System.Process.{ Process, run_process }
 
 pub fn run(action : () -> Unit ! { Process, FileSystem, Exception }) -> Unit ! { Io, Panic } {
-  let hosted = run_file_system(run_process(action))
-  handle hosted() with {
+  handle run_file_system[Unit, { Exception, Panic, Io }](
+    fn() {
+      run_process(action)
+    }
+  ) with {
     raise[R](error, _resume) => absurd(panic(exception_message(error)))
   } final _value {
     ()

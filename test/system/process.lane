@@ -27,19 +27,18 @@ pub fn test_process() -> Unit ! { Assert, Panic } {
       }
     )
   }
-  let output =
-    run_process_with(
-      action,
-      fn(command) {
-        assert_equal(command.executable, "lane")
-        assert_equal(bytes_to_string(command.stdin), "")
-        CommandOutput::{
-          result: exited(0i32),
-          stdout: string_to_bytes("inspection"),
-          stderr: string_to_bytes("")
-        }
+  let output = run_process_with(
+    action,
+    fn(command) {
+      assert_equal(command.executable, "lane")
+      assert_equal(bytes_to_string(command.stdin), "")
+      CommandOutput::{
+        result: exited(0i32),
+        stdout: string_to_bytes("inspection"),
+        stderr: string_to_bytes("")
       }
-    )()
+    }
+  )
   assert_true(
     match output.result {
       exited(0i32) => true

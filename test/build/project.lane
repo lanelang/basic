@@ -5,7 +5,7 @@ import Basic.Builtins.{ bytes_equal, string_to_bytes }
 import Basic.Data.Bool.{ bool_impl_and }
 import Basic.Data.List.{ List, list_impl_monoid }
 import Basic.Eff.Exn.{ Exception }
-import Basic.Eff.Write.{ Write, run_write }
+import Basic.Eff.Writer.{ Writer, run_writer }
 import Basic.Ops.{ op_and }
 import Basic.System.FileSystem.{ FileSystem, run_file_system_with }
 import Basic.System.Process.{ Command, CommandOutput, CommandResult, Process, run_process_with }
@@ -35,7 +35,7 @@ fn successful_command(stdout : String) -> CommandOutput {
   }
 }
 
-fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[String]] } {
+fn mock_command(command : Command) -> CommandOutput ! { Assert, Writer[List[String]] } {
   match command.arguments {
     empty() => {
       assert_true(false, info="mock process received an empty command")
@@ -47,7 +47,7 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
           string_list_equal(command.arguments, ["inspect", "Main.lane"]),
           info="inspect command"
         )
-        write!(["inspect"])
+        tell!(["inspect"])
         successful_command("{\"schema\":1,\"module\":\"Main\",\"imports\":[]}\n")
       } else if string_equal(name, "compile") {
         assert_true(
@@ -57,7 +57,7 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
           ),
           info="compile command"
         )
-        write!(["compile"])
+        tell!(["compile"])
         successful_command("")
       } else if string_equal(name, "link") {
         assert_true(
@@ -67,7 +67,7 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
           ),
           info="link command"
         )
-        write!(["link"])
+        tell!(["link"])
         successful_command("")
       } else {
         assert_true(false, info="mock process received an unexpected command")
@@ -76,9 +76,9 @@ fn mock_command(command : Command) -> CommandOutput ! { Assert, Write[List[Strin
   }
 }
 
-fn mock_file_system(path : String) -> Unit ! { Assert, Write[List[String]] } {
+fn mock_file_system(path : String) -> Unit ! { Assert, Writer[List[String]] } {
   assert_true(string_equal(path, ".lanebuild"), info="artifact directory")
-  write!(["directory"])
+  tell!(["directory"])
 }
 
 pub fn test_project_build() -> Unit ! { Assert, Panic } {
@@ -93,18 +93,21 @@ pub fn test_project_build() -> Unit ! { Assert, Panic } {
       }
     )
   }
-  let process_mocked =
-    run_process_with[Unit, { FileSystem, Exception }, { Assert, Write[List[String]] }](
-      action,
-      mock_command
-    )
-  let mocked =
+  let process_mocked : () -> Unit ! { FileSystem, Exception, Assert, Writer[List[String]], Panic } =
+    fn() {
+      run_process_with[Unit, { FileSystem, Exception }, { Assert, Writer[List[String]] }](
+        action,
+        mock_command
+      )
+    }
+  let mocked : () -> Unit ! { Exception, Assert, Writer[List[String]], Panic } = fn() {
     run_file_system_with[
       Unit,
-      { Exception, Assert, Write[List[String]], Panic },
-      { Assert, Write[List[String]] }
+      { Exception, Assert, Writer[List[String]], Panic },
+      { Assert, Writer[List[String]] }
     ](process_mocked, mock_file_system)
-  let checked : () -> Unit ! { Assert, Write[List[String]], Panic } = fn() {
+  }
+  let checked : () -> Unit ! { Assert, Writer[List[String]], Panic } = fn() {
     handle mocked() with {
       raise[R](_error, _resume) => assert_true(false)
     } final _value {
@@ -112,7 +115,7 @@ pub fn test_project_build() -> Unit ! { Assert, Panic } {
     }
   }
   let report =
-    run_write[Unit, List[String], { Assert, Panic }](checked, monoid_impl=list_impl_monoid())()
+    run_writer[Unit, List[String], { Assert, Panic }](checked, monoid_impl=list_impl_monoid())
   assert_true(
     match report.log {
       cons(first, cons(second, cons(third, cons(fourth, empty())))) => string_equal(

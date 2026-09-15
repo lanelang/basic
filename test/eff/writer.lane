@@ -1,6 +1,6 @@
-module Test.Eff.Write
+module Test.Eff.Writer
 
-import Basic.Eff.Write.*
+import Basic.Eff.Writer.*
 import Basic.Conv.I64.{ i64_impl_debug }
 import Basic.Conv.List.{ list_impl_debug }
 import Basic.Data.List.{ List, list_impl_monoid, list_impl_equal }
@@ -10,17 +10,17 @@ import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Summon.{ summon_via }
 import Test.Assert.{ Assert, assert_equal }
 
-fn program() -> Unit ! Write[List[I64]] {
-  write!([1])
-  write!([2])
-  write!([3, 4])
-  write!([5, 6])
-  write!([])
+fn program() -> Unit ! Writer[List[I64]] {
+  tell!([1])
+  tell!([2])
+  tell!([3, 4])
+  tell!([5, 6])
+  tell!([])
 }
 
 pub fn test_write_log() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_write_log"
-  let res = run_write(program, monoid_impl=list_impl_monoid())()
+  let res = run_writer(program, monoid_impl=list_impl_monoid())
   assert_equal(
     res.log,
     [1, 2, 3, 4, 5, 6],

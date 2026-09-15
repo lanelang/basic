@@ -62,17 +62,15 @@ pub fn run_command(command : Command) -> CommandOutput ! Process {
 pub fn[T, E : Effect, AdapterEffect : Effect] run_process_with(
   action : () -> T ! { E, Process },
   adapter : (Command) -> CommandOutput ! AdapterEffect
-) -> () -> T ! { E, AdapterEffect, Panic } {
-  fn() {
-    handle action() with {
-      execute(command, resume) => resume(adapter(command))
-    } final value {
-      value
-    }
+) -> T ! { E, AdapterEffect, Panic } {
+  handle action() with {
+    execute(command, resume) => resume(adapter(command))
+  } final value {
+    value
   }
 }
 
-pub fn[T, E : Effect] run_process(action : () -> T ! { E, Process }) -> () -> T ! { E, Io, Panic } {
+pub fn[T, E : Effect] run_process(action : () -> T ! { E, Process }) -> T ! { E, Io, Panic } {
   run_process_with[T, E, { Io }](action, execute_command_on_host)
 }
 
