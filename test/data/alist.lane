@@ -2,11 +2,36 @@ module Test.Data.AList
 
 import Basic.Data.AList as AList
 import Basic.Data.I64.{ i64_impl_equal }
-import Test.Assert.{ Assert, assert_true }
+import Test.Assert.{ Assert, assert_true, assert_equal }
+import Basic.Data.List as List
+import Basic.Data.List.{ List as LinkedList }
+import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Data.Tuple.{ Tuple }
 
 pub fn test_alist() -> Unit ! Assert {
   offer source_info : String = "test_alist"
   let table = AList.set(AList.set(AList.empty(), 1, 10), 1, 20)
+  assert_equal(List.length(table), 1)
+  let shadowed = AList.bind(AList.bind(AList.bind(AList.empty(), 1, 10), 2, 30), 1, 20)
+  assert_equal(List.length(shadowed), 3)
+  assert_true(
+    match AList.get(shadowed, 1) {
+      some(20) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match AList.set(shadowed, 1, 40) {
+      cons((1, 40), cons((2, 30), empty())) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match AList.del(shadowed, 1) {
+      cons((2, 30), empty()) => true
+      _ => false
+    }
+  )
   assert_true(
     match AList.get(table, 1) {
       some(20) => true

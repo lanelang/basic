@@ -14,7 +14,7 @@ The independent sibling checkout is not overwritten.
 - [ ] Structured process and filesystem errors with explicit host adapters.
 - [x] Coherent Option and Result operations and capability providers.
 - [ ] Explicit partial and total comparison contracts.
-- [ ] AList replacement semantics and separately named shadowing bindings.
+- [x] AList replacement semantics and separately named shadowing bindings.
 - [ ] Consistent effectful collection operations and predictable construction costs.
 - [ ] Direct capabilities for foundational data types and efficient text construction.
 - [ ] Consistent module naming, public exports and documented compiler ABI seams.
@@ -65,3 +65,9 @@ fresh state on a subsequent run. The isolated filesystem host test also passes.
 Both types provide lazy recovery and effect-preserving sequencing. Result now
 provides Mappable, Applicative and FlatMappable dictionaries. Application is
 fail-fast with the value error taking priority. All 22 Basic groups pass.
+
+### Association lists
+
+set replaces all bindings for a key, puts the replacement first, and preserves
+the relative order of other keys. bind is constant-time shadowing without an
+Equal requirement. Duplicate binding, cardinality and deletion tests pass.

@@ -25,7 +25,19 @@ pub fn[K, V] get(list : AList[K, V], key : K, auto offer equal_impl : Equal[K]) 
     )
 }
 
-pub fn[K, V] set(list : AList[K, V], key : K, val : V, auto _equal_impl : Equal[K]) -> AList[K, V] {
+// Replace every previous binding for key and place its new binding first.
+// Unrelated bindings retain their order. Linear in the input length.
+pub fn[K, V] set(
+  list : AList[K, V],
+  key : K,
+  val : V,
+  auto offer equal_impl : Equal[K]
+) -> AList[K, V] {
+  bind(del(list, key), key, val)
+}
+
+// Constant-time lexical shadowing. Duplicate keys are intentional; get uses the first.
+pub fn[K, V] bind(list : AList[K, V], key : K, val : V) -> AList[K, V] {
   push_head(list, (key, val))
 }
 
