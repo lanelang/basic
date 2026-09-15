@@ -1,7 +1,7 @@
 module Test.Data.List
 
-import Basic.Conv.I64.{ i64_impl_debug }
-import Basic.Conv.List.{ list_impl_debug }
+import Basic.Debug.I64.{ i64_impl_debug }
+import Basic.Debug.List.{ list_impl_debug }
 import Basic.Data.List.*
 import Basic.Data.I64.{ i64_impl_add, i64_impl_equal }
 import Basic.Ops.{ op_add }
@@ -9,7 +9,8 @@ import Basic.Trait.Num.{ Add }
 import Basic.Summon.{ summon_via }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug, debug }
-import Basic.Data.String.{ string_impl_equal, string_impl_debug }
+import Basic.Data.String.{ string_impl_equal }
+import Basic.Debug.String.{ string_impl_debug }
 import Test.Assert.{ Assert, assert_equal, assert_not_equal, assert_true }
 import Basic.Data.I64.{ i64_impl_sub, i64_impl_compare }
 import Basic.Data.Option.{ Option }

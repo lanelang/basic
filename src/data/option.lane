@@ -2,9 +2,9 @@ module Basic.Data.Option
 
 import Basic.Data.Tuple.{ Tuple }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Map.{ Mappable }
-import Basic.Trait.App.{ Applicative }
-import Basic.Trait.Flat.{ FlatMappable }
+import Basic.Trait.Mappable.{ Mappable }
+import Basic.Trait.Applicative.{ Applicative }
+import Basic.Trait.FlatMappable.{ FlatMappable }
 
 pub enum Option[T] {
   some(T)

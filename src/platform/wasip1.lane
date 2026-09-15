@@ -20,8 +20,7 @@ pub let environ_sizes_get : (WasmAddress, WasmAddress) -> I32 ! Io =
 pub let environ_get : (WasmAddress, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "environ_get")
 
-pub let proc_exit : (I32) -> Unit ! Panic =
-  extern("wasi_snapshot_preview1", "proc_exit")
+pub let proc_exit : (I32) -> Unit ! Panic = extern("wasi_snapshot_preview1", "proc_exit")
 
 pub let clock_time_get : (I32, I64, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "clock_time_get")
@@ -32,17 +31,14 @@ pub let fd_prestat_get : (I32, WasmAddress) -> I32 ! Io =
 pub let fd_prestat_dir_name : (I32, WasmAddress, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_prestat_dir_name")
 
-pub let fd_close : (I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_close")
+pub let fd_close : (I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_close")
 
-pub let random_get : (WasmAddress, I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "random_get")
+pub let random_get : (WasmAddress, I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "random_get")
 
 pub let fd_seek : (I32, I64, I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_seek")
 
-pub let fd_tell : (I32, WasmAddress) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_tell")
+pub let fd_tell : (I32, WasmAddress) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_tell")
 
 pub let fd_pread : (I32, WasmAddress, I32, I64, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_pread")
@@ -50,17 +46,8 @@ pub let fd_pread : (I32, WasmAddress, I32, I64, WasmAddress) -> I32 ! Io =
 pub let fd_pwrite : (I32, WasmAddress, I32, I64, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_pwrite")
 
-pub let path_open : (
-  I32,
-  I32,
-  WasmAddress,
-  I32,
-  I32,
-  I64,
-  I64,
-  I32,
-  WasmAddress
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "path_open")
+pub let path_open : (I32, I32, WasmAddress, I32, I32, I64, I64, I32, WasmAddress) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "path_open")
 
 pub let fd_fdstat_get : (I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_fdstat_get")
@@ -68,8 +55,7 @@ pub let fd_fdstat_get : (I32, WasmAddress) -> I32 ! Io =
 pub let clock_res_get : (I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "clock_res_get")
 
-pub let sched_yield : () -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "sched_yield")
+pub let sched_yield : () -> I32 ! Io = extern("wasi_snapshot_preview1", "sched_yield")
 
 pub let path_create_directory : (I32, WasmAddress, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "path_create_directory")
@@ -77,11 +63,9 @@ pub let path_create_directory : (I32, WasmAddress, I32) -> I32 ! Io =
 pub let fd_readdir : (I32, WasmAddress, I32, I64, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_readdir")
 
-pub let fd_sync : (I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_sync")
+pub let fd_sync : (I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_sync")
 
-pub let fd_datasync : (I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_datasync")
+pub let fd_datasync : (I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_datasync")
 
 pub let path_unlink_file : (I32, WasmAddress, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "path_unlink_file")
@@ -89,25 +73,14 @@ pub let path_unlink_file : (I32, WasmAddress, I32) -> I32 ! Io =
 pub let path_remove_directory : (I32, WasmAddress, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "path_remove_directory")
 
-pub let path_rename : (
-  I32,
-  WasmAddress,
-  I32,
-  I32,
-  WasmAddress,
-  I32
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "path_rename")
+pub let path_rename : (I32, WasmAddress, I32, I32, WasmAddress, I32) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "path_rename")
 
 pub let fd_filestat_get : (I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_filestat_get")
 
-pub let path_filestat_get : (
-  I32,
-  I32,
-  WasmAddress,
-  I32,
-  WasmAddress
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "path_filestat_get")
+pub let path_filestat_get : (I32, I32, WasmAddress, I32, WasmAddress) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "path_filestat_get")
 
 pub let fd_filestat_set_size : (I32, I64) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_filestat_set_size")
@@ -115,21 +88,12 @@ pub let fd_filestat_set_size : (I32, I64) -> I32 ! Io =
 pub let fd_filestat_set_times : (I32, I64, I64, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_filestat_set_times")
 
-pub let path_filestat_set_times : (
-  I32,
-  I32,
-  WasmAddress,
-  I32,
-  I64,
-  I64,
-  I32
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "path_filestat_set_times")
+pub let path_filestat_set_times : (I32, I32, WasmAddress, I32, I64, I64, I32) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "path_filestat_set_times")
 
-pub let fd_advise : (I32, I64, I64, I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_advise")
+pub let fd_advise : (I32, I64, I64, I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_advise")
 
-pub let fd_allocate : (I32, I64, I64) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_allocate")
+pub let fd_allocate : (I32, I64, I64) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_allocate")
 
 pub let fd_fdstat_set_flags : (I32, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_fdstat_set_flags")
@@ -137,51 +101,29 @@ pub let fd_fdstat_set_flags : (I32, I32) -> I32 ! Io =
 pub let fd_fdstat_set_rights : (I32, I64, I64) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "fd_fdstat_set_rights")
 
-pub let fd_renumber : (I32, I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "fd_renumber")
+pub let fd_renumber : (I32, I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "fd_renumber")
 
 pub let path_symlink : (WasmAddress, I32, I32, WasmAddress, I32) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "path_symlink")
 
-pub let path_readlink : (
-  I32,
-  WasmAddress,
-  I32,
-  WasmAddress,
-  I32,
-  WasmAddress
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "path_readlink")
+pub let path_readlink : (I32, WasmAddress, I32, WasmAddress, I32, WasmAddress) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "path_readlink")
 
-pub let path_link : (
-  I32,
-  I32,
-  WasmAddress,
-  I32,
-  I32,
-  WasmAddress,
-  I32
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "path_link")
+pub let path_link : (I32, I32, WasmAddress, I32, I32, WasmAddress, I32) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "path_link")
 
 pub let poll_oneoff : (WasmAddress, WasmAddress, I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "poll_oneoff")
 
-pub let sock_recv : (
-  I32,
-  WasmAddress,
-  I32,
-  I32,
-  WasmAddress,
-  WasmAddress
-) -> I32 ! Io = extern("wasi_snapshot_preview1", "sock_recv")
+pub let sock_recv : (I32, WasmAddress, I32, I32, WasmAddress, WasmAddress) -> I32 ! Io =
+  extern("wasi_snapshot_preview1", "sock_recv")
 
 pub let sock_send : (I32, WasmAddress, I32, I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "sock_send")
 
-pub let sock_shutdown : (I32, I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "sock_shutdown")
+pub let sock_shutdown : (I32, I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "sock_shutdown")
 
-pub let proc_raise : (I32) -> I32 ! Io =
-  extern("wasi_snapshot_preview1", "proc_raise")
+pub let proc_raise : (I32) -> I32 ! Io = extern("wasi_snapshot_preview1", "proc_raise")
 
 pub let sock_accept : (I32, I32, WasmAddress) -> I32 ! Io =
   extern("wasi_snapshot_preview1", "sock_accept")

@@ -1,0 +1,10 @@
+module Basic.Debug.String
+
+import Basic.Trait.Debug.{ Debug, from_formatter }
+import Basic.Data.String.{ quote }
+
+pub offer string_impl_debug : Debug[String] = from_formatter(
+  fn(value) {
+    quote(value, '"')
+  }
+)

@@ -1,6 +1,6 @@
 module Test.Data.I32
 
-import Basic.Conv.I32.{ i32_impl_debug }
+import Basic.Debug.I32.{ i32_impl_debug }
 import Basic.Data.I32.*
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Rem, Neg }
 import Basic.Data.I32.{ wrapping_from_i64 as i64_to_i32 }

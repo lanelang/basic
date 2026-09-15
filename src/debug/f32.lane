@@ -1,4 +1,4 @@
-module Basic.Conv.F32
+module Basic.Debug.F32
 
 import Basic.Builtins.{ f32_to_string }
 import Basic.Trait.Debug.{ Debug, from_formatter }

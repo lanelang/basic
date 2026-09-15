@@ -1,6 +1,6 @@
-module Basic.Trait.App
+module Basic.Trait.Applicative
 
-import Basic.Trait.Map.{ Mappable }
+import Basic.Trait.Mappable.{ Mappable }
 
 pub struct Applicative[A : [Type] -> Type] {
   mappable_impl : Mappable[A]

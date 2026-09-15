@@ -1,10 +1,10 @@
 module Test.Data.Option
 
 import Basic.Data.Option.*
-import Basic.Conv.Unit.{ unit_impl_debug }
-import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Debug.Unit.{ unit_impl_debug }
+import Basic.Debug.I64.{ i64_impl_debug }
 import Basic.Data.I64.{ i64_impl_equal }
-import Basic.Conv.Option.{ option_impl_debug }
+import Basic.Debug.Option.{ option_impl_debug }
 import Basic.Data.Unit.{ unit_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }

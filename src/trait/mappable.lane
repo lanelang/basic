@@ -1,4 +1,4 @@
-module Basic.Trait.Map
+module Basic.Trait.Mappable
 
 pub struct Mappable[M : [Type] -> Type] {
   map : [T, R, E : Effect](M[T], (T) -> R ! E) -> M[R] ! E

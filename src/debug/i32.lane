@@ -1,0 +1,12 @@
+module Basic.Debug.I32
+
+import Basic.Data.I32.{ to_i64 }
+import Basic.Trait.Debug.{ Debug, from_formatter, debug }
+import Basic.Debug.I64.{ i64_impl_debug }
+
+pub offer i32_impl_debug : Debug[I32] = from_formatter(
+  fn(value : I32) -> String {
+    to_i64(value)
+      |> debug(debug_impl=i64_impl_debug)
+  }
+)

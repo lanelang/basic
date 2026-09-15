@@ -4,7 +4,8 @@ import Basic.Data.Result.{ Result }
 import Basic.System.Process.{ ProcessError, ProcessFailure }
 import Basic.Builtins.{ bytes_to_string, string_to_bytes }
 import Basic.Data.Option.{ Option }
-import Basic.Data.String.{ string_impl_debug, string_impl_equal }
+import Basic.Data.String.{ string_impl_equal }
+import Basic.Debug.String.{ string_impl_debug }
 import Basic.System.Process.{
   Command,
   CommandOutput,

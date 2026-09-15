@@ -1,0 +1,13 @@
+module Basic.Debug.Bool
+
+import Basic.Trait.Debug.{ Debug, from_formatter }
+
+pub offer bool_impl_debug : Debug[Bool] = from_formatter(
+  fn(b : Bool) -> String {
+    if b {
+      "true"
+    } else {
+      "false"
+    }
+  }
+)

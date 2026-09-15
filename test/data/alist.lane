@@ -5,7 +5,7 @@ import Basic.Data.I64.{ i64_impl_equal }
 import Test.Assert.{ Assert, assert_true, assert_equal }
 import Basic.Data.List as List
 import Basic.Data.List.{ List as LinkedList }
-import Basic.Conv.I64.{ i64_impl_debug }
+import Basic.Debug.I64.{ i64_impl_debug }
 import Basic.Data.Tuple.{ Tuple }
 
 pub fn test_alist() -> Unit ! Assert {

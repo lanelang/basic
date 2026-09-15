@@ -1,4 +1,4 @@
-module Basic.Conv.Option
+module Basic.Debug.Option
 
 import Basic.Data.Option.{ Option }
 import Basic.Trait.Debug.{ Debug, Document }

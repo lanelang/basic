@@ -2,13 +2,13 @@ module Test.Data.Bytes
 
 import Basic.Data.Bytes.*
 import Basic.Builtins as Builtins
-import Basic.Conv.I64.{ i64_impl_debug }
-import Basic.Conv.Option.{ option_impl_debug }
+import Basic.Debug.I64.{ i64_impl_debug }
+import Basic.Debug.Option.{ option_impl_debug }
 import Basic.Data.Byte as Byte
 import Basic.Data.String.{ string_impl_equal, encode_utf8, decode_utf8 }
 import Basic.Data.Option.{ Option, option_impl_equal }
 import Basic.Data.I64.{ i64_impl_equal }
-import Basic.Data.String.{ string_impl_debug }
+import Basic.Debug.String.{ string_impl_debug }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }
 import Basic.Summon.{ summon_via }
@@ -40,13 +40,13 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
   let empty = Builtins.bytes_make(0, Byte.wrapping_from_i64(0))
   let text = "Aé中😀\0"
   let encoded = encode_utf8(text)
-  assert_equal(bytes_length(encoded), 11)
+  assert_equal(length(encoded), 11)
   assert_true(is_valid_utf8(encoded))
   assert_equal(decode_utf8(encoded), some(text))
   // A lone 0xFF byte is not valid UTF-8.
   let malformed = expect_in_bounds(
     fn() {
-      bytes_make(1, Byte.wrapping_from_i64(255))
+      make(1, Byte.wrapping_from_i64(255))
     },
     empty
   )
@@ -56,7 +56,7 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
   let original_bytes = encode_utf8(original)
   let changed = expect_in_bounds(
     fn() {
-      bytes_set(original_bytes, 0, Byte.wrapping_from_i64(122))
+      set(original_bytes, 0, Byte.wrapping_from_i64(122))
     },
     empty
   )
@@ -65,21 +65,21 @@ pub fn test_utf8_and_bytes() -> Unit ! Assert {
   // Slicing and concatenation round-trip the whole sequence.
   let prefix = expect_in_bounds(
     fn() {
-      bytes_slice(encoded, 0, 6)
+      slice(encoded, 0, 6)
     },
     empty
   )
   let suffix = expect_in_bounds(
     fn() {
-      bytes_slice(encoded, 6, 5)
+      slice(encoded, 6, 5)
     },
     empty
   )
-  assert_true(bytes_equal(bytes_concat(prefix, suffix), encoded))
+  assert_true(equal(concat(prefix, suffix), encoded))
   assert_true(
     is_out_of_bounds[Bytes](
       fn() {
-        bytes_slice(encoded, 10, 2)
+        slice(encoded, 10, 2)
       }
     )
   )

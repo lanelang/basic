@@ -5,9 +5,9 @@ import Basic.Data.Option.{ Option }
 import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_compare, i64_impl_equal }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
-import Basic.Trait.Map.{ Mappable }
-import Basic.Trait.App.{ Applicative }
-import Basic.Trait.Flat.{ FlatMappable }
+import Basic.Trait.Mappable.{ Mappable }
+import Basic.Trait.Applicative.{ Applicative }
+import Basic.Trait.FlatMappable.{ FlatMappable }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Ops.{ op_add, op_sub, op_equal, op_less }
 

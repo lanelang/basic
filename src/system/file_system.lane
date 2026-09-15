@@ -11,7 +11,7 @@ import Basic.Builtins.{
   i64_to_i32,
   string_to_bytes
 }
-import Basic.Conv.I32.{ i32_impl_debug }
+import Basic.Debug.I32.{ i32_impl_debug }
 import Basic.Data.String.{ concat }
 import Basic.Data.Result.{ Result }
 import Basic.Builtins.{ i64_less }

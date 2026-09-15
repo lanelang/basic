@@ -97,3 +97,7 @@ pub fn from_i64(value : I64) -> Option[I32] {
 pub fn wrapping_from_i64(value : I64) -> I32 {
   Builtins.i64_to_i32(value)
 }
+
+pub fn to_i64(value : I32) -> I64 {
+  Builtins.i32_to_i64(value)
+}

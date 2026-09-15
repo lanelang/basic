@@ -1,4 +1,4 @@
-module Basic.Conv.Unit
+module Basic.Debug.Unit
 
 import Basic.Trait.Debug.{ Debug, from_formatter }
 

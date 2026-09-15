@@ -3,7 +3,7 @@ module Test.Build.Plan
 import Basic.Prelude.*
 import Basic.Build.Plan.*
 import Basic.Data.List.{ map, list_impl_equal }
-import Basic.Conv.List.{ list_impl_debug }
+import Basic.Debug.List.{ list_impl_debug }
 import Test.Assert.{ Assert, assert_true, assert_equal }
 
 fn project() -> Project {

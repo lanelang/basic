@@ -1,4 +1,4 @@
-module Basic.Conv.Result
+module Basic.Debug.Result
 
 import Basic.Data.Result.{ Result }
 import Basic.Trait.Debug.{ Debug, Document }

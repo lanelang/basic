@@ -22,7 +22,7 @@ import Basic.Data.Char
 import Basic.Data.Option.{ Option }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Debug.{ Debug, Document, render, from_formatter }
+import Basic.Trait.Debug.{ Document, render }
 import Basic.Trait.Compare.{ PartialCompare, TotalCompare, Ordering }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 
@@ -273,12 +273,6 @@ fn hex_scalar(code : I32) -> String {
   let digits = string_to_bytes("0123456789abcdef")
   bytes_to_string(bytes_concat(bytes_slice(digits, high, 1), bytes_slice(digits, low, 1)))
 }
-
-pub offer string_impl_debug : Debug[String] = from_formatter(
-  fn(value) {
-    quote(value, '"')
-  }
-)
 
 pub offer string_impl_total_compare : TotalCompare[String] = TotalCompare::{
   compare: fn(a, b) {

@@ -8,4 +8,3 @@ pub struct Monoid[T] {
   semigroup_impl : Semigroup[T]
   empty : T
 }
-

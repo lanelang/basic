@@ -1,6 +1,7 @@
 module Test.Assert.Summary
 
-import Basic.Data.String.{ string_impl_debug, string_impl_equal }
+import Basic.Data.String.{ string_impl_equal }
+import Basic.Debug.String.{ string_impl_debug }
 import Test.Assert.{ Assert, TestCounts, assert_equal, format_test_summary }
 
 pub fn test_summary() -> Unit ! Assert {

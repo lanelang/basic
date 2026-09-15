@@ -1,8 +1,8 @@
 module Test.Eff.Writer
 
 import Basic.Eff.Writer.*
-import Basic.Conv.I64.{ i64_impl_debug }
-import Basic.Conv.List.{ list_impl_debug }
+import Basic.Debug.I64.{ i64_impl_debug }
+import Basic.Debug.List.{ list_impl_debug }
 import Basic.Data.List.{ List, list_impl_monoid, list_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }

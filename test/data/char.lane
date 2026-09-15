@@ -1,11 +1,12 @@
 module Test.Data.Char
 
 import Basic.Data.Char.*
-import Basic.Conv.Char.{ char_impl_debug }
-import Basic.Conv.I64.{ i64_impl_debug }
-import Basic.Conv.Option.{ option_impl_debug }
+import Basic.Debug.Char.{ char_impl_debug }
+import Basic.Debug.I64.{ i64_impl_debug }
+import Basic.Debug.Option.{ option_impl_debug }
 import Basic.Data.Option.{ Option, option_impl_equal }
-import Basic.Data.String.{ string_impl_equal, string_impl_debug }
+import Basic.Data.String.{ string_impl_equal }
+import Basic.Debug.String.{ string_impl_debug }
 import Basic.Data.I64.{ i64_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }

@@ -1,6 +1,6 @@
 module Test.Data.F64
 
-import Basic.Conv.F64.{ f64_impl_debug }
+import Basic.Debug.F64.{ f64_impl_debug }
 import Basic.Data.F64.*
 import Basic.Trait.Num.{ Add, Sub, Mul, Div, Neg }
 import Basic.Trait.Equal.{ Equal }

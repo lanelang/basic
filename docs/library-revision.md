@@ -17,7 +17,7 @@ The independent sibling checkout is not overwritten.
 - [x] AList replacement semantics and separately named shadowing bindings.
 - [x] Consistent effectful collection operations and predictable construction costs.
 - [x] Direct capabilities for foundational data types and efficient text construction.
-- [ ] Consistent module naming, public exports and documented compiler ABI seams.
+- [x] Consistent module naming, public exports and documented compiler ABI seams.
 - [x] Explicit build configuration, planning and required interface closures.
 - [ ] Boundary, order, composition, large-input and compatibility regression gates.
 
@@ -119,3 +119,12 @@ or compiling. Each step records only its transitive interface closure. Tests
 cover an unrelated module, dependency order and configuration forwarding. The
 real manifest compiled, linked and executed all 23 Basic groups. This exposed
 and fixed a compiler slot-allocation bug on fatal paths; 1936 native tests pass.
+
+### Public modules and ABI
+
+Debug providers now live under Basic.Debug; numeric conversions live on data
+modules. Applicative, Mappable and FlatMappable module names are explicit. Bytes
+and Bool use module-relative operation names. Prelude hides derivation metadata,
+and the empty Ref placeholder is removed. README and compiler-abi.md document
+the canonical and raw-host seams. This also exposed and fixed hidden derive
+constructor registration; all 1937 native tests pass.

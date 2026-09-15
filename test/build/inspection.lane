@@ -2,7 +2,8 @@ module Test.Build.Inspection
 
 import Basic.Build.Inspection.{ SourceInspection, decode as decode_inspection }
 import Basic.Data.Option.{ Option }
-import Basic.Data.String.{ string_impl_debug, string_impl_equal }
+import Basic.Data.String.{ string_impl_equal }
+import Basic.Debug.String.{ string_impl_debug }
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_inspection() -> Unit ! Assert {

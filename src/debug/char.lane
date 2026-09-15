@@ -1,4 +1,4 @@
-module Basic.Conv.Char
+module Basic.Debug.Char
 
 import Basic.Data.Char.{ to_string as char_to_string }
 import Basic.Data.String.{ quote }

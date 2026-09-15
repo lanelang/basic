@@ -16,6 +16,5 @@ pub fn test_prelude() -> Unit ! Assert {
   let _values : List[I64] = [1, 2, 3]
   let _constructed_values : List[I64] = cons(1, empty())
   let _pair : (I64, I64) = (1, 2)
-  let _product : Product[I64, Unit] = Product::{ head: 1, tail: () }
   assert_true(pair_equal.equal(Pair::{ left: 1, right: 2 }, Pair::{ left: 1, right: 2 }))
 }

@@ -1,4 +1,4 @@
-module Basic.Conv.List
+module Basic.Debug.List
 
 import Basic.Data.List.{ List }
 import Basic.Trait.Debug.{ Debug, Document }

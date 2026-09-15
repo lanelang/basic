@@ -2,17 +2,16 @@ module Basic.Data.Bool
 
 import Basic.Trait.Bool.{ And, Or, Not }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Debug.{ Debug, from_formatter }
 
-pub offer bool_impl_and : And = And::{ and: bool_and }
+pub offer bool_impl_and : And = And::{ and }
 
-pub offer bool_impl_or : Or = Or::{ or: bool_or }
+pub offer bool_impl_or : Or = Or::{ or }
 
-pub offer bool_impl_not : Not = Not::{ not: bool_not }
+pub offer bool_impl_not : Not = Not::{ not }
 
-pub offer bool_impl_equal : Equal[Bool] = Equal::{ equal: bool_equal }
+pub offer bool_impl_equal : Equal[Bool] = Equal::{ equal }
 
-pub fn[E : Effect] bool_and(a : Bool, b : () -> Bool ! E) -> Bool ! E {
+pub fn[E : Effect] and(a : Bool, b : () -> Bool ! E) -> Bool ! E {
   if a {
     b()
   } else {
@@ -20,7 +19,7 @@ pub fn[E : Effect] bool_and(a : Bool, b : () -> Bool ! E) -> Bool ! E {
   }
 }
 
-pub fn[E : Effect] bool_or(a : Bool, b : () -> Bool ! E) -> Bool ! E {
+pub fn[E : Effect] or(a : Bool, b : () -> Bool ! E) -> Bool ! E {
   if a {
     true
   } else {
@@ -28,7 +27,7 @@ pub fn[E : Effect] bool_or(a : Bool, b : () -> Bool ! E) -> Bool ! E {
   }
 }
 
-pub fn bool_not(a : Bool) -> Bool {
+pub fn not(a : Bool) -> Bool {
   if a {
     false
   } else {
@@ -36,20 +35,10 @@ pub fn bool_not(a : Bool) -> Bool {
   }
 }
 
-pub fn bool_equal(a : Bool, b : Bool) -> Bool {
+pub fn equal(a : Bool, b : Bool) -> Bool {
   if a {
     b
   } else {
-    bool_not(b)
+    not(b)
   }
 }
-
-pub offer bool_impl_debug : Debug[Bool] = from_formatter(
-  fn(b : Bool) -> String {
-    if b {
-      "true"
-    } else {
-      "false"
-    }
-  }
-)

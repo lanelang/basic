@@ -6,7 +6,7 @@ import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Ops.{ op_sub, op_greater_eq, op_less }
 
 // Create an immutable byte sequence, reporting a negative length through OutOfBound.
-pub fn bytes_make(len : I64, init : Byte) -> Bytes ! OutOfBound {
+pub fn make(len : I64, init : Byte) -> Bytes ! OutOfBound {
   if len < 0 {
     out_of_min!()
   } else {
@@ -15,12 +15,12 @@ pub fn bytes_make(len : I64, init : Byte) -> Bytes ! OutOfBound {
 }
 
 // Return the number of bytes in the sequence.
-pub fn bytes_length(bytes : Bytes) -> I64 {
+pub fn length(bytes : Bytes) -> I64 {
   Builtins.bytes_length(bytes)
 }
 
 // Read one byte, reporting a negative or past-the-end index through OutOfBound.
-pub fn bytes_get(bytes : Bytes, index : I64) -> Byte ! OutOfBound {
+pub fn get(bytes : Bytes, index : I64) -> Byte ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index >= Builtins.bytes_length(bytes) {
@@ -31,7 +31,7 @@ pub fn bytes_get(bytes : Bytes, index : I64) -> Byte ! OutOfBound {
 }
 
 // Return a sequence with one byte replaced, preserving the original value and reporting an invalid index through OutOfBound.
-pub fn bytes_set(bytes : Bytes, index : I64, byte : Byte) -> Bytes ! OutOfBound {
+pub fn set(bytes : Bytes, index : I64, byte : Byte) -> Bytes ! OutOfBound {
   if index < 0 {
     out_of_min!()
   } else if index >= Builtins.bytes_length(bytes) {
@@ -42,25 +42,25 @@ pub fn bytes_set(bytes : Bytes, index : I64, byte : Byte) -> Bytes ! OutOfBound 
 }
 
 // PartialCompare two sequences by exact byte contents.
-pub fn bytes_equal(left : Bytes, right : Bytes) -> Bool {
+pub fn equal(left : Bytes, right : Bytes) -> Bool {
   Builtins.bytes_equal(left, right)
 }
 
 // Concatenate two sequences without assigning text semantics to either operand.
-pub fn bytes_concat(left : Bytes, right : Bytes) -> Bytes {
+pub fn concat(left : Bytes, right : Bytes) -> Bytes {
   Builtins.bytes_concat(left, right)
 }
 
 // Copy the selected byte range, reporting negative or out-of-bounds ranges through OutOfBound.
-pub fn bytes_slice(bytes : Bytes, start : I64, length : I64) -> Bytes ! OutOfBound {
-  let bytes_length = Builtins.bytes_length(bytes)
+pub fn slice(bytes : Bytes, start : I64, length : I64) -> Bytes ! OutOfBound {
+  let size = Builtins.bytes_length(bytes)
   if start < 0 {
     out_of_min!()
   } else if length < 0 {
     out_of_min!()
-  } else if bytes_length < start {
+  } else if size < start {
     out_of_max!()
-  } else if bytes_length - start < length {
+  } else if size - start < length {
     out_of_max!()
   } else {
     Builtins.bytes_slice(bytes, start, length)

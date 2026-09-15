@@ -1,4 +1,4 @@
-module Basic.Conv.Tuple
+module Basic.Debug.Tuple
 
 import Basic.Data.Tuple.{ Tuple }
 import Basic.Trait.Debug.{ Debug, Document }
