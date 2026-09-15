@@ -6,7 +6,9 @@ import Basic.Debug.List.{ list_impl_debug }
 import Basic.Data.List.{ List, list_impl_monoid, list_impl_equal }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }
-import Basic.Data.I64.{ i64_impl_equal }
+import Basic.Data.I64.{ i64_impl_equal, i64_impl_sub }
+import Basic.Ops.{ op_equal, op_sub }
+import Basic.Data.String.{ byte_length, string_impl_monoid }
 import Basic.Summon.{ summon_via }
 import Test.Assert.{ Assert, assert_equal }
 
@@ -20,6 +22,12 @@ fn program() -> Unit ! Writer[List[I64]] {
 
 pub fn test_write_log() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_write_log"
+  let text = run_writer[Unit, String, {}](
+    fn() {
+      messages(1000)
+    }
+  )
+  assert_equal(byte_length(text.log), 1000)
   let res = run_writer(program, monoid_impl=list_impl_monoid())
   assert_equal(
     res.log,
@@ -29,4 +37,11 @@ pub fn test_write_log() -> Unit ! { Assert, Panic } {
   )
 }
 
-// TODO: missing contextual offer; need to display argument name
+fn messages(count : I64) -> Unit ! Writer[String] {
+  if count == 0 {
+    ()
+  } else {
+    tell!("x")
+    messages(count - 1)
+  }
+}

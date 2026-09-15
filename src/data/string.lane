@@ -19,6 +19,7 @@ import Basic.Builtins.{
 import Basic.Data.I64.{ i64_impl_add, i64_impl_sub, i64_impl_mul, i64_impl_equal, i64_impl_compare }
 import Basic.Data.I32.{ i32_impl_equal, i32_impl_compare }
 import Basic.Data.Char
+import Basic.Data.List.{ List }
 import Basic.Data.Option.{ Option }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Equal.{ Equal }
@@ -282,6 +283,31 @@ pub offer string_impl_total_compare : TotalCompare[String] = TotalCompare::{
       Ordering::less()
     } else {
       Ordering::greater()
+    }
+  }
+}
+
+// Join fragments without quadratic prefix copying. The separator appears only
+// between fragments, including empty fragments. Uses balanced Document merging.
+pub fn join(values : List[String], separator : String) -> String {
+  render(join_document(values, separator, true, Document::empty()))
+}
+
+fn join_document(
+  values : List[String],
+  separator : String,
+  first : Bool,
+  document : Document
+) -> Document {
+  match values {
+    empty() => document
+    cons(value, rest) => {
+      let prefix = if first {
+        document
+      } else {
+        Document::append(document, Document::text(separator))
+      }
+      join_document(rest, separator, false, Document::append(prefix, Document::text(value)))
     }
   }
 }

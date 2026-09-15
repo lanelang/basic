@@ -14,6 +14,10 @@ import Test.Assert.{ Assert, assert_equal, assert_true, assert_false }
 
 pub fn test_string() -> Unit ! Assert {
   offer source_info : String = "test_string"
+  assert_equal(join([], ","), "")
+  assert_equal(join([""], ","), "")
+  assert_equal(join(["", "a", "", "b", ""], ","), ",a,,b,")
+  assert_equal(join(["中", "😀"], ""), "中😀")
   let text = "Aé中😀\0"
   // Byte length is the UTF-8 size; scalar count is independent of it.
   assert_equal(byte_length(text), 11)

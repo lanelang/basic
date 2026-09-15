@@ -128,3 +128,9 @@ and Bool use module-relative operation names. Prelude hides derivation metadata,
 and the empty Ref placeholder is removed. README and compiler-abi.md document
 the canonical and raw-host seams. This also exposed and fixed hidden derive
 constructor registration; all 1937 native tests pass.
+
+### Text fragments and Writer
+
+String.join and Writer log collection use balanced merging. Writer records
+messages in order and reassociates only the pure monoid operation. A 1,000-message
+String log and separator/empty-fragment regressions pass with all 23 groups.

@@ -1,6 +1,7 @@
 module Basic.Eff.Writer
 
-import Basic.Trait.Monoid.{ Monoid }
+import Basic.Trait.Monoid.{ Monoid, Semigroup }
+import Basic.Data.List.{ List, reverse }
 
 pub effect Writer[T] {
   tell(T) -> Unit
@@ -15,12 +16,31 @@ pub fn[A, W, E : Effect] run_writer(
   action : () -> A ! { Writer[W], E },
   auto monoid_impl : Monoid[W]
 ) -> WriterResult[A, W] ! { E, Panic } {
-  handle action() with {
+  let collected : WriterResult[A, List[W]] = handle action() with {
     tell(message, resume) => {
       let rest = resume(())
-      WriterResult::{ value: rest.value, log: monoid_impl.semigroup_impl.append(message, rest.log) }
+      WriterResult[A, List[W]]::{ value: rest.value, log: cons(message, rest.log) }
     }
   } final value {
-    WriterResult[A, W]::{ value, log: monoid_impl.empty }
+    WriterResult[A, List[W]]::{ value, log: [] }
+  }
+  WriterResult[A, W]::{ value: collected.value, log: merge_all(collected.log, monoid_impl) }
+}
+
+// Reassociate only the pure, associative monoid operation. Message order and
+// action effects are preserved; strings avoid repeatedly copying the full log.
+fn[W] merge_pairs(values : List[W], append : Semigroup[W], acc : List[W]) -> List[W] {
+  match values {
+    empty() => reverse(acc)
+    cons(a, empty()) => reverse(cons(a, acc))
+    cons(a, cons(b, rest)) => merge_pairs(rest, append, cons(append.append(a, b), acc))
+  }
+}
+
+fn[W] merge_all(values : List[W], monoid : Monoid[W]) -> W {
+  match values {
+    empty() => monoid.empty
+    cons(value, empty()) => value
+    _ => merge_all(merge_pairs(values, monoid.semigroup_impl, []), monoid)
   }
 }
