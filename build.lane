@@ -88,6 +88,7 @@ pub fn build() -> Unit ! { Io, Panic } {
             "test/eff/write.lane",
             "test/eff/composition.lane",
             "test/entry.lane",
+            "test/io.lane",
             "test/failing_entry.lane",
             "test/prelude.lane",
             "test/system/process.lane"

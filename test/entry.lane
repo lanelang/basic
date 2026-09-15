@@ -13,6 +13,7 @@ import Test.Data.Bytes.{ test_utf8_and_bytes as test_bytes }
 import Test.Data.Option.{ test_equal as test_option }
 import Test.Data.List.{ test_list }
 import Test.Data.AList.{ test_alist }
+import Test.Io.{ test_io }
 import Test.Eff.Composition.{ test_composition }
 import Test.Eff.Write.{ test_write_log }
 import Test.Eff.Exn.{ test_exception_info }
@@ -38,6 +39,7 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       test_alist,
       test_write_log,
       test_composition,
+      test_io,
       test_exception_info,
       test_debug,
       test_process,

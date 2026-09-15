@@ -8,7 +8,7 @@ The independent sibling checkout is not overwritten.
 
 - [x] Effectful short-circuit operators and exception conversion preserving residual effects.
 - [x] Nominal Debug identity, quoted/escaped rendering, and structural empty-payload handling.
-- [ ] Reliable output and directory creation with truthful failure reporting.
+- [x] Reliable output and directory creation with truthful failure reporting.
 - [ ] Defined numeric conversions and arithmetic failure contracts.
 - [ ] Independent Reader, State and Writer semantics, with immediate runner functions.
 - [ ] Structured process and filesystem errors with explicit host adapters.
@@ -43,3 +43,11 @@ formatters use `from_formatter`; String and Char render escaped delimiters.
 The derivation terminator is `Document.empty`, distinct from `text("")`.
 Regression tests cover ordinary conversion coexistence, empty enum payloads,
 escaping and custom empty renderers. All 19 Basic test groups pass.
+
+### Output and directory correctness
+
+`try_println`/`write_all` return structured errors. `println` is explicitly fatal
+on write failure and carries Panic. Short writes retry, zero progress terminates
+with an error, and empty output does not invoke the adapter. Directory creation
+is non-recursive and verifies the type of existing paths. All 20 Basic groups
+and the isolated filesystem host regression passed.

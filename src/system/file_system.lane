@@ -2,6 +2,9 @@ module Basic.System.FileSystem
 
 import Basic.Builtins.{
   bytes_equal,
+  byte_to_i64,
+  bytes_get,
+  i64_equal,
   bytes_length,
   i32_add,
   i32_to_i64,
@@ -11,7 +14,12 @@ import Basic.Builtins.{
 import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.String.{ concat }
 import Basic.Eff.Exn.{ Exception, throw_system }
-import Basic.Platform.Wasip1.{ fd_prestat_dir_name, fd_prestat_get, path_create_directory }
+import Basic.Platform.Wasip1.{
+  fd_prestat_dir_name,
+  fd_prestat_get,
+  path_create_directory,
+  path_filestat_get
+}
 import Basic.Trait.Debug.{ debug }
 import Basic.Wasm.Abi.{ address, allocate, read_i32, to_bytes, write_bytes }
 
@@ -19,6 +27,7 @@ pub effect FileSystem {
   ensure_directory(String) -> Unit
 }
 
+// Create one directory; its parent must already exist. Existing files fail.
 pub fn ensure_directory_exists(path : String) -> Unit ! FileSystem {
   ensure_directory!(path)
 }
@@ -51,7 +60,25 @@ fn ensure_directory_on_host(path : String) -> Unit ! { Io, Exception } {
   let errno = path_create_directory(directory, address(storage, 0i32), i64_to_i32(length))
   match errno {
     0i32 => ()
-    20i32 => ()
+    20i32 => {
+      let stat = allocate(64)
+      match
+        path_filestat_get(
+          directory,
+          1i32,
+          address(storage, 0i32),
+          i64_to_i32(length),
+          address(stat, 0i32)
+        ) {
+        0i32 =>
+          if i64_equal(byte_to_i64(bytes_get(to_bytes(stat), 16)), 3) {
+            ()
+          } else {
+            throw_system[Unit](concat("path is not a directory: ", path), 54i32)
+          }
+        error => throw_system[Unit](concat("unable to inspect directory: ", path), error)
+      }
+    }
     errno => throw_system[Unit](
       concat(
         concat(concat("unable to create directory `", path), "`: platform error "),

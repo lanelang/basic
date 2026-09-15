@@ -106,7 +106,7 @@ fn execute_test(f : () -> Unit ! { Assert, Panic }) -> TestOutcome ! Panic {
   }
 }
 
-fn print_failures(failures : List[TestFailure]) -> Unit ! Io {
+fn print_failures(failures : List[TestFailure]) -> Unit ! { Io, Panic } {
   match failures {
     empty() => ()
     cons(failure, rest) => {

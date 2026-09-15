@@ -1,36 +1,97 @@
 module Basic.Io
 
-import Basic.Builtins.{ bytes_concat, bytes_length, i64_add, i64_to_i32, string_to_bytes }
-import Basic.Data.Void.{ Void }
+import Basic.Builtins.{
+  bytes_concat,
+  bytes_length,
+  bytes_slice,
+  i64_add,
+  i64_sub,
+  i64_less,
+  i64_to_i32,
+  i32_to_i64,
+  string_to_bytes
+}
+import Basic.Data.Void.{ Void, absurd }
+import Basic.Data.Result.{ Result }
 import Basic.Platform.Wasip1.{ fd_write, proc_exit }
-import Basic.Wasm.Abi.{
-  WasmAddress,
-  address as buffer_address,
-  allocate as allocate_buffer,
-  write_address as write_buffer_address,
-  write_bytes as write_buffer_bytes,
-  write_i32 as write_buffer_i32
+import Basic.Wasm.Abi.{ address, allocate, write_address, write_bytes, write_i32, read_i32 }
+
+pub enum IoError {
+  system(I32)
+  no_progress()
+  invalid_count()
+  too_large()
 }
 
-fn write(fd : I32, bytes : Bytes) -> Unit ! Io {
+// The adapter writes a prefix and returns the number of bytes accepted.
+// Retry only the unwritten suffix, preserving ordering and the adapter effect.
+pub fn[E : Effect] write_all_with(
+  bytes : Bytes,
+  writer : (Bytes) -> Result[I64, IoError] ! E
+) -> Result[Unit, IoError] ! E {
   let length = bytes_length(bytes)
-  let frame = allocate_buffer(i64_add(12, length))
-  write_buffer_bytes(frame, 12, bytes)
-  write_buffer_address(frame, 0, frame, 12i32)
-  write_buffer_i32(frame, 4, i64_to_i32(length))
-  write_buffer_i32(frame, 8, 0i32)
-  let _errno = fd_write(fd, buffer_address(frame, 0i32), 1i32, buffer_address(frame, 8i32))
-  ()
+  if i64_less(0, length) {
+    match writer(bytes) {
+      err(error) => Result[Unit, IoError]::err(error)
+      ok(count) => {
+        if i64_less(count, 0) {
+          Result[Unit, IoError]::err(IoError::invalid_count())
+        } else if i64_less(length, count) {
+          Result[Unit, IoError]::err(IoError::invalid_count())
+        } else if i64_less(0, count) {
+          write_all_with(bytes_slice(bytes, count, i64_sub(length, count)), writer)
+        } else {
+          Result[Unit, IoError]::err(IoError::no_progress())
+        }
+      }
+    }
+  } else {
+    Result[Unit, IoError]::ok(())
+  }
 }
 
-pub fn println(value : String) -> Unit ! Io {
-  write(1i32, bytes_concat(string_to_bytes(value), string_to_bytes("\n")))
+fn write_once(fd : I32, bytes : Bytes) -> Result[I64, IoError] ! Io {
+  let length = bytes_length(bytes)
+  if i64_less(2147483635, length) {
+    Result[I64, IoError]::err(IoError::too_large())
+  } else {
+    let frame = allocate(i64_add(12, length))
+    write_bytes(frame, 12, bytes)
+    write_address(frame, 0, frame, 12i32)
+    write_i32(frame, 4, i64_to_i32(length))
+    write_i32(frame, 8, 0i32)
+    match fd_write(fd, address(frame, 0i32), 1i32, address(frame, 8i32)) {
+      0i32 => Result[I64, IoError]::ok(i32_to_i64(read_i32(frame, 8)))
+      errno => Result[I64, IoError]::err(IoError::system(errno))
+    }
+  }
+}
+
+pub fn write_all(fd : I32, bytes : Bytes) -> Result[Unit, IoError] ! Io {
+  write_all_with(
+    bytes,
+    fn(remaining) {
+      write_once(fd, remaining)
+    }
+  )
+}
+
+pub fn try_println(value : String) -> Result[Unit, IoError] ! Io {
+  write_all(1i32, bytes_concat(string_to_bytes(value), string_to_bytes("\n")))
 }
 
 let abort : () -> Void ! Panic = builtin("%abort")
 
+// Convenience output terminates on failure. Use try_println to recover it.
+pub fn println(value : String) -> Unit ! { Io, Panic } {
+  match try_println(value) {
+    ok(_) => ()
+    err(_) => absurd(abort())
+  }
+}
+
 pub fn panic(value : String) -> Void ! { Io, Panic } {
-  write(2i32, string_to_bytes(value))
+  let _output = write_all(2i32, string_to_bytes(value))
   proc_exit(1i32)
   abort()
 }

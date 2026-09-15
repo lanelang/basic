@@ -1,0 +1,37 @@
+module Test.System.FileSystemHost
+
+import Basic.Prelude.*
+import Basic.Eff.Exn.{ to_result }
+import Basic.System.FileSystem.{ run_file_system, ensure_directory_exists }
+import Basic.Io.{ println, panic }
+
+pub fn main() -> Unit ! { Io, Panic } {
+  let invalid = to_result[Unit, { Io, Panic }](
+    fn() {
+      run_file_system[Unit, {}](
+        fn() {
+          ensure_directory_exists("existing-file")
+        }
+      )()
+    }
+  )
+  match invalid {
+    err(_) => ()
+    _ => absurd(panic("accepted a regular file as a directory"))
+  }
+  let created = to_result[Unit, { Io, Panic }](
+    fn() {
+      run_file_system[Unit, {}](
+        fn() {
+          ensure_directory_exists("created-directory")
+          ensure_directory_exists("created-directory")
+        }
+      )()
+    }
+  )
+  match created {
+    ok(_) => ()
+    _ => absurd(panic("unable to create or reuse directory"))
+  }
+  println("filesystem host checks passed")
+}

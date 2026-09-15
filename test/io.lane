@@ -1,0 +1,86 @@
+module Test.Io
+
+import Basic.Prelude.*
+import Basic.Builtins.{ string_to_bytes, bytes_to_string }
+import Basic.Io.{ IoError, write_all_with }
+import Basic.Eff.Write.{ Write, run_write }
+import Basic.Data.List.{ list_impl_monoid }
+import Test.Assert.{ Assert, assert_true }
+
+pub fn test_io() -> Unit ! { Assert, Panic } {
+  offer source_info : String = "complete output"
+  let observed =
+    run_write[Result[Unit, IoError], List[String], {}](
+      fn() {
+        write_all_with[Write[List[String]]](
+          string_to_bytes("abc"),
+          fn(bytes) {
+            write!([bytes_to_string(bytes)])
+            Result[I64, IoError]::ok(1)
+          }
+        )
+      },
+      monoid_impl=list_impl_monoid()
+    )()
+  assert_true(
+    match observed.result {
+      ok(_) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match observed.log {
+      cons("abc", cons("bc", cons("c", empty()))) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match
+      write_all_with[{}](
+        string_to_bytes("a"),
+        fn(_bytes) {
+          Result[I64, IoError]::ok(0)
+        }
+      ) {
+      err(IoError::no_progress()) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match
+      write_all_with[{}](
+        string_to_bytes("a"),
+        fn(_bytes) {
+          Result[I64, IoError]::ok(2)
+        }
+      ) {
+      err(IoError::invalid_count()) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match
+      write_all_with[{}](
+        string_to_bytes("a"),
+        fn(_bytes) {
+          Result[I64, IoError]::err(IoError::system(8i32))
+        }
+      ) {
+      err(IoError::system(8i32)) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match
+      write_all_with[Assert](
+        string_to_bytes(""),
+        fn(_bytes) {
+          assert_true(false)
+          Result[I64, IoError]::ok(0)
+        }
+      ) {
+      ok(_) => true
+      _ => false
+    }
+  )
+}
