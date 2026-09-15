@@ -7,7 +7,7 @@ The independent sibling checkout is not overwritten.
 ## Milestones
 
 - [x] Effectful short-circuit operators and exception conversion preserving residual effects.
-- [ ] Nominal Debug identity, quoted/escaped rendering, and structural empty-payload handling.
+- [x] Nominal Debug identity, quoted/escaped rendering, and structural empty-payload handling.
 - [ ] Reliable output and directory creation with truthful failure reporting.
 - [ ] Defined numeric conversions and arithmetic failure contracts.
 - [ ] Independent Reader, State and Writer semantics, with immediate runner functions.
@@ -35,3 +35,11 @@ Basic checkout's existing changes.
 residual effects; `to_result` also retains the exception value. The Basic suite
 passes 19 test groups, including effectful and skipped Boolean operands and
 exception conversion with an independent assertion effect.
+
+### Debug identity and rendering
+
+Debug is a nominal dictionary producing structural Documents. Primitive
+formatters use `from_formatter`; String and Char render escaped delimiters.
+The derivation terminator is `Document.empty`, distinct from `text("")`.
+Regression tests cover ordinary conversion coexistence, empty enum payloads,
+escaping and custom empty renderers. All 19 Basic test groups pass.

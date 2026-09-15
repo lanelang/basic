@@ -1,6 +1,11 @@
 module Basic.Conv.Char
 
 import Basic.Data.Char.{ to_string as char_to_string }
-import Basic.Trait.Debug.{ Debug }
+import Basic.Data.String.{ quote }
+import Basic.Trait.Debug.{ Debug, from_formatter }
 
-pub offer char_impl_debug : Debug[Char] = char_to_string
+pub offer char_impl_debug : Debug[Char] = from_formatter(
+  fn(value) {
+    quote(char_to_string(value), '\'')
+  }
+)

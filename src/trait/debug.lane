@@ -1,9 +1,36 @@
 module Basic.Trait.Debug
 
-import Basic.Trait.Iso.{ Into }
+import Basic.Builtins.{ bytes_concat, bytes_to_string, string_to_bytes }
 
-pub type Debug[T] = Into[T, String]
+// Empty is a structural terminator, distinct from a value rendering as "".
+pub enum Document {
+  empty()
+  text(String)
+  append(Document, Document)
+}
 
-pub fn[T] debug(t : T, auto debug_impl : Debug[T]) -> String {
-  debug_impl(t)
+pub struct Debug[T] {
+  format : (T) -> Document
+}
+
+pub fn render(document : Document) -> String {
+  match document {
+    empty() => ""
+    text(value) => value
+    append(left, right) => bytes_to_string(
+      bytes_concat(string_to_bytes(render(left)), string_to_bytes(render(right)))
+    )
+  }
+}
+
+pub fn[T] from_formatter(format : (T) -> String) -> Debug[T] {
+  Debug::{
+    format: fn(value) {
+      Document::text(format(value))
+    }
+  }
+}
+
+pub fn[T] debug(value : T, auto debug_impl : Debug[T]) -> String {
+  render(debug_impl.format(value))
 }

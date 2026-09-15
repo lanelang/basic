@@ -1,5 +1,6 @@
 module Basic.Data.String
 
+import Basic.Builtins
 import Basic.Ops.{ op_add, op_sub, op_mul, op_equal, op_less }
 import Basic.Builtins.{
   byte_to_i64,
@@ -21,7 +22,7 @@ import Basic.Data.Char
 import Basic.Data.Option.{ Option }
 import Basic.Eff.Bound.{ OutOfBound }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Trait.Debug.{ Debug }
+import Basic.Trait.Debug.{ Debug, from_formatter }
 import Basic.Trait.Compare.{ Compare }
 import Basic.Trait.Monoid.{ Monoid, Semigroup }
 
@@ -232,6 +233,48 @@ pub fn decode_utf8(bytes : Bytes) -> Option[String] {
   }
 }
 
-pub offer string_impl_debug : Debug[String] = fn(x) {
-  x
+// Quote a scalar sequence without changing its Unicode contents.
+pub fn quote(value : String, delimiter : Char) -> String {
+  let body = foldl(
+    value,
+    "",
+    fn(result, scalar) {
+      let code = char_to_i32(scalar)
+      let escaped = if code == 10i32 {
+        "\\n"
+      } else if code == 13i32 {
+        "\\r"
+      } else if code == 9i32 {
+        "\\t"
+      } else if code == 0i32 {
+        "\\0"
+      } else if code == 92i32 {
+        "\\\\"
+      } else if code == char_to_i32(delimiter) {
+        concat("\\", from_char(scalar))
+      } else if code < 32i32 {
+        concat("\\u{", concat(hex_scalar(code), "}"))
+      } else if code == 127i32 {
+        "\\u{7f}"
+      } else {
+        from_char(scalar)
+      }
+      concat(result, escaped)
+    }
+  )
+  concat(from_char(delimiter), concat(body, from_char(delimiter)))
 }
+
+fn hex_scalar(code : I32) -> String {
+  let value = Basic.Builtins.i32_to_i64(code)
+  let high = Basic.Builtins.i64_div(value, 16)
+  let low = Basic.Builtins.i64_rem(value, 16)
+  let digits = string_to_bytes("0123456789abcdef")
+  bytes_to_string(bytes_concat(bytes_slice(digits, high, 1), bytes_slice(digits, low, 1)))
+}
+
+pub offer string_impl_debug : Debug[String] = from_formatter(
+  fn(value) {
+    quote(value, '"')
+  }
+)

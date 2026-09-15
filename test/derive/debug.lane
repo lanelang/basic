@@ -8,6 +8,9 @@ import Basic.Conv.I64.{ i64_to_i32, i64_impl_debug }
 import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.String.{ string_impl_equal, string_impl_debug }
 import Test.Assert.{ Assert, assert_equal }
+import Basic.Trait.Iso.{ Into }
+import Basic.Trait.Debug.{ from_formatter }
+import Basic.Conv.Char.{ char_impl_debug }
 
 fn test_debug_unit() -> Unit ! Assert {
   offer source_info : String = "test_debug_unit"
@@ -33,7 +36,46 @@ fn test_debug_derive_struct() -> Unit ! Assert {
 }
 
 pub fn test_debug() -> Unit ! Assert {
+  test_debug_contract()
   test_debug_unit()
   test_debug_i32()
   test_debug_derive_struct()
+}
+
+// Ordinary conversions must not participate in Debug resolution.
+
+enum Message {
+  text(String)
+  empty()
+}
+
+offer message_impl_debug : Debug[Message] = derive[Debug, Message]()
+
+struct EmptyDisplay {}
+
+offer empty_display_debug : Debug[EmptyDisplay] = from_formatter(
+  fn(_value) {
+    ""
+  }
+)
+
+enum Pair {
+  both(EmptyDisplay, EmptyDisplay)
+}
+
+offer pair_impl_debug : Debug[Pair] = derive[Debug, Pair]()
+
+fn test_debug_contract() -> Unit ! Assert {
+  offer source_info : String = "debug contract"
+  offer ordinary_conversion : Into[I64, String] = fn(_value) {
+    "encoded"
+  }
+  assert_equal(ordinary_conversion(7), "encoded")
+  assert_equal(debug(7), "7")
+  assert_equal(debug(""), "\"\"")
+  assert_equal(debug("a\n\t\"\\"), "\"a\\n\\t\\\"\\\\\"")
+  assert_equal(debug('\n'), "'\\n'")
+  assert_equal(debug(Message::text("")), "Message::text(\"\")")
+  assert_equal(debug(Message::empty()), "Message::empty()")
+  assert_equal(debug(Pair::both(EmptyDisplay::{}, EmptyDisplay::{})), "Pair::both(, )")
 }

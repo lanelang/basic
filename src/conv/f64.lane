@@ -1,6 +1,6 @@
 module Basic.Conv.F64
 
 import Basic.Builtins.{ f64_to_string }
-import Basic.Trait.Debug.{ Debug }
+import Basic.Trait.Debug.{ Debug, from_formatter }
 
-pub offer f64_impl_debug : Debug[F64] = f64_to_string
+pub offer f64_impl_debug : Debug[F64] = from_formatter(f64_to_string)

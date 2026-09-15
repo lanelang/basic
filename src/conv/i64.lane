@@ -8,7 +8,7 @@ import Basic.Data.I64.{
   i64_impl_compare,
   i64_impl_rem
 }
-import Basic.Trait.Debug.{ Debug }
+import Basic.Trait.Debug.{ Debug, from_formatter }
 import Basic.Data.String.{ concat }
 import Basic.Trait.Iso.{ Into }
 import Basic.Builtins
@@ -42,4 +42,4 @@ fn i64_debug_string(value : I64) -> String {
   }
 }
 
-pub offer i64_impl_debug : Debug[I64] = i64_debug_string
+pub offer i64_impl_debug : Debug[I64] = from_formatter(i64_debug_string)

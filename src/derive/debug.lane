@@ -1,12 +1,11 @@
 module Basic.Derive.Debug
 
-import Basic.Data.String.{ concat, is_empty }
+import Basic.Trait.Debug.{ Debug, Document }
 import Basic.Data.Void.{ Void, absurd }
-import Basic.Trait.Debug.{ Debug }
 import Basic.Trait.Derive.{ Product, Sum, Deriver, Recursive, FieldInfo, VariantInfo, TypeInfo }
 import Basic.Trait.Iso.{ Iso }
 
-pub offer derive_debug : Deriver[Debug] = Deriver[Debug]::{
+pub offer derive_debug : Deriver[Debug] = Deriver::{
   unit: show_unit,
   product: show_product,
   void: show_void,
@@ -17,80 +16,102 @@ pub offer derive_debug : Deriver[Debug] = Deriver[Debug]::{
   enumeration: show_enumeration
 }
 
-// The empty product terminates a field or payload sequence and renders nothing.
-// `show_product` relies on that: it is the only capability in this deriver that
-// produces an empty rendering, because `show_field` and `show_variant` always
-// emit at least a name.
 fn show_unit() -> Debug[Unit] {
-  fn(_u) {
-    ""
+  Debug::{
+    format: fn(_u) {
+      Document::empty()
+    }
   }
 }
 
 fn show_void() -> Debug[Void] {
-  fn(v) {
-    absurd(v)
-  }
-}
-
-// Separate two renderings with ", ", except when the tail is the empty product,
-// which would otherwise leave a trailing separator.
-fn[A, B] show_product(show_a : Debug[A], show_b : Debug[B]) -> Debug[Product[A, B]] {
-  fn(p) {
-    let head = show_a(p.head)
-    let tail = show_b(p.tail)
-    if is_empty(tail) {
-      head
-    } else {
-      head |> concat(", ") |> concat(tail)
+  Debug::{
+    format: fn(value) {
+      absurd(value)
     }
   }
 }
 
-fn[A, B] show_sum(show_a : Debug[A], show_b : Debug[B]) -> Debug[Sum[A, B]] {
-  fn(s) {
-    match s {
-      here(a) => show_a(a)
-      there(b) => show_b(b)
+fn[A, B] show_product(a : Debug[A], b : Debug[B]) -> Debug[Product[A, B]] {
+  Debug::{
+    format: fn(value) {
+      let head = a.format(value.head)
+      let tail = b.format(value.tail)
+      match tail {
+        empty() => head
+        _ => Document::append(head, Document::append(Document::text(", "), tail))
+      }
     }
   }
 }
 
-fn[A] show_field(info : FieldInfo, show_a : Debug[A]) -> Debug[A] {
-  fn(a) {
-    info.name |> concat(": ") |> concat(show_a(a))
-  }
-}
-
-// A variant with no payload renders as its bare name, since its payload is the
-// empty product.
-fn[A] show_variant(info : VariantInfo, show_a : Debug[A]) -> Debug[A] {
-  fn(a) {
-    let payload = show_a(a)
-    if is_empty(payload) {
-      info.name
-    } else {
-      info.name |> concat("(") |> concat(payload) |> concat(")")
+fn[A, B] show_sum(a : Debug[A], b : Debug[B]) -> Debug[Sum[A, B]] {
+  Debug::{
+    format: fn(value) {
+      match value {
+        here(x) => a.format(x)
+        there(x) => b.format(x)
+      }
     }
   }
 }
 
-fn[T, R] show_record(info : TypeInfo, iso : Iso[T, R], show_r : Debug[R]) -> Debug[T] {
-  fn(t) {
-    info.name |> concat("::{ ") |> concat(show_r(iso.to(t))) |> concat(" }")
+fn[A] show_field(info : FieldInfo, a : Debug[A]) -> Debug[A] {
+  Debug::{
+    format: fn(value) {
+      Document::append(
+        Document::text(info.name),
+        Document::append(Document::text(": "), a.format(value))
+      )
+    }
   }
 }
 
-fn[T, R] show_enumeration(info : TypeInfo, iso : Iso[T, R], show_r : Debug[R]) -> Debug[T] {
-  fn(t) {
-    info.name |> concat("::") |> concat(show_r(iso.to(t)))
+fn[A] show_variant(info : VariantInfo, a : Debug[A]) -> Debug[A] {
+  Debug::{
+    format: fn(value) {
+      Document::append(
+        Document::text(info.name),
+        Document::append(
+          Document::text("("),
+          Document::append(a.format(value), Document::text(")"))
+        )
+      )
+    }
+  }
+}
+
+fn[T, R] show_record(info : TypeInfo, iso : Iso[T, R], representation : Debug[R]) -> Debug[T] {
+  Debug::{
+    format: fn(value) {
+      Document::append(
+        Document::text(info.name),
+        Document::append(
+          Document::text("::{ "),
+          Document::append(representation.format(iso.to(value)), Document::text(" }"))
+        )
+      )
+    }
+  }
+}
+
+fn[T, R] show_enumeration(info : TypeInfo, iso : Iso[T, R], representation : Debug[R]) -> Debug[T] {
+  Debug::{
+    format: fn(value) {
+      Document::append(
+        Document::text(info.name),
+        Document::append(Document::text("::"), representation.format(iso.to(value)))
+      )
+    }
   }
 }
 
 pub let recursive_debug : Recursive[Debug] = Recursive::{
   defer: fn[T](get_debug) {
-    fn(t : T) {
-      get_debug()(t)
+    Debug::{
+      format: fn(value) {
+        get_debug().format(value)
+      }
     }
   }
 }
