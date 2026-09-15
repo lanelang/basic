@@ -1,12 +1,14 @@
 module Test.System.Process
 
+import Basic.Data.Result.{ Result }
+import Basic.System.Process.{ ProcessError, ProcessFailure }
 import Basic.Builtins.{ bytes_to_string, string_to_bytes }
 import Basic.Data.Option.{ Option }
 import Basic.Data.String.{ string_impl_debug, string_impl_equal }
 import Basic.System.Process.{
   Command,
   CommandOutput,
-  CommandResult,
+  ExitStatus,
   Process,
   run_command,
   run_process_with
@@ -14,8 +16,9 @@ import Basic.System.Process.{
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_process() -> Unit ! { Assert, Panic } {
+  test_execution_failure()
   offer source_info : String = "test_process"
-  let action : () -> CommandOutput ! Process = fn() {
+  let action : () -> Result[CommandOutput, ProcessError] ! Process = fn() {
     run_command(
       Command::{
         executable: "lane",
@@ -32,18 +35,81 @@ pub fn test_process() -> Unit ! { Assert, Panic } {
     fn(command) {
       assert_equal(command.executable, "lane")
       assert_equal(bytes_to_string(command.stdin), "")
-      CommandOutput::{
-        result: exited(0i32),
-        stdout: string_to_bytes("inspection"),
-        stderr: string_to_bytes("")
+      Result[CommandOutput, ProcessError]::ok(
+        CommandOutput::{
+          status: exited(0i32),
+          stdout: string_to_bytes("inspection"),
+          stderr: string_to_bytes("")
+        }
+      )
+    }
+  )
+  match output {
+    ok(output) => {
+      assert_true(
+        match output.status {
+          exited(0i32) => true
+          _ => false
+        }
+      )
+      assert_equal(bytes_to_string(output.stdout), "inspection")
+    }
+    err(_) => assert_true(false)
+  }
+}
+
+fn test_execution_failure() -> Unit ! { Assert, Panic } {
+  offer source_info : String = "process failure vs exit status"
+  let action : () -> Result[CommandOutput, ProcessError] ! Process = fn() {
+    run_command(
+      Command::{
+        executable: "missing",
+        arguments: [],
+        working_directory: none(),
+        environment: [],
+        inherit_environment: true,
+        stdin: string_to_bytes("")
       }
+    )
+  }
+  let failed = run_process_with(
+    action,
+    fn(command) {
+      Result[CommandOutput, ProcessError]::err(
+        ProcessError::{ executable: command.executable, reason: executable_not_found() }
+      )
     }
   )
   assert_true(
-    match output.result {
-      exited(0i32) => true
+    match failed {
+      err(error) =>
+        match error.reason {
+          executable_not_found() => true
+          _ => false
+        }
       _ => false
     }
   )
-  assert_equal(bytes_to_string(output.stdout), "inspection")
+  let exited = run_process_with(
+    action,
+    fn(_command) {
+      Result[CommandOutput, ProcessError]::ok(
+        CommandOutput::{
+          status: ExitStatus::exited(7i32),
+          stdout: string_to_bytes(""),
+          stderr: string_to_bytes("failed")
+        }
+      )
+    }
+  )
+  assert_true(
+    match exited {
+      ok(output) =>
+        match output.status {
+          ExitStatus::exited(7i32) => true
+          _ => false
+        }
+      _ => false
+    }
+  )
 }

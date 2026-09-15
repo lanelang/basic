@@ -11,7 +11,7 @@ The independent sibling checkout is not overwritten.
 - [x] Reliable output and directory creation with truthful failure reporting.
 - [x] Defined numeric conversions and arithmetic failure contracts.
 - [x] Independent Reader, State and Writer semantics, with immediate runner functions.
-- [ ] Structured process and filesystem errors with explicit host adapters.
+- [x] Structured process and filesystem errors with explicit host adapters.
 - [x] Coherent Option and Result operations and capability providers.
 - [x] Explicit partial and total comparison contracts.
 - [x] AList replacement semantics and separately named shadowing bindings.
@@ -101,3 +101,12 @@ with Panic for invalid integer inputs. Floating divide remains available as a
 pure named operation (generic / conservatively carries Panic). Float-to-I64,
 Byte and I32 narrowing are checked; intentional truncation uses wrapping_from_i64.
 Wrapping negation includes the minimum integer. Boundary and nonfinite tests pass.
+
+### Host errors
+
+Process execution returns Result: launch/protocol failure is separate from
+ExitStatus, including nonzero exits. Output stays binary. Filesystem errors
+retain operation, path and WASIp1 code. Adapters preserve these types. Build
+validates UTF-8 before treating process output as text. Mock regressions and
+real regular-file, directory, nonzero-exit, binary-output and missing-executable
+checks all pass. Host protocol status is not mislabeled as native errno.

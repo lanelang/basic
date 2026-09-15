@@ -1,0 +1,51 @@
+module Test.System.ProcessHost
+
+import Basic.Prelude.*
+import Basic.Builtins.{ string_to_bytes, bytes_is_valid_utf8 }
+import Basic.System.Process.{ Command, CommandOutput, ProcessError, run_command, run_process }
+import Basic.Io.{ println, panic }
+
+fn execute(
+  executable : String,
+  arguments : List[String]
+) -> Result[CommandOutput, ProcessError] ! { Io, Panic } {
+  run_process[Result[CommandOutput, ProcessError], {}](
+    fn() {
+      run_command(
+        Command::{
+          executable,
+          arguments,
+          working_directory: none(),
+          environment: [],
+          inherit_environment: true,
+          stdin: string_to_bytes("")
+        }
+      )
+    }
+  )
+}
+
+pub fn main() -> Unit ! { Io, Panic } {
+  match execute("sh", ["-c", "printf '\\377'; exit 7"]) {
+    ok(output) =>
+      match output.status {
+        exited(7i32) =>
+          if bytes_is_valid_utf8(output.stdout) {
+            absurd(panic("captured binary output changed"))
+          } else {
+            ()
+          }
+        _ => absurd(panic("nonzero process exit lost"))
+      }
+    err(_) => absurd(panic("nonzero exit treated as launch failure"))
+  }
+  match execute("lane-basic-missing-executable-9374601", []) {
+    err(error) =>
+      match error.reason {
+        executable_not_found() => ()
+        _ => absurd(panic("missing executable error lost"))
+      }
+    ok(_) => absurd(panic("missing executable accepted"))
+  }
+  println("process host checks passed")
+}

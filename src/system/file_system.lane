@@ -13,7 +13,8 @@ import Basic.Builtins.{
 }
 import Basic.Conv.I32.{ i32_impl_debug }
 import Basic.Data.String.{ concat }
-import Basic.Eff.Exn.{ Exception, throw_system }
+import Basic.Data.Result.{ Result }
+import Basic.Builtins.{ i64_less }
 import Basic.Platform.Wasip1.{
   fd_prestat_dir_name,
   fd_prestat_get,
@@ -23,18 +24,31 @@ import Basic.Platform.Wasip1.{
 import Basic.Trait.Debug.{ debug }
 import Basic.Wasm.Abi.{ address, allocate, read_i32, to_bytes, write_bytes }
 
+pub enum FileSystemOperation {
+  discover_preopen()
+  create_directory()
+  inspect_directory()
+}
+
+pub struct FileSystemError {
+  operation : FileSystemOperation
+  path : String
+  // WASIp1 errno, not a native host errno.
+  code : I32
+}
+
 pub effect FileSystem {
-  ensure_directory(String) -> Unit
+  ensure_directory(String) -> Result[Unit, FileSystemError]
 }
 
 // Create one directory; its parent must already exist. Existing files fail.
-pub fn ensure_directory_exists(path : String) -> Unit ! FileSystem {
+pub fn ensure_directory_exists(path : String) -> Result[Unit, FileSystemError] ! FileSystem {
   ensure_directory!(path)
 }
 
 pub fn[T, E : Effect, AdapterEffect : Effect] run_file_system_with(
   action : () -> T ! { E, FileSystem },
-  adapter : (String) -> Unit ! AdapterEffect
+  adapter : (String) -> Result[Unit, FileSystemError] ! AdapterEffect
 ) -> T ! { E, AdapterEffect, Panic } {
   handle action() with {
     ensure_directory(path, resume) => resume(adapter(path))
@@ -43,75 +57,74 @@ pub fn[T, E : Effect, AdapterEffect : Effect] run_file_system_with(
   }
 }
 
-pub fn[T, E : Effect] run_file_system(
-  action : () -> T ! { E, FileSystem }
-) -> T ! { E, Io, Exception, Panic } {
-  run_file_system_with[T, E, { Io, Exception }](action, ensure_directory_on_host)
+pub fn[T, E : Effect] run_file_system(action : () -> T ! { E, FileSystem }) -> T ! { E, Io, Panic } {
+  run_file_system_with[T, E, { Io }](action, ensure_directory_on_host)
 }
 
-fn ensure_directory_on_host(path : String) -> Unit ! { Io, Exception } {
-  let directory = working_directory_preopen(3i32)
-  let bytes = string_to_bytes(path)
-  let length = bytes_length(bytes)
-  let storage = allocate(length)
-  write_bytes(storage, 0, bytes)
-  let errno = path_create_directory(directory, address(storage, 0i32), i64_to_i32(length))
-  match errno {
-    0i32 => ()
-    20i32 => {
-      let stat = allocate(64)
-      match
-        path_filestat_get(
-          directory,
-          1i32,
-          address(storage, 0i32),
-          i64_to_i32(length),
-          address(stat, 0i32)
-        ) {
-        0i32 =>
-          if i64_equal(byte_to_i64(bytes_get(to_bytes(stat), 16)), 3) {
-            ()
-          } else {
-            throw_system[Unit](concat("path is not a directory: ", path), 54i32)
+fn ensure_directory_on_host(path : String) -> Result[Unit, FileSystemError] ! Io {
+  match working_directory_preopen(3i32, path) {
+    err(error) => err(error)
+    ok(directory) => {
+      let bytes = string_to_bytes(path)
+      let length = bytes_length(bytes)
+      if i64_less(2147483647, length) {
+        err(FileSystemError::{ operation: create_directory(), path, code: 28i32 })
+      } else {
+        let storage = allocate(length)
+        write_bytes(storage, 0, bytes)
+        match path_create_directory(directory, address(storage, 0i32), i64_to_i32(length)) {
+          0i32 => ok(())
+          20i32 => {
+            let stat = allocate(64)
+            match
+              path_filestat_get(
+                directory,
+                1i32,
+                address(storage, 0i32),
+                i64_to_i32(length),
+                address(stat, 0i32)
+              ) {
+              0i32 =>
+                if i64_equal(byte_to_i64(bytes_get(to_bytes(stat), 16)), 3) {
+                  ok(())
+                } else {
+                  err(FileSystemError::{ operation: inspect_directory(), path, code: 54i32 })
+                }
+              code => err(FileSystemError::{ operation: inspect_directory(), path, code })
+            }
           }
-        error => throw_system[Unit](concat("unable to inspect directory: ", path), error)
+          code => err(FileSystemError::{ operation: create_directory(), path, code })
+        }
       }
     }
-    errno => throw_system[Unit](
-      concat(
-        concat(concat("unable to create directory `", path), "`: platform error "),
-        debug(errno)
-      ),
-      errno
-    )
   }
 }
 
-fn working_directory_preopen(descriptor : I32) -> I32 ! { Io, Exception } {
+fn working_directory_preopen(descriptor : I32, path : String) -> Result[I32, FileSystemError] ! Io {
   let prestat = allocate(8)
-  let errno = fd_prestat_get(descriptor, address(prestat, 0i32))
-  match errno {
+  match fd_prestat_get(descriptor, address(prestat, 0i32)) {
     0i32 => {
       let name_length = read_i32(prestat, 4)
       let name = allocate(i32_to_i64(name_length))
-      let name_errno = fd_prestat_dir_name(descriptor, address(name, 0i32), name_length)
-      match name_errno {
+      match fd_prestat_dir_name(descriptor, address(name, 0i32), name_length) {
         0i32 =>
           if bytes_equal(to_bytes(name), string_to_bytes(".")) {
-            descriptor
+            ok(descriptor)
           } else {
-            working_directory_preopen(i32_add(descriptor, 1i32))
+            working_directory_preopen(i32_add(descriptor, 1i32), path)
           }
-        errno => throw_system[I32](
-          concat("unable to read a WASIp1 preopen: platform error ", debug(errno)),
-          errno
-        )
+        code => err(FileSystemError::{ operation: discover_preopen(), path, code })
       }
     }
-    8i32 => throw_system[I32]("the current directory is not available through WASIp1", errno)
-    errno => throw_system[I32](
-      concat("unable to inspect WASIp1 preopens: platform error ", debug(errno)),
-      errno
-    )
+    code => err(FileSystemError::{ operation: discover_preopen(), path, code })
   }
+}
+
+pub fn error_message(error : FileSystemError) -> String {
+  let operation = match error.operation {
+    discover_preopen() => "find current-directory preopen"
+    create_directory() => "create directory"
+    inspect_directory() => "inspect directory"
+  }
+  concat(concat(concat(concat(operation, " "), error.path), ": WASIp1 errno "), debug(error.code))
 }

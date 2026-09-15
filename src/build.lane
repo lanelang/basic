@@ -1,20 +1,27 @@
 module Basic.Build
 
 import Basic.Build.Inspection.{ SourceInspection, decode as decode_inspection }
-import Basic.Builtins.{ bytes_length, bytes_to_string, bytes_equal, string_to_bytes }
+import Basic.Builtins.{ bytes_length, bytes_equal, string_to_bytes }
 import Basic.Data.I64.{ i64_impl_compare }
 import Basic.Data.List.{ List, append as append_list }
+import Basic.Data.Result.{ Result }
 import Basic.Data.Option.{ Option }
-import Basic.Data.String.{ concat }
+import Basic.Data.String.{ concat, decode_utf8 }
 import Basic.Eff.Exn.{ Exception, throw }
 import Basic.System.Process.{
   Command,
   CommandOutput,
-  CommandResult,
+  ExitStatus,
+  ProcessError,
+  error_message as process_error_message,
   Process,
   run_command as execute_command
 }
-import Basic.System.FileSystem.{ FileSystem, ensure_directory_exists }
+import Basic.System.FileSystem.{
+  FileSystem,
+  ensure_directory_exists,
+  error_message as file_system_error_message
+}
 import Basic.Ops.{ op_greater }
 
 pub struct Export {
@@ -61,12 +68,19 @@ fn contains_string(values : List[String], value : String) -> Bool {
   }
 }
 
+fn diagnostic_text(bytes : Bytes) -> String {
+  match decode_utf8(bytes) {
+    some(text) => text
+    none() => "Lane command emitted non-UTF-8 output"
+  }
+}
+
 fn command_failure(output : CommandOutput) -> String {
-  let stderr = bytes_to_string(output.stderr)
+  let stderr = diagnostic_text(output.stderr)
   if bytes_length(output.stderr) > 0 {
     stderr
   } else if bytes_length(output.stdout) > 0 {
-    bytes_to_string(output.stdout)
+    diagnostic_text(output.stdout)
   } else {
     "Lane command failed"
   }
@@ -81,8 +95,11 @@ fn run_lane(arguments : List[String]) -> CommandOutput ! { Process, Exception } 
     inherit_environment: true,
     stdin: string_to_bytes("")
   }
-  let output = execute_command(command)
-  match output.result {
+  let output = match execute_command(command) {
+    ok(output) => output
+    err(error) => fail[CommandOutput](process_error_message(error))
+  }
+  match output.status {
     exited(0i32) => output
     _ => fail[CommandOutput](command_failure(output))
   }
@@ -90,7 +107,7 @@ fn run_lane(arguments : List[String]) -> CommandOutput ! { Process, Exception } 
 
 fn inspect_source(path : String) -> SourceModule ! { Process, Exception } {
   let output = run_lane(["inspect", path])
-  match decode_inspection(bytes_to_string(output.stdout)) {
+  match decode_inspection(diagnostic_text(output.stdout)) {
     none() => fail[SourceModule](
       concat(concat("lane inspect returned an invalid source inspection for `", path), "`")
     )
@@ -239,7 +256,10 @@ fn export_arguments(exports : List[Export]) -> List[String] {
 }
 
 pub fn build(project : Project) -> Unit ! { Process, FileSystem, Exception } {
-  ensure_directory_exists(project.artifact_directory)
+  match ensure_directory_exists(project.artifact_directory) {
+    ok(_) => ()
+    err(error) => fail[Unit](file_system_error_message(error))
+  }
   let sources = inspect_sources(project.sources)
   ensure_unique_modules(sources, [])
   let state = compile_sources(
