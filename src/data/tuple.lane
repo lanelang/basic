@@ -1,15 +1,23 @@
 module Basic.Data.Tuple
 
 import Basic.Trait.Equal.{ Equal }
-import Basic.Derive.Equal.{ derive_equal }
-import Basic.Derive.*
 
 pub enum Tuple[A, B] {
   tuple(A, B)
 }
 
-pub offer fn[A, B] tuple_impl_equal(offer a : Equal[A], offer b : Equal[B]) -> Equal[Tuple[A, B]] {
-  derive[Equal, Tuple[A, B]]()
+pub offer fn[A, B] tuple_impl_equal(auto a : Equal[A], auto b : Equal[B]) -> Equal[Tuple[A, B]] {
+  Equal::{
+    equal: fn(left, right) {
+      let tuple(lx, ly) = left
+      let tuple(rx, ry) = right
+      if a.equal(lx, rx) {
+        b.equal(ly, ry)
+      } else {
+        false
+      }
+    }
+  }
 }
 
 pub fn[A, B] fst(tp : (A, B)) -> A {

@@ -2,7 +2,7 @@ module Test.Derive.Debug
 
 import Basic.Derive.Debug.*
 import Basic.Derive.*
-import Basic.Trait.Debug.{ Debug, debug }
+import Basic.Trait.Debug.{ Debug, Document, render, debug }
 import Basic.Conv.Unit.{ unit_impl_debug }
 import Basic.Conv.I64.{ i64_to_i32, i64_impl_debug }
 import Basic.Conv.I32.{ i32_impl_debug }
@@ -10,6 +10,9 @@ import Basic.Data.String.{ string_impl_equal, string_impl_debug }
 import Test.Assert.{ Assert, assert_equal }
 import Basic.Trait.Iso.{ Into }
 import Basic.Trait.Debug.{ from_formatter }
+import Basic.Builtins
+import Basic.Data.I64.{ i64_impl_equal }
+import Basic.Data.String
 import Basic.Conv.Char.{ char_impl_debug }
 
 fn test_debug_unit() -> Unit ! Assert {
@@ -37,6 +40,7 @@ fn test_debug_derive_struct() -> Unit ! Assert {
 
 pub fn test_debug() -> Unit ! Assert {
   test_debug_contract()
+  test_document_depth()
   test_debug_unit()
   test_debug_i32()
   test_debug_derive_struct()
@@ -78,4 +82,28 @@ fn test_debug_contract() -> Unit ! Assert {
   assert_equal(debug(Message::text("")), "Message::text(\"\")")
   assert_equal(debug(Message::empty()), "Message::empty()")
   assert_equal(debug(Pair::both(EmptyDisplay::{}, EmptyDisplay::{})), "Pair::both(, )")
+}
+
+fn deep_document(n : I64, document : Document) -> Document {
+  if Basic.Builtins.i64_equal(n, 0) {
+    document
+  } else {
+    deep_document(Basic.Builtins.i64_sub(n, 1), Document::append(document, Document::text("x")))
+  }
+}
+
+fn test_document_depth() -> Unit ! Assert {
+  offer source_info : String = "balanced document rendering"
+  assert_equal(
+    render(
+      Document::append(
+        Document::text("a"),
+        Document::append(Document::empty(), Document::text("b"))
+      )
+    ),
+    "ab"
+  )
+  let rendered = render(deep_document(10000, Document::empty()))
+  assert_equal(Basic.Data.String.byte_length(rendered), 10000)
+  assert_equal(Basic.Data.String.byte_length(Basic.Data.String.quote(rendered, '"')), 10002)
 }

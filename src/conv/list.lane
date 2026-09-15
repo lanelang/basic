@@ -1,15 +1,26 @@
 module Basic.Conv.List
 
 import Basic.Data.List.{ List }
-import Basic.Trait.Debug.{ Debug }
-import Basic.Derive.Debug.{ derive_debug, recursive_debug }
-import Basic.Derive.*
+import Basic.Trait.Debug.{ Debug, Document }
 
-pub offer fn[T] list_impl_debug(auto offer debug_impl : Debug[T]) -> Debug[List[T]] {
-  offer recursive_list_debug : Debug[List[T]] = recursive_debug.defer(
-    fn() {
-      list_impl_debug()
+fn[T] format_items(values : List[T], formatter : Debug[T], acc : Document, first : Bool) -> Document {
+  match values {
+    empty() => Document::append(acc, Document::text("]"))
+    cons(value, rest) => {
+      let prefix = if first {
+        acc
+      } else {
+        Document::append(acc, Document::text(", "))
+      }
+      format_items(rest, formatter, Document::append(prefix, formatter.format(value)), false)
     }
-  )
-  derive[Debug, List[T]]()
+  }
+}
+
+pub offer fn[T] list_impl_debug(auto debug_impl : Debug[T]) -> Debug[List[T]] {
+  Debug::{
+    format: fn(values) {
+      format_items(values, debug_impl, Document::text("["), true)
+    }
+  }
 }

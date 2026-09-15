@@ -9,8 +9,6 @@ import Basic.Trait.Map.{ Mappable }
 import Basic.Trait.App.{ Applicative }
 import Basic.Trait.Flat.{ FlatMappable }
 import Basic.Trait.Equal.{ Equal }
-import Basic.Derive.Equal.{ derive_equal, recursive_equal }
-import Basic.Derive.*
 import Basic.Ops.{ op_add, op_sub, op_equal, op_less }
 
 pub enum List[T] {
@@ -18,13 +16,25 @@ pub enum List[T] {
   cons(T, List[T])
 }
 
-pub offer fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
-  offer recursive_list_equal : Equal[List[T]] = recursive_equal.defer(
-    fn() {
-      list_impl_equal()
+fn[T] equal_lists(left : List[T], right : List[T], equal : Equal[T]) -> Bool {
+  match (left, right) {
+    (empty(), empty()) => true
+    (cons(a, xs), cons(b, ys)) =>
+      if equal.equal(a, b) {
+        equal_lists(xs, ys, equal)
+      } else {
+        false
+      }
+    _ => false
+  }
+}
+
+pub offer fn[T] list_impl_equal(auto equal : Equal[T]) -> Equal[List[T]] {
+  Equal::{
+    equal: fn(left, right) {
+      equal_lists(left, right, equal)
     }
-  )
-  derive[Equal, List[T]]()
+  }
 }
 
 fn[T] length_from(list : List[T], count : I64) -> I64 {

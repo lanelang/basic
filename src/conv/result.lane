@@ -1,0 +1,24 @@
+module Basic.Conv.Result
+
+import Basic.Data.Result.{ Result }
+import Basic.Trait.Debug.{ Debug, Document }
+
+pub offer fn[T, E] result_impl_debug(
+  auto value_debug : Debug[T],
+  auto error_debug : Debug[E]
+) -> Debug[Result[T, E]] {
+  Debug::{
+    format: fn(value) {
+      match value {
+        ok(value) => Document::append(
+          Document::text("ok("),
+          Document::append(value_debug.format(value), Document::text(")"))
+        )
+        err(error) => Document::append(
+          Document::text("err("),
+          Document::append(error_debug.format(error), Document::text(")"))
+        )
+      }
+    }
+  }
+}

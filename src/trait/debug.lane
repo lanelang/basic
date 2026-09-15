@@ -13,14 +13,59 @@ pub struct Debug[T] {
   format : (T) -> Document
 }
 
-pub fn render(document : Document) -> String {
+enum Pending {
+  done()
+  next(Document, Pending)
+}
+
+enum Fragments {
+  end()
+  fragment(Bytes, Fragments)
+}
+
+fn flatten(document : Document, pending : Pending, fragments : Fragments) -> Fragments {
   match document {
-    empty() => ""
-    text(value) => value
-    append(left, right) => bytes_to_string(
-      bytes_concat(string_to_bytes(render(left)), string_to_bytes(render(right)))
-    )
+    append(left, right) => flatten(left, next(right, pending), fragments)
+    _ => {
+      let fragments = match document {
+        text(value) => fragment(string_to_bytes(value), fragments)
+        _ => fragments
+      }
+      match pending {
+        done() => fragments
+        next(value, rest) => flatten(value, rest, fragments)
+      }
+    }
   }
+}
+
+fn reverse_fragments(values : Fragments, acc : Fragments) -> Fragments {
+  match values {
+    end() => acc
+    fragment(value, rest) => reverse_fragments(rest, fragment(value, acc))
+  }
+}
+
+fn merge_pairs(values : Fragments, acc : Fragments) -> Fragments {
+  match values {
+    end() => reverse_fragments(acc, end())
+    fragment(a, end()) => reverse_fragments(fragment(a, acc), end())
+    fragment(a, fragment(b, rest)) => merge_pairs(rest, fragment(bytes_concat(a, b), acc))
+  }
+}
+
+fn merge_all(values : Fragments) -> String {
+  match values {
+    end() => ""
+    fragment(value, end()) => bytes_to_string(value)
+    _ => merge_all(merge_pairs(values, end()))
+  }
+}
+
+// Balanced merging bounds copying by O(bytes * log(fragments)), even for a
+// deeply skewed document. Traversal uses an explicit stack and tail recursion.
+pub fn render(document : Document) -> String {
+  merge_all(reverse_fragments(flatten(document, done(), end()), end()))
 }
 
 pub fn[T] from_formatter(format : (T) -> String) -> Debug[T] {

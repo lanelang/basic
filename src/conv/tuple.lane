@@ -1,0 +1,19 @@
+module Basic.Conv.Tuple
+
+import Basic.Data.Tuple.{ Tuple }
+import Basic.Trait.Debug.{ Debug, Document }
+
+pub offer fn[A, B] tuple_impl_debug(auto a : Debug[A], auto b : Debug[B]) -> Debug[Tuple[A, B]] {
+  Debug::{
+    format: fn(value) {
+      let tuple(x, y) = value
+      Document::append(
+        Document::text("("),
+        Document::append(
+          a.format(x),
+          Document::append(Document::text(", "), Document::append(b.format(y), Document::text(")")))
+        )
+      )
+    }
+  }
+}

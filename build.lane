@@ -21,6 +21,8 @@ pub fn build() -> Unit ! { Io, Panic } {
             "src/conv/i64.lane",
             "src/conv/list.lane",
             "src/conv/option.lane",
+            "src/conv/tuple.lane",
+            "src/conv/result.lane",
             "src/conv/unit.lane",
             "src/data/alist.lane",
             "src/data/bool.lane",

@@ -1,10 +1,18 @@
 module Basic.Conv.Option
 
 import Basic.Data.Option.{ Option }
-import Basic.Trait.Debug.{ Debug }
-import Basic.Derive.Debug.{ derive_debug }
-import Basic.Derive.*
+import Basic.Trait.Debug.{ Debug, Document }
 
-pub offer fn[T] option_impl_debug(auto offer debug_impl : Debug[T]) -> Debug[Option[T]] {
-  derive[Debug, Option[T]]()
+pub offer fn[T] option_impl_debug(auto debug_impl : Debug[T]) -> Debug[Option[T]] {
+  Debug::{
+    format: fn(value) {
+      match value {
+        none() => Document::text("none()")
+        some(value) => Document::append(
+          Document::text("some("),
+          Document::append(debug_impl.format(value), Document::text(")"))
+        )
+      }
+    }
+  }
 }

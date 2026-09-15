@@ -16,7 +16,7 @@ The independent sibling checkout is not overwritten.
 - [ ] Explicit partial and total comparison contracts.
 - [x] AList replacement semantics and separately named shadowing bindings.
 - [x] Consistent effectful collection operations and predictable construction costs.
-- [ ] Direct capabilities for foundational data types and efficient text construction.
+- [x] Direct capabilities for foundational data types and efficient text construction.
 - [ ] Consistent module naming, public exports and documented compiler ABI seams.
 - [ ] Explicit build configuration, planning and required interface closures.
 - [ ] Boundary, order, composition, large-input and compatibility regression gates.
@@ -78,3 +78,11 @@ filter and find preserve callback effects. Construction, append, zip, folds and
 flat_map use tail-recursive accumulation; reverse and reverse_append make costs
 explicit. get returns Option; elem([], 0) reports the upper bound. Tests cover
 effect order, early exit, 10,000-element maps/folds and 20,000-element append.
+
+### Foundational capabilities and text
+
+List, Option, Result and Tuple equality compares fields directly. Each has a
+direct Debug provider; List renders bracketed elements. Document rendering uses
+tail-recursive traversal and balanced fragment merging, with O(bytes * log
+fragments) copying rather than quadratic prefix copying. String quoting uses
+the same path. Skewed 10,000-fragment documents and quotes pass.
