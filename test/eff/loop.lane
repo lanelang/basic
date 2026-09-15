@@ -1,4 +1,57 @@
 module Test.Eff.Loop
 
-// import Basic.Eff.Loop.*
-// import Test.Assert.{ Assert, assert_equal, assert_true }
+import Basic.Prelude.*
+import Basic.Eff.Loop.{ Loop, loop }
+import Test.Assert.{ Assert, assert_equal, assert_true }
+
+pub fn test_loop() -> Unit ! Assert {
+  offer source_info : String = "loop control and callback effects"
+  let broken = loop[I64, I64, Assert](
+    0,
+    fn(i) {
+      assert_true(i < 4)
+      true
+    },
+    fn(i) {
+      if i < 2 {
+        continue!(i + 1)
+      } else {
+        break!(i)
+      }
+    },
+    fn() {
+      assert_true(false)
+      0
+    }
+  )
+  assert_equal(broken, 2)
+  let completed = loop[I64, I64, Assert](
+    0,
+    fn(i) {
+      assert_true(i < 4)
+      i < 3
+    },
+    fn(i) {
+      assert_true(i < 3)
+      i + 1
+    },
+    fn() {
+      42
+    }
+  )
+  assert_equal(completed, 42)
+  let skipped = loop[I64, I64, Assert](
+    0,
+    fn(_i) {
+      false
+    },
+    fn(_i) {
+      assert_true(false)
+      1
+    },
+    fn() {
+      7
+    }
+  )
+  assert_equal(skipped, 7)
+}

@@ -56,6 +56,10 @@ PATH=/path/to/compiler/bin:$PATH lane run build.lane:build --no-basic --lib-dir 
 lane exec basic.wasm:test
 ```
 
+`test.sh` runs all groups with both JIT and interpreter execution, then checks
+that a failing test exits unsuccessfully. `test-host.sh` exercises real filesystem,
+process and arithmetic failure boundaries in a temporary directory.
+
 The manifest uses `default_configuration()` (`lane` on PATH, root `.`).
 Applications can supply their own configuration. The parent Lane repository
 pins this Basic revision; updating an independent checkout is a separate action.

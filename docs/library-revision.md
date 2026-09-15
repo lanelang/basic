@@ -19,7 +19,7 @@ The independent sibling checkout is not overwritten.
 - [x] Direct capabilities for foundational data types and efficient text construction.
 - [x] Consistent module naming, public exports and documented compiler ABI seams.
 - [x] Explicit build configuration, planning and required interface closures.
-- [ ] Boundary, order, composition, large-input and compatibility regression gates.
+- [x] Boundary, order, composition, large-input and compatibility regression gates.
 
 ## Validation
 
@@ -134,3 +134,25 @@ constructor registration; all 1937 native tests pass.
 String.join and Writer log collection use balanced merging. Writer records
 messages in order and reassociates only the pure monoid operation. A 1,000-message
 String log and separator/empty-fragment regressions pass with all 23 groups.
+
+
+### Final regression gates
+
+The complete 24-group suite passes with both JIT and interpreter execution,
+including effectful Loop predicates, break/continue, checked narrowing, direct
+Result/Tuple capabilities, 10,000-element traversal and deep Document rendering.
+Writer now returns each message to an outer driver before resuming its one-shot
+continuation; a 1,000-message log uses bounded handler stack space. Same-payload
+Reader/State/Writer composition and message order remain covered.
+
+The manifest compiles and links the complete library, and the resulting
+basic.wasm passes all 24 groups on both execution engines. Real host tests cover
+filesystem, process and fatal integer arithmetic behavior. The test runner also
+checks that an assertion failure exits unsuccessfully. The parent repository's
+227-case example fixture and Explore smoke gate verify consumer compatibility.
+
+Deep-input interpreter checks exposed two further compiler defects: recursive
+reference destruction and missed tail calls through simplified return joins.
+The compiler now drains destruction with an intrusive worklist and recognizes
+those tail calls before ARC cleanup. Together with the fatal-path slot and hidden
+derive-constructor fixes above, all 1,939 native compiler tests pass.

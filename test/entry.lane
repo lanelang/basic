@@ -14,6 +14,7 @@ import Test.Data.Result.{ test_result }
 import Test.Data.Option.{ test_equal as test_option }
 import Test.Data.List.{ test_list }
 import Test.Data.AList.{ test_alist }
+import Test.Eff.Loop.{ test_loop }
 import Test.Eff.State.{ test_state }
 import Test.Io.{ test_io }
 import Test.Eff.Composition.{ test_composition }
@@ -45,6 +46,7 @@ pub fn test_entry() -> Unit ! { Io, Panic } {
       test_composition,
       test_io,
       test_state,
+      test_loop,
       test_exception_info,
       test_debug,
       test_process,

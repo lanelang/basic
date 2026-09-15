@@ -12,6 +12,30 @@ import Test.Assert.{ Assert, assert_equal, assert_true }
 pub fn test_i32() -> Unit ! { Assert, Panic } {
   offer source_info : String = "test_i32"
   assert_true(
+    match from_i64(-2147483649) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match from_i64(2147483648) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match from_i64(-2147483648) {
+      some(-2147483648i32) => true
+      _ => false
+    }
+  )
+  assert_true(
+    match from_i64(2147483647) {
+      some(2147483647i32) => true
+      _ => false
+    }
+  )
+  assert_true(
     match checked_div(1i32, 0i32) {
       err(_) => true
       _ => false

@@ -13,7 +13,7 @@ run_test_entry() {
 }
 
 run_test_entry
-# run_test_entry --no-jit
+run_test_entry --no-jit
 
 set +e
 "$lane_bin" run test/failing_entry.lane:test_entry --lib-dir . --no-basic >/dev/null

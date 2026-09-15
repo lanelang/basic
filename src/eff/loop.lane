@@ -7,7 +7,7 @@ pub effect Loop[It, Res] {
 
 pub fn[It, Res, E : Effect] loop(
   init : It,
-  cond : (It) -> Bool,
+  cond : (It) -> Bool ! E,
   body : (It) -> It ! { Loop[It, Res], E },
   nobreak : () -> Res ! E
 ) -> Res ! E {

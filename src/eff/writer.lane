@@ -16,15 +16,38 @@ pub fn[A, W, E : Effect] run_writer(
   action : () -> A ! { Writer[W], E },
   auto monoid_impl : Monoid[W]
 ) -> WriterResult[A, W] ! { E, Panic } {
-  let collected : WriterResult[A, List[W]] = handle action() with {
-    tell(message, resume) => {
-      let rest = resume(())
-      WriterResult[A, List[W]]::{ value: rest.value, log: cons(message, rest.log) }
-    }
+  let first : WriterStep[A, W, E] = handle action() with {
+    tell(message, resume) => WriterStep[A, W, E]::more(
+      message,
+      fn() {
+        resume(())
+      }
+    )
   } final value {
-    WriterResult[A, List[W]]::{ value, log: [] }
+    WriterStep[A, W, E]::done(value)
   }
-  WriterResult[A, W]::{ value: collected.value, log: merge_all(collected.log, monoid_impl) }
+  let collected = collect(first, [])
+  WriterResult[A, W]::{
+    value: collected.value,
+    log: merge_all(reverse(collected.log), monoid_impl)
+  }
+}
+
+// Return to the driver before resuming the action, so every tell uses bounded
+// handler stack space, including on the interpreter backend.
+enum WriterStep[A, W, E : Effect] {
+  done(A)
+  more(W, () -> WriterStep[A, W, E] ! { E, Panic })
+}
+
+fn[A, W, E : Effect] collect(
+  step : WriterStep[A, W, E],
+  log : List[W]
+) -> WriterResult[A, List[W]] ! { E, Panic } {
+  match step {
+    done(value) => WriterResult[A, List[W]]::{ value, log }
+    more(message, next) => collect(next(), cons(message, log))
+  }
 }
 
 // Reassociate only the pure, associative monoid operation. Message order and

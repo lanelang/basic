@@ -3,10 +3,27 @@ module Test.Data.Result
 import Basic.Prelude.*
 import Basic.Data.Result as R
 import Basic.Data.Option as O
+import Basic.Debug.Result.{ result_impl_debug }
+import Basic.Debug.Tuple.{ tuple_impl_debug }
+import Basic.Debug.Option.{ option_impl_debug }
+import Basic.Data.Tuple.{ tuple_impl_equal }
 import Test.Assert.{ Assert, assert_equal, assert_true }
 
 pub fn test_result() -> Unit ! Assert {
   offer source_info : String = "result and option contracts"
+  let equality = R.result_impl_equal[I64, String]()
+  assert_true(equality.equal(Result[I64, String]::ok(1), Result[I64, String]::ok(1)))
+  assert_true(!equality.equal(Result[I64, String]::ok(1), Result[I64, String]::err("1")))
+  assert_true(!equality.equal(Result[I64, String]::err("a"), Result[I64, String]::err("b")))
+  assert_equal(
+    debug(Result[I64, String]::err("bad"), debug_impl=result_impl_debug()),
+    "err(\"bad\")"
+  )
+  assert_equal(debug((1, "x"), debug_impl=tuple_impl_debug()), "(1, \"x\")")
+  assert_equal(debug(Option[I64]::some(1), debug_impl=option_impl_debug()), "some(1)")
+  let pair_equality = tuple_impl_equal[I64, String]()
+  assert_true(pair_equality.equal((1, "x"), (1, "x")))
+  assert_true(!pair_equality.equal((1, "x"), (1, "y")))
   let success : Result[I64, String] = ok(7)
   let failure : Result[I64, String] = err("first")
   assert_equal(
