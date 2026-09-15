@@ -27,25 +27,45 @@ pub offer fn[T] list_impl_equal(auto offer equal : Equal[T]) -> Equal[List[T]] {
   derive[Equal, List[T]]()
 }
 
+fn[T] length_from(list : List[T], count : I64) -> I64 {
+  match list {
+    empty() => count
+    cons(_, rest) => length_from(rest, count + 1)
+  }
+}
+
+// Linear time, constant call-stack depth.
 pub fn[T] length(list : List[T]) -> I64 {
+  length_from(list, 0)
+}
+
+// Reverse the first list onto the second in linear time.
+pub fn[T] reverse_append(list : List[T], tail : List[T]) -> List[T] {
   match list {
-    empty() => 0
-    cons(_x, xs) => length(xs) + 1
+    empty() => tail
+    cons(value, rest) => reverse_append(rest, cons(value, tail))
   }
 }
 
+pub fn[T] reverse(list : List[T]) -> List[T] {
+  reverse_append(list, [])
+}
+
+// Linear in the first list; shares the second list.
 pub fn[T] append(a : List[T], b : List[T]) -> List[T] {
-  match a {
-    empty() => b
-    cons(x, xs) => cons(x, append(xs, b))
+  reverse_append(reverse(a), b)
+}
+
+fn[T, R, E : Effect] map_reverse(list : List[T], f : (T) -> R ! E, acc : List[R]) -> List[R] ! E {
+  match list {
+    empty() => acc
+    cons(x, xs) => map_reverse(xs, f, cons(f(x), acc))
   }
 }
 
+// Callbacks run left to right, once per element.
 pub fn[T, R, E : Effect] map(list : List[T], f : (T) -> R ! E) -> List[R] ! E {
-  match list {
-    empty() => empty()
-    cons(x, xs) => cons(f(x), map(xs, f))
-  }
+  reverse(map_reverse(list, f, []))
 }
 
 pub offer list_impl_mappable : Mappable[List] = Mappable::{ map }
@@ -55,7 +75,7 @@ pub fn[T] elem(list : List[T], index : I64) -> T ! OutOfBound {
     out_of_min!()
   } else if index == 0 {
     match list {
-      empty() => out_of_min!()
+      empty() => out_of_max!()
       cons(x, _xs) => x
     }
   } else {
@@ -66,10 +86,24 @@ pub fn[T] elem(list : List[T], index : I64) -> T ! OutOfBound {
   }
 }
 
+// Linear in list length. Use cons/reverse for repeated construction.
 pub fn[T] push_tail(list : List[T], elem : T) -> List[T] {
-  match list {
-    empty() => [elem]
-    cons(x, xs) => cons(x, push_tail(xs, elem))
+  append(list, [elem])
+}
+
+pub fn[T] get(list : List[T], index : I64) -> Option[T] {
+  if index < 0 {
+    none()
+  } else {
+    match list {
+      empty() => none()
+      cons(x, xs) =>
+        if index == 0 {
+          some(x)
+        } else {
+          get(xs, index - 1)
+        }
+    }
   }
 }
 
@@ -77,19 +111,31 @@ pub fn[T] push_head(list : List[T], elem : T) -> List[T] {
   cons(elem, list)
 }
 
-pub fn[T] filter(list : List[T], pred : (T) -> Bool) -> List[T] {
+fn[T, E : Effect] filter_reverse(
+  list : List[T],
+  pred : (T) -> Bool ! E,
+  acc : List[T]
+) -> List[T] ! E {
   match list {
-    empty() => empty()
-    cons(x, xs) =>
+    empty() => acc
+    cons(x, xs) => filter_reverse(
+      xs,
+      pred,
       if pred(x) {
-        cons(x, filter(xs, pred))
+        cons(x, acc)
       } else {
-        filter(xs, pred)
+        acc
       }
+    )
   }
 }
 
-pub fn[T] find(list : List[T], pred : (T) -> Bool) -> Option[T] {
+pub fn[T, E : Effect] filter(list : List[T], pred : (T) -> Bool ! E) -> List[T] ! E {
+  reverse(filter_reverse(list, pred, []))
+}
+
+// Stop at the first match; later callbacks are not invoked.
+pub fn[T, E : Effect] find(list : List[T], pred : (T) -> Bool ! E) -> Option[T] ! E {
   match list {
     empty() => none()
     cons(x, xs) =>
@@ -117,11 +163,20 @@ pub fn[T] pure(x : T) -> List[T] {
   [x]
 }
 
-pub fn[T, R, E : Effect] apply(list : List[T], flist : List[(T) -> R ! E]) -> List[R] ! E {
-  match flist {
-    empty() => empty()
-    cons(f, fs) => append(map(list, f), apply(list, fs))
+fn[T, R, E : Effect] apply_reverse(
+  list : List[T],
+  functions : List[(T) -> R ! E],
+  acc : List[R]
+) -> List[R] ! E {
+  match functions {
+    empty() => acc
+    cons(f, fs) => apply_reverse(list, fs, map_reverse(list, f, acc))
   }
+}
+
+// Functions run in order; each visits values left to right.
+pub fn[T, R, E : Effect] apply(list : List[T], flist : List[(T) -> R ! E]) -> List[R] ! E {
+  reverse(apply_reverse(list, flist, []))
 }
 
 pub offer list_impl_applicative : Applicative[List] = Applicative::{
@@ -130,16 +185,19 @@ pub offer list_impl_applicative : Applicative[List] = Applicative::{
   mappable_impl: list_impl_mappable
 }
 
-pub fn[T, R, E : Effect] flat_map(list : List[T], f : (T) -> List[R] ! E) -> List[R] ! E {
+fn[T, R, E : Effect] flat_map_reverse(
+  list : List[T],
+  f : (T) -> List[R] ! E,
+  acc : List[R]
+) -> List[R] ! E {
   match list {
-    empty() => empty()
-    cons(x, xs) => {
-      match f(x) {
-        empty() => flat_map(xs, f)
-        r => append(r, flat_map(xs, f))
-      }
-    }
+    empty() => acc
+    cons(x, xs) => flat_map_reverse(xs, f, reverse_append(f(x), acc))
   }
+}
+
+pub fn[T, R, E : Effect] flat_map(list : List[T], f : (T) -> List[R] ! E) -> List[R] ! E {
+  reverse(flat_map_reverse(list, f, []))
 }
 
 pub offer list_impl_flat_mappable : FlatMappable[List] = FlatMappable::{
@@ -147,22 +205,27 @@ pub offer list_impl_flat_mappable : FlatMappable[List] = FlatMappable::{
   flat_map
 }
 
-pub offer fn[T] list_impl_monoid() -> Monoid[List[T]] {
-  Monoid::{
-    empty: empty(),
-    semigroup_impl: Semigroup::{
-      append: fn(a, b) {
-        append(a, b)
-      }
+pub offer fn[T] list_impl_semigroup() -> Semigroup[List[T]] {
+  Semigroup::{
+    append: fn(a, b) {
+      append(a, b)
     }
   }
 }
 
+pub offer fn[T] list_impl_monoid() -> Monoid[List[T]] {
+  Monoid::{ empty: empty(), semigroup_impl: list_impl_semigroup[T]() }
+}
+
+// Strict right fold: callbacks run from the last element to the first.
 pub fn[T, R, E : Effect] foldr(list : List[T], init : R, f : (T, R) -> R ! E) -> R ! E {
-  match list {
-    empty() => init
-    cons(x, xs) => f(x, foldr(xs, init, f))
-  }
+  foldl(
+    reverse(list),
+    init,
+    fn(acc, item) {
+      f(item, acc)
+    }
+  )
 }
 
 pub fn[T, R, E : Effect] foldl(list : List[T], init : R, f : (R, T) -> R ! E) -> R ! E {
@@ -196,9 +259,14 @@ pub fn[T, E : Effect] any(list : List[T], pred : (T) -> Bool ! E) -> Bool ! E {
   }
 }
 
-pub fn[A, B] zip(al : List[A], bl : List[B]) -> List[(A, B)] {
+fn[A, B] zip_reverse(al : List[A], bl : List[B], acc : List[(A, B)]) -> List[(A, B)] {
   match (al, bl) {
-    (cons(x, xs), cons(y, ys)) => cons((x, y), zip(xs, ys))
-    _ => empty()
+    (cons(x, xs), cons(y, ys)) => zip_reverse(xs, ys, cons((x, y), acc))
+    _ => acc
   }
+}
+
+// Stop at the shorter input.
+pub fn[A, B] zip(al : List[A], bl : List[B]) -> List[(A, B)] {
+  reverse(zip_reverse(al, bl, []))
 }

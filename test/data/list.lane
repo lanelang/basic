@@ -9,7 +9,12 @@ import Basic.Trait.Num.{ Add }
 import Basic.Summon.{ summon_via }
 import Basic.Trait.Equal.{ Equal }
 import Basic.Trait.Debug.{ Debug }
-import Test.Assert.{ Assert, assert_equal, assert_not_equal }
+import Test.Assert.{ Assert, assert_equal, assert_not_equal, assert_true }
+import Basic.Data.I64.{ i64_impl_sub, i64_impl_compare }
+import Basic.Data.Option.{ Option }
+import Basic.Eff.State.{ State, run_state }
+import Basic.Eff.Bound.{ OutOfBound }
+import Basic.Ops.{ op_sub, op_equal, op_less }
 
 fn test_length() -> Unit ! Assert {
   offer source_info : String = "test_length"
@@ -47,9 +52,114 @@ fn test_foldl() -> Unit ! Assert {
   assert_equal(s, 6)
 }
 
-pub fn test_list() -> Unit ! Assert {
+pub fn test_list() -> Unit ! { Assert, Panic } {
   test_length()
   test_equal()
   test_map()
   test_foldl()
+  test_contracts()
+}
+
+fn range_reverse(n : I64, acc : List[I64]) -> List[I64] {
+  if n == 0 {
+    acc
+  } else {
+    range_reverse(n - 1, cons(n, acc))
+  }
+}
+
+fn test_contracts() -> Unit ! { Assert, Panic } {
+  offer source_info : String = "collection order and boundaries"
+  let values = [1, 2, 3]
+  let filtered = run_state[List[I64], List[I64], {}](
+    fn() {
+      filter(
+        values,
+        fn(value) {
+          put!(cons(value, get!()))
+          value < 3
+        }
+      )
+    },
+    []
+  )
+  assert_equal(filtered.value, [1, 2])
+  assert_equal(filtered.state, [3, 2, 1])
+  let found = run_state[Option[I64], List[I64], {}](
+    fn() {
+      find(
+        values,
+        fn(value) {
+          put!(cons(value, get!()))
+          value == 2
+        }
+      )
+    },
+    []
+  )
+  assert_true(
+    match found.value {
+      some(2) => true
+      _ => false
+    }
+  )
+  assert_equal(found.state, [2, 1])
+  let folded = run_state[I64, List[I64], {}](
+    fn() {
+      foldr(
+        values,
+        0,
+        fn(value, sum) {
+          put!(cons(value, get!()))
+          sum + value
+        }
+      )
+    },
+    []
+  )
+  assert_equal(folded.value, 6)
+  assert_equal(folded.state, [1, 2, 3])
+  assert_equal(reverse_append(values, [4]), [3, 2, 1, 4])
+  assert_equal(
+    flat_map[I64, I64, {}](
+      values,
+      fn(x) {
+        [x, x]
+      }
+    ),
+    [1, 1, 2, 2, 3, 3]
+  )
+  assert_true(
+    match get(values, -1) {
+      none() => true
+      _ => false
+    }
+  )
+  assert_true(
+    match get(values, 3) {
+      none() => true
+      _ => false
+    }
+  )
+  let upper = handle elem[I64]([], 0) with {
+    out_of_min[_A](_resume) => false
+    out_of_max[_A](_resume) => true
+  } final _value {
+    false
+  }
+  assert_true(upper)
+  let large = range_reverse(10000, [])
+  assert_equal(
+    length(
+      map[I64, I64, {}](
+        large,
+        fn(x) {
+          x + 1
+        }
+      )
+    ),
+    10000
+  )
+  assert_equal(length(append(large, large)), 20000)
+  assert_equal(foldr(large, 0, i64_impl_add.add), 50005000)
 }

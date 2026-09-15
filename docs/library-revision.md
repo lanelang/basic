@@ -15,7 +15,7 @@ The independent sibling checkout is not overwritten.
 - [x] Coherent Option and Result operations and capability providers.
 - [ ] Explicit partial and total comparison contracts.
 - [x] AList replacement semantics and separately named shadowing bindings.
-- [ ] Consistent effectful collection operations and predictable construction costs.
+- [x] Consistent effectful collection operations and predictable construction costs.
 - [ ] Direct capabilities for foundational data types and efficient text construction.
 - [ ] Consistent module naming, public exports and documented compiler ABI seams.
 - [ ] Explicit build configuration, planning and required interface closures.
@@ -71,3 +71,10 @@ fail-fast with the value error taking priority. All 22 Basic groups pass.
 set replaces all bindings for a key, puts the replacement first, and preserves
 the relative order of other keys. bind is constant-time shadowing without an
 Equal requirement. Duplicate binding, cardinality and deletion tests pass.
+
+### Collection traversal
+
+filter and find preserve callback effects. Construction, append, zip, folds and
+flat_map use tail-recursive accumulation; reverse and reverse_append make costs
+explicit. get returns Option; elem([], 0) reports the upper bound. Tests cover
+effect order, early exit, 10,000-element maps/folds and 20,000-element append.
